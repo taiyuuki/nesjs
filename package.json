@@ -1,0 +1,26 @@
+{
+  "name": "nesjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@taiyuuki/eslint-config": "^1.4.14",
+    "@types/node": "^20.14.2",
+    "typescript": "^5.4.5",
+    "eslint": "^9.5.0",
+    "vitest": "^1.6.0"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "eslint": "9"
+      }
+    }
+  }
+}
