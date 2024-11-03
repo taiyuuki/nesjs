@@ -13,7 +13,7 @@ class Audio {
     gain = 1
 
     constructor() {
-        this.context = new window.AudioContext({ sampleRate: this.getSampleRate() })
+        this.context = new window.AudioContext()
         this.audioScriptProcessorNode = null
     }
 
@@ -33,8 +33,8 @@ class Audio {
             }
             for (let i = 0; i < len; i++) {
                 const srcIdx = this.audioReadCursor + i & Audio.SAMPLE_MASK
-                left[i] = this.audioSamplesL[srcIdx] * this.gain
-                right[i] = this.audioSamplesR[srcIdx] * this.gain
+                left[i] = this.audioSamplesL[srcIdx] 
+                right[i] = this.audioSamplesR[srcIdx]
             }
             this.audioReadCursor = this.audioReadCursor + len & Audio.SAMPLE_MASK
         })

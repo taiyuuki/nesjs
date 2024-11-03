@@ -210,7 +210,6 @@ class NES {
     setFramerate(rate: number) {
         this.opts.preferredFrameRate = rate
         this.frameTime = 1000 / rate
-        this.papu.setSampleRate(this.opts.sampleRate, false)
     }
     
     toJSON() {
@@ -220,7 +219,6 @@ class NES {
             cpu: this.cpu.toJSON(),
             mmap: this.mmap.toJSON(),
             ppu: this.ppu.toJSON(),
-            papu: this.papu.toJSON(),
         }
     }
     
@@ -232,7 +230,6 @@ class NES {
         this.cpu.fromJSON(s.cpu)
         this.mmap.fromJSON(s.mmap)
         this.ppu.fromJSON(s.ppu)
-        this.papu.fromJSON(s.papu)
     }
 }
 

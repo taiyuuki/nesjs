@@ -31,10 +31,6 @@ class NesEmulator {
                 this.nes.frame()
             })
 
-            setTimeout(() => {
-                console.log(this.saveState())
-            }, 1000)
-
         }
         catch (error) {
             throw new Error(`[@nesjs/native] ${error}`)
