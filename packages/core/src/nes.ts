@@ -3,14 +3,14 @@ import { Controller } from './controller'
 import { PPU } from './ppu'
 import { PAPU } from './papu'
 import { ROM } from './rom'
-import type { Mapper, NESOption, NESOptionParams } from './type'
+import type { Mapper, NESOption, NESOptionParams, Player } from './type'
 
 class NES {
-    fpsFrameCount = 0
-    romData!: string
-    break = false
-    lastFpsTime = 0
-    crashMessage = ''
+    fpsFrameCount = 0 // FPS counter
+    frameCount = 0 // Frame counter
+    romData!: string // Loaded ROM data
+    break = false // Flag to break out of frame loop
+    lastFpsTime = 0 // Time of last FPS calculation
     opts: NESOption = {
         onFrame: function() {},
         onAudioSample: function() {},
@@ -29,6 +29,7 @@ class NES {
     papu: PAPU
     mmap!: Mapper
     rom!: ROM
+    crashMessage = ''
     controllers: { 1: Controller; 2: Controller }
     ui: {
         writeFrame: (frameBuffer: number[])=> void
@@ -80,6 +81,7 @@ class NES {
     
         this.lastFpsTime = 0
         this.fpsFrameCount = 0
+        this.frameCount = 0
     
         this.break = false
     }
@@ -145,13 +147,14 @@ class NES {
             }
         }
         this.fpsFrameCount++
+        this.frameCount++
     }
     
-    buttonDown(controller: 1 | 2, button: number) {
+    buttonDown(controller: Player, button: number) {
         this.controllers[controller].buttonDown(button)
     }
     
-    buttonUp(controller: 1 | 2, button: number) {
+    buttonUp(controller: Player, button: number) {
         this.controllers[controller].buttonUp(button)
     }
     
@@ -225,6 +228,7 @@ class NES {
         this.reset()
 
         // this.romData = s.romData;
+        this.ppu.reset()
         this.cpu.fromJSON(s.cpu)
         this.mmap.fromJSON(s.mmap)
         this.ppu.fromJSON(s.ppu)

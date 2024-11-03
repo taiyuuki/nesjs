@@ -1,6 +1,6 @@
 import { Tile } from './tile'
 import type { NES } from './nes'
-import { fromJSON, toJSON } from './utils'
+import { fillArray, fromJSON, toJSON } from './utils'
 
 class NameTable {
     tile: number[]
@@ -379,10 +379,10 @@ class PPU {
         'scantile',
 
         // Used during rendering
-        'attrib',
-        'buffer',
-        'bgbuffer',
-        'pixrendered',
+        // 'attrib',
+        // 'buffer',
+        // 'bgbuffer',
+        // 'pixrendered',
 
         // Misc
         'requestEndFrame',
@@ -1857,6 +1857,11 @@ class PPU {
         let i
     
         fromJSON(this, state)
+
+        this.attrib = fillArray(0x20, 0)
+        this.bgbuffer = fillArray(0xF000, 0)
+        this.buffer = fillArray(0xF000, 0)
+        this.pixrendered = fillArray(0xF000, 0)
     
         for (i = 0; i < this.nameTable.length; i++) {
             this.nameTable[i].fromJSON(state.nameTable[i])
@@ -1874,4 +1879,4 @@ class PPU {
 
 }
 
-export { PPU }
+export { NameTable, PPU }

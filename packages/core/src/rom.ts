@@ -193,7 +193,6 @@ class ROM {
     }
     
     createMapper() {
-        console.error(this.mapperType)
         if (this.mapperSupported()) {
             return new Mappers[this.mapperType](this.nes)
         }

@@ -1,5 +1,7 @@
 import type { NES } from './nes'
 
+type Player = 1 | 2
+
 type HasJSON = { JSON_PROPERTIES: string[] }
 
 type From<O extends HasJSON, K extends string = O['JSON_PROPERTIES'][number]> = { 
@@ -58,6 +60,7 @@ type Mapper = {
 type MappersType = { [key: number]: new(nes: NES)=> Mapper }
 
 export type {
+    Player,
     HasJSON,
     From,
     To,

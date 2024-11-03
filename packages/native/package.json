@@ -1,5 +1,5 @@
 {
-  "name": "@nesjs/core",
+  "name": "@nesjs/native",
   "version": "0.0.1",
   "description": "",
   "type": "module",
@@ -8,10 +8,10 @@
   "types": "./dist/types/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/taiyuuki/core"
+    "url": "https://github.com/taiyuuki/native"
   },
-  "bugs": "https://github.com/taiyuuki/core/issues",
-  "homepage": "https://github.com/taiyuuki/core#readme",
+  "bugs": "https://github.com/taiyuuki/native/issues",
+  "homepage": "https://github.com/taiyuuki/native#readme",
   "scripts": {
     "lint": "eslint --fix",
     "dev": "rollup -cw",
@@ -32,13 +32,29 @@
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "@nesjs/core": "workspace:*"
+  },
   "devDependencies": {
     "@babel/core": "^7.24.7",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^26.0.1",
+    "@taiyuuki/eslint-config": "^1.4.14",
+    "@types/node": "^20.14.2",
+    "eslint": "^9.5.0",
     "rollup": "^4.18.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.1.1",
-    "rollup-plugin-typescript2": "^0.36.0"
+    "rollup-plugin-raw": "^0.0.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "eslint": "9"
+      }
+    }
   }
 }

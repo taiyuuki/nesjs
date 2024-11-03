@@ -952,7 +952,7 @@ class CPU {
                     addr
                 = this.nes.mmap.load(addr)
                 + (this.nes.mmap.load(addr & 0xff00 | (addr & 0xff) + 1 & 0xff)
-                << 8)
+                    << 8)
                 }
                 break
             }
@@ -1134,13 +1134,13 @@ class CPU {
                 this.F_BRK = 1
     
                 this.push(this.F_CARRY
-                | (this.F_ZERO === 0 ? 1 : 0) << 1
-                | this.F_INTERRUPT << 2
-                | this.F_DECIMAL << 3
-                | this.F_BRK << 4
-                | this.F_NOTUSED << 5
-                | this.F_OVERFLOW << 6
-                | this.F_SIGN << 7)
+                    | (this.F_ZERO === 0 ? 1 : 0) << 1
+                    | this.F_INTERRUPT << 2
+                    | this.F_DECIMAL << 3
+                    | this.F_BRK << 4
+                    | this.F_NOTUSED << 5
+                    | this.F_OVERFLOW << 6
+                    | this.F_SIGN << 7)
     
                 this.F_INTERRUPT = 1
 
@@ -1474,13 +1474,13 @@ class CPU {
                 // Push processor status on stack
                 this.F_BRK = 1
                 this.push(this.F_CARRY
-                | (this.F_ZERO === 0 ? 1 : 0) << 1
-                | this.F_INTERRUPT << 2
-                | this.F_DECIMAL << 3
-                | this.F_BRK << 4
-                | this.F_NOTUSED << 5
-                | this.F_OVERFLOW << 6
-                | this.F_SIGN << 7)
+                    | (this.F_ZERO === 0 ? 1 : 0) << 1
+                    | this.F_INTERRUPT << 2
+                    | this.F_DECIMAL << 3
+                    | this.F_BRK << 4
+                    | this.F_NOTUSED << 5
+                    | this.F_OVERFLOW << 6
+                    | this.F_SIGN << 7)
                 break
             }
             case 37: {

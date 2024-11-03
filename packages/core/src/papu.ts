@@ -510,7 +510,7 @@ class ChannelSquare {
                     this.progTimerMax
                 = this.progTimerMax
                 - ((this.progTimerMax >> this.sweepShiftAmount)
-                - (this.sqr1 ? 1 : 0))
+                    - (this.sqr1 ? 1 : 0))
                 }
             }
         }
@@ -890,15 +890,16 @@ class PAPU {
     constructor(public nes: NES) {
         this.setPanning(this.panning)
 
+        this.square_table = new Array(32 * 16)
+        this.tnd_table = new Array(204 * 16)
+        this.noiseWavelengthLookup = new Array(16)
+        this.dmcFreqLookup = new Array(16)
+        
         // Initialize lookup tables:
         this.initLengthLookup()
         this.initDmcFrequencyLookup()
         this.initNoiseWavelengthLookup()
         this.initDACtables()
-        this.square_table = new Array(32 * 16)
-        this.tnd_table = new Array(204 * 16)
-        this.noiseWavelengthLookup = new Array(16)
-        this.dmcFreqLookup = new Array(16)
 
         // Init sound registers:
         for (let i = 0; i < 0x14; i++) {
@@ -912,7 +913,7 @@ class PAPU {
 
         this.sampleRate = this.nes.opts.sampleRate
         this.sampleTimerMax = Math.floor(1024.0 * PAPU.CPU_FREQ_NTSC * this.nes.opts.preferredFrameRate
-        / (this.sampleRate * 60.0))
+            / (this.sampleRate * 60.0))
     
         this.frameTime = Math.floor(14915.0 * this.nes.opts.preferredFrameRate / 60.0)
     
@@ -1195,7 +1196,7 @@ class PAPU {
                     noise.shiftReg <<= 1
                     noise.tmp
             = (noise.shiftReg << (noise.randomMode === 0 ? 1 : 6)
-            ^ noise.shiftReg)
+                ^ noise.shiftReg)
             & 0x8000
                     if (noise.tmp === 0) {
 

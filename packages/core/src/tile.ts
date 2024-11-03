@@ -12,7 +12,7 @@ class Tile {
     tpri = 0
     c = 0
     initialized = false
-    opaque = new Array(8)
+    opaque = new Array<boolean>(8)
 
     constructor() {
     }
