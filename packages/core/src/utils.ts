@@ -86,7 +86,7 @@ function decompressArray(compressed: number[]): number[] {
     return decompressed
 }
 
-function compressPtTile(ptTile: Tile[]): [number[], number[]] {
+function compressPtTile(ptTile: Tile[]) {
     const opaques: number[] = []
     const pixs: number[] = []
     for (let i = 0; i < ptTile.length; i++) {
@@ -104,7 +104,7 @@ function compressPtTile(ptTile: Tile[]): [number[], number[]] {
     return [compressArray(opaques), compressArray(pixs)]
 }
 
-function decompressPtTile(compressed: [number[], number[]]) {
+function decompressPtTile(compressed: [ReturnType<typeof compressArray>, ReturnType<typeof compressArray>]) {
     const ptTile: Pick<Tile, 'opaque' | 'pix'>[] = []
     let opaque: boolean[] = Array(8)
     let pix: number[] = []
@@ -130,7 +130,7 @@ function decompressPtTile(compressed: [number[], number[]]) {
     return ptTile
 }
 
-function compressNameTable(nameTable: NameTable[]): [number[], number[]] {
+function compressNameTable(nameTable: NameTable[]) {
     const tile: number[] = []
     const attrib: number[] = []
     nameTable.reduce((prev, curr) => {
@@ -143,7 +143,7 @@ function compressNameTable(nameTable: NameTable[]): [number[], number[]] {
     return [compressArray(tile), compressArray(attrib)]
 }
 
-function decompressNameTable(compressed: [number[], number[]]) {
+function decompressNameTable(compressed: [ReturnType<typeof compressArray>, ReturnType<typeof compressArray>]) {
     const nameTable: Pick<NameTable, 'attrib' | 'tile'>[] = []
     let tile: number[] = []
     let attrib: number[] = []
@@ -162,20 +162,27 @@ function decompressNameTable(compressed: [number[], number[]]) {
     return nameTable
 }
 
+function toHexNumber(str: string) {
+    return Number(`0x${str}`)
+}
+
+function objectEntries<T extends object, K extends keyof T>(obj: T) {
+    return Object.entries(obj) as [K, T[K]][]
+}
+
 export {
     getVramMirrorTable,
-    compressArray,
-    decompressArray,
     compressPtTile,
     decompressPtTile,
     compressNameTable,
     decompressNameTable,
-}
-
-export {
+    compressArray,
+    decompressArray,
     copyArrayElements,
     copyArray,
     toJSON,
     fromJSON,
     fillArray,
+    toHexNumber,
+    objectEntries,
 }

@@ -1,6 +1,6 @@
 import { Tile } from './tile'
 import type { NES } from './nes'
-import { fillArray, fromJSON, toJSON } from './utils'
+import { compressArray, compressNameTable, compressPtTile, decompressArray, decompressNameTable, decompressPtTile, fillArray, fromJSON, getVramMirrorTable, toJSON } from './utils'
 
 class NameTable {
     tile: number[]
@@ -53,7 +53,7 @@ class NameTable {
         }
     }
     
-    fromJSON(s: NameTable) {
+    fromJSON(s: Pick<NameTable, 'attrib' | 'tile'>) {
         this.tile = s.tile
         this.attrib = s.attrib
     }
@@ -357,8 +357,8 @@ class PPU {
         'firstWrite',
 
         // Mirroring
+        // 'vramMirrorTable',
         'currentMirroring',
-        'vramMirrorTable',
         'ntable1',
 
         // SPR-RAM I/O
@@ -1839,30 +1839,38 @@ class PPU {
     toJSON() {
         let i
         const state = toJSON(this)
-    
-        state.nameTable = []
+
+        const nameTable = []
         for (i = 0; i < this.nameTable.length; i++) {
-            state.nameTable[i] = this.nameTable[i].toJSON()
+            nameTable[i] = this.nameTable[i].toJSON()
         }
-    
-        state.ptTile = []
+        
+        const ptTile = []
         for (i = 0; i < this.ptTile.length; i++) {
-            state.ptTile[i] = this.ptTile[i].toJSON()
+            ptTile[i] = this.ptTile[i].toJSON()
         }
+
+        state.nameTable = compressNameTable(nameTable as NameTable[])
+        state.ptTile = compressPtTile(ptTile as Tile[])
+        state.vramMem = compressArray(this.vramMem)
     
         return state
     }
     
-    fromJSON(state: PPU) {
+    fromJSON(state: ReturnType<PPU['toJSON']>) {
         let i
     
+        state.nameTable = decompressNameTable(state.nameTable)
+        state.ptTile = decompressPtTile(state.ptTile)
+        state.vramMem = decompressArray(state.vramMem)
+        state.vramMirrorTable = getVramMirrorTable()
+
         fromJSON(this, state)
 
-        this.attrib = fillArray(0x20, 0)
-        this.bgbuffer = fillArray(0xF000, 0)
-        this.buffer = fillArray(0xF000, 0)
-        this.pixrendered = fillArray(0xF000, 0)
-    
+        this.attrib = fillArray(0, 0x20)
+        this.bgbuffer = fillArray(0, 0xF000)
+        this.buffer = fillArray(0, 0xF000)
+        this.pixrendered = fillArray(0, 0xF000)
         for (i = 0; i < this.nameTable.length; i++) {
             this.nameTable[i].fromJSON(state.nameTable[i])
         }

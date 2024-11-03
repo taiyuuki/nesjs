@@ -46,7 +46,7 @@ class Tile {
         }
     }
     
-    fromJSON(s: Tile) {
+    fromJSON(s: Pick<Tile, 'opaque' | 'pix'>) {
         this.opaque = s.opaque
         this.pix = s.pix
     }

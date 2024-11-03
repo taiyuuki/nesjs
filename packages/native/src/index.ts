@@ -4,7 +4,7 @@ import { Animation } from './animation'
 
 class NesEmulator {
     nes: NES
-    currentURL: string | null = null
+    currentURL: string | undefined = void 0
     rom: string | null = null
     audio: Audio
     animation: Animation
@@ -19,7 +19,7 @@ class NesEmulator {
         })
     }
 
-    async start(romURL: string) {
+    async start(romURL?: string) {
         if (!this.nes.break) {
             this.stop()
         }
@@ -37,14 +37,18 @@ class NesEmulator {
         }
     }
 
-    getROM(romURL: string) {
+    getROM(romURL?: string) {
         if (romURL === this.currentURL && this.rom) {
             return this.rom
         }
         
         return new Promise<string>((resolve, reject) => {
-            if (typeof romURL !== 'string') {
-                reject('TypeError: Invalid ROM URL')
+            if (!romURL) {
+                if (!this.currentURL) {
+                    reject('TypeError: Invalid ROM URL')
+                }
+
+                return 
             }
             this.currentURL = romURL
             const xhr = new XMLHttpRequest()
@@ -91,6 +95,33 @@ class NesEmulator {
     saveState() {
         return this.nes.toJSON()
     }
-}
 
+    loadState(state: ReturnType<NES['toJSON']>) {
+        this.nes.fromJSON(state)
+    }
+
+    playFM2(fm2URL: string) {
+        return new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest()
+            xhr.open('GET', fm2URL, true)
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const cheatCode = xhr.response
+                    this.start(this.currentURL)
+                    this.nes.video.parseFM2(cheatCode)
+                    this.nes.video.run()
+                    resolve()
+                }
+                else {
+                    reject(`Failed to load fm2 file from ${fm2URL}.`)
+                }
+                xhr.onerror = () => {
+                    reject(`Failed to load fm2 file from ${fm2URL}.`)
+                }
+            }
+            xhr.send()
+        })
+        
+    }
+}
 export { NesEmulator }

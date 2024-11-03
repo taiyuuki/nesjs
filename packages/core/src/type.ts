@@ -59,6 +59,8 @@ type Mapper = {
 
 type MappersType = { [key: number]: new(nes: NES)=> Mapper }
 
+type CheatCodeMap = Record<number, number>
+
 export type {
     Player,
     HasJSON,
@@ -68,4 +70,5 @@ export type {
     NESOptionParams,
     Mapper,
     MappersType,
+    CheatCodeMap,
 }

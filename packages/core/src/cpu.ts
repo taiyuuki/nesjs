@@ -1,5 +1,5 @@
 import type { NES } from './nes'
-import { fromJSON, toJSON } from './utils'
+import { compressArray, decompressArray, fromJSON, toJSON } from './utils'
 
 class OpData {
     INS_ADC = 0
@@ -2148,10 +2148,14 @@ class CPU {
     }
 
     toJSON() {
-        return toJSON(this)
+        const state = toJSON(this)
+        state.mem = compressArray(this.mem)
+
+        return state
     }
     
-    fromJSON(s: CPU) {
+    fromJSON(s: ReturnType<CPU['toJSON']>) {
+        s.mem = decompressArray(s.mem)
         fromJSON(this, s)
     }
 }

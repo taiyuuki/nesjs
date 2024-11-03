@@ -3,7 +3,9 @@ import { Controller } from './controller'
 import { PPU } from './ppu'
 import { PAPU } from './papu'
 import { ROM } from './rom'
+import { Cheat } from './cheat'
 import type { Mapper, NESOption, NESOptionParams, Player } from './type'
+import { Video } from './video'
 
 class NES {
     fpsFrameCount = 0 // FPS counter
@@ -29,6 +31,8 @@ class NES {
     papu: PAPU
     mmap!: Mapper
     rom!: ROM
+    cheat: Cheat
+    video: Video
     crashMessage = ''
     controllers: { 1: Controller; 2: Controller }
     ui: {
@@ -49,6 +53,8 @@ class NES {
         this.cpu = new CPU(this)
         this.ppu = new PPU(this)
         this.papu = new PAPU(this)
+        this.cheat = new Cheat(this)
+        this.video = new Video(this)
 
         // this.mmap = null // set in loadROM()
         this.controllers = {
@@ -78,6 +84,7 @@ class NES {
         this.cpu.reset()
         this.ppu.reset()
         this.papu.reset()
+        this.cheat.reset()
     
         this.lastFpsTime = 0
         this.fpsFrameCount = 0
@@ -148,6 +155,8 @@ class NES {
         }
         this.fpsFrameCount++
         this.frameCount++
+        this.cheat.frame()
+        this.video.frame()
     }
     
     buttonDown(controller: Player, button: number) {
@@ -213,16 +222,18 @@ class NES {
     }
     
     toJSON() {
+
         return {
 
             // romData: this.romData,
+            frameCount: this.frameCount,
             cpu: this.cpu.toJSON(),
             mmap: this.mmap.toJSON(),
             ppu: this.ppu.toJSON(),
         }
     }
     
-    fromJSON(s: NES) {
+    fromJSON(s: ReturnType<NES['toJSON']>) {
         this.reset()
 
         // this.romData = s.romData;
@@ -230,6 +241,7 @@ class NES {
         this.cpu.fromJSON(s.cpu)
         this.mmap.fromJSON(s.mmap)
         this.ppu.fromJSON(s.ppu)
+        this.frameCount = s.frameCount
     }
 }
 
