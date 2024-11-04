@@ -1,13 +1,28 @@
 <script setup lang="ts">
-import { NesEmulator } from '@nesjs/native'
+import { NESEmulator } from '@nesjs/native'
 import { Ref, onMounted, ref } from 'vue'
 
 const cvs = ref() as Ref<HTMLCanvasElement>
 
-let emulator: NesEmulator
+let emulator: NESEmulator
 
 onMounted(() => {
-    emulator = new NesEmulator(cvs.value)
+    emulator = new NESEmulator(cvs.value, {
+        controller: {
+            p1: {
+                UP: 'KeyW',
+                DOWN: 'KeyS',
+                LEFT: 'KeyA',
+                RIGHT: 'KeyD',
+                A: 'KeyK',
+                B: 'KeyJ',
+                C: 'KeyO',
+                D: 'KeyI',
+                SELECT: 'Digit2',
+                START: 'Digit1',
+            },
+        },
+    })
 })
 
 function start() {

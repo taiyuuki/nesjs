@@ -1,15 +1,28 @@
 import { NES } from '@nesjs/core'
 import { Audio } from './audio'
 import { Animation } from './animation'
+import { NESGamepad } from './gamepad'
 
-class NesEmulator {
+type EmulatorOptions = {
+    gamepad?: { 
+        threshold?: number
+        turbo?: number
+    }
+    controller?: {
+        p1?: NESGamepad['_p1']
+        p2?: NESGamepad['_p2']
+    }
+}
+
+class NESEmulator {
     nes: NES
     currentURL: string | undefined = void 0
     rom: string | null = null
     audio: Audio
     animation: Animation
+    gamepad: NESGamepad
 
-    constructor(cvs: HTMLCanvasElement) {
+    constructor(cvs: HTMLCanvasElement, opt?: EmulatorOptions) {
         this.audio = new Audio()
         this.animation = new Animation(cvs)
         this.nes = new NES({ 
@@ -17,6 +30,25 @@ class NesEmulator {
             onFrame: this.animation.onFrame.bind(this.animation),
             sampleRate: this.audio.getSampleRate(),
         })
+        this.gamepad = new NESGamepad(this.nes)
+        if (opt) {
+            this.updateOptions(opt)
+        }
+        this.gamepad.addKeyboadEvent()
+        this.gamepad.addGamepadEvent()
+    }
+
+    updateOptions(opt: EmulatorOptions) {
+        this.gamepad.setThreshold(opt.gamepad?.threshold || 0.3)
+        if (opt.controller?.p1) {
+            this.gamepad.p1 = opt.controller.p1
+        }
+        if (opt.controller?.p2) {
+            this.gamepad.p2 = opt.controller.p2
+        }
+        if (opt.gamepad?.turbo) {
+            this.gamepad.setThreshold(opt.gamepad.turbo)
+        }
     }
 
     async start(romURL?: string) {
@@ -101,6 +133,8 @@ class NesEmulator {
     }
 
     async playVideo(opt: { type: 'fm2', URL?: string, text?: string }) {
+        this.gamepad.removeKeyboardEvent()
+        this.gamepad.removeGamepadEvent()
         if (opt.type === 'fm2') {
             if (opt.text) {
                 this.playVideoByFM2Text(opt.text)
@@ -109,6 +143,7 @@ class NesEmulator {
                 await this.playVideoByFM2URL(opt.URL)
             }
             else {
+                this.stopVideo()
                 throw new Error('[@nesjs/native] Please specify a URL or text for the FM2 file.')
             }
         }
@@ -146,6 +181,10 @@ class NesEmulator {
 
     stopVideo() {
         this.nes.video.stop()
+        this.gamepad.addKeyboadEvent()
+        this.gamepad.addGamepadEvent()
     }
 }
-export { NesEmulator }
+export { NESEmulator }
+
+export type { EmulatorOptions }
