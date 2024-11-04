@@ -82,9 +82,9 @@ class Video {
         if (this.running) {
             const frame = this.nes.frameCount + 1 + this.offset
             if (frame in this.controllerState) {
-                const script = this.controllerState[frame]
-                this.nes.controllers[1].state = script.p1
-                this.nes.controllers[2].state = script.p2
+                const state = this.controllerState[frame]
+                this.nes.controllers[1].state = state.p1
+                this.nes.controllers[2].state = state.p2
             }
         }
     }

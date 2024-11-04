@@ -100,28 +100,52 @@ class NesEmulator {
         this.nes.fromJSON(state)
     }
 
-    playFM2(fm2URL: string) {
+    async playVideo(opt: { type: 'fm2', URL?: string, text?: string }) {
+        if (opt.type === 'fm2') {
+            if (opt.text) {
+                this.playVideoByFM2Text(opt.text)
+            }
+            else if (opt.URL) {
+                await this.playVideoByFM2URL(opt.URL)
+            }
+            else {
+                throw new Error('[@nesjs/native] Please specify a URL or text for the FM2 file.')
+            }
+        }
+    }
+
+    playVideoByFM2Text(fm2Text: string) {
+        this.start(this.currentURL)
+        this.nes.video.parseFM2(fm2Text)
+        this.nes.video.run()
+    }
+
+    playVideoByFM2URL(fm2URL: string) {
         return new Promise<void>((resolve, reject) => {
             const xhr = new XMLHttpRequest()
             xhr.open('GET', fm2URL, true)
             xhr.onload = () => {
                 if (xhr.status === 200) {
-                    const cheatCode = xhr.response
+                    const fm2Text = xhr.response
                     this.start(this.currentURL)
-                    this.nes.video.parseFM2(cheatCode)
+                    this.nes.video.parseFM2(fm2Text)
                     this.nes.video.run()
                     resolve()
                 }
                 else {
                     reject(`Failed to load fm2 file from ${fm2URL}.`)
                 }
-                xhr.onerror = () => {
-                    reject(`Failed to load fm2 file from ${fm2URL}.`)
-                }
+            }
+            xhr.onerror = () => {
+                reject(`Failed to load fm2 file from ${fm2URL}.`)
             }
             xhr.send()
         })
         
+    }
+
+    stopVideo() {
+        this.nes.video.stop()
     }
 }
 export { NesEmulator }

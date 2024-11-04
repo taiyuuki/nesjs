@@ -16,8 +16,15 @@ function start() {
 
 }
 
-function playFM2() {
-    emulator.playFM2('happylee-supermariobros,warped.fm2')
+function playVideo() {
+    emulator.playVideo({
+        type: 'fm2',
+        URL: 'happylee-supermariobros,warped.fm2',
+    })
+}
+
+function stopVideo() {
+    emulator.stopVideo()
 }
 </script>
 
@@ -30,7 +37,10 @@ function playFM2() {
   <button @click="start">
     Start
   </button>
-  <button @click="playFM2">
+  <button @click="playVideo">
     Play FM2
+  </button>
+  <button @click="stopVideo">
+    Stop FM2
   </button>
 </template>

@@ -2,7 +2,6 @@ import { defineConfig } from 'rollup'
 import ts from 'rollup-plugin-typescript2'
 import commonjs from '@rollup/plugin-commonjs'
 import babelPlugin from '@rollup/plugin-babel'
-import raw from 'rollup-plugin-raw'
 import dts from 'rollup-plugin-dts'
 
 const config = defineConfig([
@@ -26,7 +25,6 @@ const config = defineConfig([
                 extensions: ['.ts'],
             }),
             commonjs(),
-            raw({ filter: /.*?\.worker\.js$/ }),
         ],
     },
     {
@@ -36,7 +34,6 @@ const config = defineConfig([
             format: 'esm',
         },
         plugins: [
-            raw({ filter: /.*?\.worker\.js$/ }),
             dts(),
         ],
     },
