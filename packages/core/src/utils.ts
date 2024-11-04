@@ -40,28 +40,23 @@ function getVramMirrorTable() {
     return fillArray(0x8000, 0).map((_, i) => i)
 }
 
-function compressArray(arr: number[] | Uint32Array) {
+function compressArray(arr: number[]) {
     const compressed = []
     let current = arr[0]
     let count = 1
-    for (let i = 1; i < arr.length; i++) {
+    for (let i = 1; i <= arr.length; i++) {
         if (arr[i] === current) {
             count++
         }
         else {
             if (count > 1) {
-                compressed.push(count)
-                compressed.push(current)
+                compressed.push(-count)
             }
-            else {
-                compressed.push(-current - 1)
-            }
+            compressed.push(current)
             current = arr[i]
             count = 1
         }
     }
-    compressed.push(count)
-    compressed.push(current)
 
     return compressed
 }
@@ -69,12 +64,12 @@ function compressArray(arr: number[] | Uint32Array) {
 function decompressArray(compressed: number[]): number[] {
     const decompressed = []
     for (let i = 0; i < compressed.length;) {
-        if (compressed[i] < 0) {
-            decompressed.push(-compressed[i] - 1)
+        if (compressed[i] >= 0) {
+            decompressed.push(compressed[i])
             i++
         }
         else {
-            const count = compressed[i]
+            const count = -compressed[i]
             const value = compressed[i + 1]
             for (let j = 0; j < count; j++) {
                 decompressed.push(value)

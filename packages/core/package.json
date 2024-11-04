@@ -15,8 +15,7 @@
   "scripts": {
     "lint": "eslint --fix",
     "dev": "rollup -cw",
-    "build": "rollup -c",
-    "test": "vitest"
+    "build": "rollup -c"
   },
   "keywords": [],
   "sideEffects": false,
@@ -39,5 +38,8 @@
     "rollup": "^4.18.0",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-typescript2": "^0.36.0"
+  },
+  "dependencies": {
+    "lz-string": "^1.5.0"
   }
 }

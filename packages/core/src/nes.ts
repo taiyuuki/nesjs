@@ -1,3 +1,4 @@
+import lz from 'lz-string'
 import { CPU } from './cpu'
 import { Controller } from './controller'
 import { PPU } from './ppu'
@@ -221,27 +222,33 @@ class NES {
         this.frameTime = 1000 / rate
     }
     
-    toJSON() {
+    toJSON(compress = true) {
 
-        return {
-
-            // romData: this.romData,
+        const json = JSON.stringify({
             frameCount: this.frameCount,
             cpu: this.cpu.toJSON(),
             mmap: this.mmap.toJSON(),
             ppu: this.ppu.toJSON(),
+        })
+
+        return {
+            data: compress ? lz.compressToEncodedURIComponent(json) : json,
+            compress: compress ? true : false,
         }
     }
     
     fromJSON(s: ReturnType<NES['toJSON']>) {
         this.reset()
 
+        const data = s.compress ? lz.decompressFromEncodedURIComponent(s.data) : s.data
+        const state = JSON.parse(data)
+
         // this.romData = s.romData;
         this.ppu.reset()
-        this.cpu.fromJSON(s.cpu)
-        this.mmap.fromJSON(s.mmap)
-        this.ppu.fromJSON(s.ppu)
-        this.frameCount = s.frameCount
+        this.cpu.fromJSON(state.cpu)
+        this.mmap.fromJSON(state.mmap)
+        this.ppu.fromJSON(state.ppu)
+        this.frameCount = state.frameCount
     }
 }
 

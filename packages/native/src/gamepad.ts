@@ -1,14 +1,7 @@
 import type { NES } from '@nesjs/core'
+import { fiilArray, obejctKeys } from './utils'
 
 type Player = 1 | 2
-
-function obejctKeys<T extends object>(obj: T) {
-    return Object.keys(obj) as (keyof T)[]
-}
-
-function fiilArray<T>(length: number, value: T) {
-    return Array.from<T>({ length }).fill(value)
-}
 
 class NESGamepad {
     static KEYS_INDEX = {
@@ -23,8 +16,8 @@ class NESGamepad {
         C: 8,
         D: 9,
     }
-
-    static DEFAULT_P1 = {
+    
+    private _p1 = {
         UP: 'KeyW',
         DOWN: 'KeyS',
         LEFT: 'KeyA',
@@ -36,8 +29,7 @@ class NESGamepad {
         SELECT: 'Digit2',
         START: 'Digit1',
     }
-
-    static DEFAULT_P2 = {
+    private _p2 = {
         UP: 'ArrowUp',
         DOWN: 'ArrowDown',
         LEFT: 'ArrowLeft',
@@ -49,9 +41,6 @@ class NESGamepad {
         SELECT: 'NumpadDecimal',
         START: 'NumpadEnter',
     }
-    
-    private _p1 = NESGamepad.DEFAULT_P1
-    private _p2 = NESGamepad.DEFAULT_P2
 
     private _eventKeys: Record<string, [Player, number][]>
 
@@ -111,6 +100,7 @@ class NESGamepad {
         NESGamepad.KEYS_INDEX.LEFT,
         NESGamepad.KEYS_INDEX.RIGHT,
     ]
+    enableGamepad = false
 
     constructor(nes: NES) {
         window.addEventListener('gamepadconnected', this.connectGamepadHandler.bind(this, true))
@@ -165,8 +155,22 @@ class NESGamepad {
         return this._p2
     }
 
-    setThreshold(turbo: number) {
-        this.threshold = 1000 / Math.min(20, Math.max(1, turbo))
+    setThreshold(threshold: number) {
+        this.threshold = threshold
+    }
+
+    setInterval(turbo: number) {
+        this.interval = 1000 / turbo
+    }
+
+    setEnableGamepad(enable: boolean) {
+        this.enableGamepad = enable
+        if (enable) {
+            this.addGamepadEvent()
+        }
+        else {
+            this.removeGamepadEvent()
+        }
     }
 
     setButtonState(player: Player, index: number, state: 0x40 | 0x41) {
@@ -223,6 +227,9 @@ class NESGamepad {
     }
 
     connectGamepadHandler(state: boolean, _e: GamepadEvent) {
+        if (!this.enableGamepad) {
+            return
+        }
         if (state) {
             this.addGamepadEvent()
         }
@@ -276,7 +283,6 @@ class NESGamepad {
 
             const lr = gamepad.axes[0]
             const tb = gamepad.axes[1]
-
             this.axesHandler(player, lr > this.threshold, 0, 15)
             this.axesHandler(player, lr < -this.threshold, 1, 14)
             this.axesHandler(player, tb > this.threshold, 2, 13)
@@ -285,12 +291,15 @@ class NESGamepad {
     }
 
     runGamepad() {
+        if (this.animationFrameId !== null) {
+            window.cancelAnimationFrame(this.animationFrameId)
+        }
         this.gamepadFrame()
         this.animationFrameId = window.requestAnimationFrame(this.runGamepad)
     }
 
     stopGamepad() {
-        if (this.animationFrameId) {
+        if (this.animationFrameId !== null) {
             window.cancelAnimationFrame(this.animationFrameId)
             this.animationFrameId = null
         }

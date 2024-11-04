@@ -91,6 +91,8 @@ class Video {
 
     stop() {
         this.running = false
+        this.nes.controllers[1].state = fillArray(0x40, 8)
+        this.nes.controllers[2].state = fillArray(0x40, 8)
     }
 }
 

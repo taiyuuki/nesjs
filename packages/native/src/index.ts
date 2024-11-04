@@ -2,6 +2,7 @@ import { NES } from '@nesjs/core'
 import { Audio } from './audio'
 import { Animation } from './animation'
 import { NESGamepad } from './gamepad'
+import { keyIn } from './utils'
 
 type EmulatorOptions = {
     gamepad?: { 
@@ -12,6 +13,15 @@ type EmulatorOptions = {
         p1?: NESGamepad['_p1']
         p2?: NESGamepad['_p2']
     }
+    volume?: number
+    clip?: boolean
+    enableGamepad?: boolean
+}
+
+type VideoOptions = {
+    type: 'fm2'
+    text?: string
+    URL?: string
 }
 
 class NESEmulator {
@@ -21,8 +31,12 @@ class NESEmulator {
     audio: Audio
     animation: Animation
     gamepad: NESGamepad
+    paused = false
 
     constructor(cvs: HTMLCanvasElement, opt?: EmulatorOptions) {
+        if (!cvs || !(cvs instanceof HTMLCanvasElement)) {
+            throw new Error('[@nesjs/native] Please specify a canvas element.')
+        }
         this.audio = new Audio()
         this.animation = new Animation(cvs)
         this.nes = new NES({ 
@@ -35,11 +49,13 @@ class NESEmulator {
             this.updateOptions(opt)
         }
         this.gamepad.addKeyboadEvent()
-        this.gamepad.addGamepadEvent()
+    }
+
+    resizeScreen(width: number, height?: number) {
+        this.animation.resize(width, height)
     }
 
     updateOptions(opt: EmulatorOptions) {
-        this.gamepad.setThreshold(opt.gamepad?.threshold || 0.3)
         if (opt.controller?.p1) {
             this.gamepad.p1 = opt.controller.p1
         }
@@ -47,7 +63,19 @@ class NESEmulator {
             this.gamepad.p2 = opt.controller.p2
         }
         if (opt.gamepad?.turbo) {
-            this.gamepad.setThreshold(opt.gamepad.turbo)
+            this.gamepad.setInterval(opt.gamepad.turbo)
+        }
+        if (opt.gamepad?.threshold) {
+            this.gamepad.setThreshold(opt.gamepad.threshold)
+        }
+        if (keyIn('volume', opt)) {
+            this.audio.setVolume(opt.volume!)
+        }
+        if (keyIn('clip', opt)) {
+            this.nes.ppu.clipToTvSize = opt.clip!
+        }
+        if (keyIn('enableGamepad', opt)) {
+            this.gamepad.setEnableGamepad(opt.enableGamepad!)
         }
     }
 
@@ -58,7 +86,9 @@ class NESEmulator {
         try {
             this.rom = await this.getROM(romURL)
             this.nes.loadROM(this.rom)
-    
+            if (this.paused) {
+                this.play()
+            }
             this.audio.createAudioProgressor(() => {
                 this.nes.frame()
             })
@@ -124,15 +154,15 @@ class NESEmulator {
         }
     }
 
-    saveState() {
-        return this.nes.toJSON()
+    saveState(compress = true) {
+        return this.nes.toJSON(compress)
     }
 
     loadState(state: ReturnType<NES['toJSON']>) {
         this.nes.fromJSON(state)
     }
 
-    async playVideo(opt: { type: 'fm2', URL?: string, text?: string }) {
+    async playVideo<T extends VideoOptions>(opt: T extends Required<VideoOptions> ? never : T) {
         this.gamepad.removeKeyboardEvent()
         this.gamepad.removeGamepadEvent()
         if (opt.type === 'fm2') {
@@ -151,8 +181,13 @@ class NESEmulator {
 
     playVideoByFM2Text(fm2Text: string) {
         this.start(this.currentURL)
-        this.nes.video.parseFM2(fm2Text)
-        this.nes.video.run()
+        const check = this.nes.video.parseFM2(fm2Text)
+        if (check) {
+            this.nes.video.run()
+        }
+        else {
+            console.warn('[@nesjs/native] Not a valid FM2 file.')
+        }
     }
 
     playVideoByFM2URL(fm2URL: string) {
@@ -162,9 +197,7 @@ class NESEmulator {
             xhr.onload = () => {
                 if (xhr.status === 200) {
                     const fm2Text = xhr.response
-                    this.start(this.currentURL)
-                    this.nes.video.parseFM2(fm2Text)
-                    this.nes.video.run()
+                    this.playVideoByFM2Text(fm2Text)
                     resolve()
                 }
                 else {

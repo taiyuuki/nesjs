@@ -49,8 +49,8 @@ class Audio {
         this.context.resume()
     }
 
-    setGain(gain: number) {
-        this.gain = gain
+    setVolume(volume: number) {
+        this.gain = Math.max(0, Math.min(100, volume)) / 100
     }
 
     stop() {

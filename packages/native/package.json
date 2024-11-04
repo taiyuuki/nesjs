@@ -15,8 +15,7 @@
   "scripts": {
     "lint": "eslint --fix",
     "dev": "rollup -cw",
-    "build": "rollup -c",
-    "test": "vitest"
+    "build": "rollup -c"
   },
   "keywords": [],
   "sideEffects": false,

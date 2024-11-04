@@ -393,6 +393,11 @@ class PPU {
         'scanlineAlreadyRendered',
     ]
 
+    KEEP_OPTIONS = [
+        'showSpr0Hit',
+        'clipToTvSize',
+    ] as const
+
     constructor(public nes: NES) {
         let i
 
@@ -523,6 +528,9 @@ class PPU {
 
     reset() {
         const instance = new PPU(this.nes)
+        for (const prop of this.KEEP_OPTIONS) {
+            instance[prop] = this[prop]
+        }
         Object.assign(this, instance)
     }
 
