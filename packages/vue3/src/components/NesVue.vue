@@ -9,29 +9,15 @@ let emulator: NESEmulator
 let clip = false
 let enableGamepad = true
 onMounted(() => {
-    emulator = new NESEmulator(cvs.value, {
-        controller: {
-            p1: {
-                UP: 'KeyW',
-                DOWN: 'KeyS',
-                LEFT: 'KeyA',
-                RIGHT: 'KeyD',
-                A: 'KeyK',
-                B: 'KeyJ',
-                C: 'KeyO',
-                D: 'KeyI',
-                SELECT: 'Digit2',
-                START: 'Digit1',
-            },
-        },
-        clip,
-        enableGamepad,
-    })
+    emulator = new NESEmulator(cvs.value)
 })
 
 function start() {
-    emulator.start('Super Mario Bros (JU).nes')
-    emulator.resizeScreen(800)
+    emulator.start('Super Mario Bros (JU).nes').then(() => {
+        emulator.resizeScreen(800)
+        const cheatCode = '079F-01-01'
+        emulator.nes.cheat.onCheat(cheatCode)
+    })
 }
 
 function stop() {

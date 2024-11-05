@@ -1,20 +1,39 @@
 import { NES } from '@nesjs/core'
 import { Audio } from './audio'
 import { Animation } from './animation'
+import type { ControllerOptions } from './gamepad'
 import { NESGamepad } from './gamepad'
 import { keyIn } from './utils'
 
 type EmulatorOptions = {
+
+    /** Gamepad options. */
     gamepad?: { 
+
+        /** The sensitive threshold for the gamepad's level of input, between 0 and 1, default to 0.3 */  
         threshold?: number
+
+        /** The mashing speed of the turbo button, in frames per second, between 5 and 30, default to 16 */
         turbo?: number
     }
+
+    /** Keyboard options. */
     controller?: {
-        p1?: NESGamepad['_p1']
-        p2?: NESGamepad['_p2']
+
+        /** The player 1's controller configuration. */
+        p1?: ControllerOptions
+
+        /** The player 2's controller configuration. */
+        p2?: ControllerOptions
     }
+
+    /** Audio options. */
     volume?: number
+
+    /** Clip 8 pixels around the screen to the TV size. */
     clip?: boolean
+
+    /** Enable gamepad support. */
     enableGamepad?: boolean
 }
 
@@ -51,10 +70,19 @@ class NESEmulator {
         this.gamepad.addKeyboadEvent()
     }
 
+    /**
+     * Resize the canvas and the screen.
+     * @param width
+     * @param height 
+     */
     resizeScreen(width: number, height?: number) {
         this.animation.resize(width, height)
     }
 
+    /**
+     * Update the emulator options.
+     * @param opt 
+     */
     updateOptions(opt: EmulatorOptions) {
         if (opt.controller?.p1) {
             this.gamepad.p1 = opt.controller.p1
@@ -79,6 +107,10 @@ class NESEmulator {
         }
     }
 
+    /**
+     * Start the emulator with the specified ROM URL.
+     * @param romURL 
+     */
     async start(romURL?: string) {
         if (!this.nes.break) {
             this.stop()
@@ -154,14 +186,26 @@ class NESEmulator {
         }
     }
 
+    /**
+     * Save the current emulator state.
+     * @param compress - Whether to compress the state or not.
+     */
     saveState(compress = true) {
         return this.nes.toJSON(compress)
     }
 
+    /**
+     * Load the emulator state.
+     * @param state - The saved state.
+     */
     loadState(state: ReturnType<NES['toJSON']>) {
         this.nes.fromJSON(state)
     }
 
+    /**
+     * Play a replay video file.
+     * @param opt - The video options.
+     */
     async playVideo<T extends VideoOptions>(opt: T extends Required<VideoOptions> ? never : T) {
         this.gamepad.removeKeyboardEvent()
         this.gamepad.removeGamepadEvent()

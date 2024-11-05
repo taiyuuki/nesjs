@@ -3,6 +3,8 @@ import { fiilArray, obejctKeys } from './utils'
 
 type Player = 1 | 2
 
+type ControllerOptions = Partial<Record<keyof typeof NESGamepad.KEYS_INDEX, string>>
+
 class NESGamepad {
     static KEYS_INDEX = {
         A: 0,
@@ -137,21 +139,21 @@ class NESGamepad {
         })
     }
 
-    set p1(value: Partial<Record<keyof typeof NESGamepad.KEYS_INDEX, string>>) {
+    set p1(value: ControllerOptions) {
         Object.assign(this._p1, value)
         this.setEventKeys()
     }
 
-    set p2(value: Partial<Record<keyof typeof NESGamepad.KEYS_INDEX, string>>) {
+    set p2(value: ControllerOptions) {
         Object.assign(this._p2, value)
         this.setEventKeys()
     }
 
-    get p1(): NESGamepad['_p1'] {
+    get p1(): ControllerOptions {
         return this._p1
     }
 
-    get p2(): NESGamepad['_p2'] {
+    get p2(): ControllerOptions {
         return this._p2
     }
 
@@ -160,7 +162,7 @@ class NESGamepad {
     }
 
     setInterval(turbo: number) {
-        this.interval = 1000 / turbo
+        this.interval = 1000 / Math.min(Math.max(turbo, 5), 30)
     }
 
     setEnableGamepad(enable: boolean) {
@@ -319,3 +321,5 @@ class NESGamepad {
 }
 
 export { NESGamepad }
+
+export type { Player, ControllerOptions }
