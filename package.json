@@ -1,22 +1,26 @@
 {
   "name": "nesjs",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix",
+    "patch": "esno scripts/bump.ts patch",
+    "minor": "esno scripts/bump.ts minor",
+    "major": "esno scripts/bump.ts major",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@nesjs/core": "workspace:^",
     "@taiyuuki/eslint-config": "^1.4.15",
     "@types/node": "^20.17.5",
     "eslint": "^9.13.0",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.4",
-    "@nesjs/core": "workspace:^"
+    "vitest": "^2.1.4"
   },
   "pnpm": {
     "peerDependencyRules": {
@@ -24,5 +28,12 @@
         "eslint": "9"
       }
     }
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9",
+    "esno": "^4.8.0",
+    "fast-glob": "^3.3.2",
+    "kolorist": "^1.8.0",
+    "prompts": "^2.4.2"
   }
 }
