@@ -16,6 +16,7 @@ class Animation {
         const buffer = new ArrayBuffer(this.imageData.data.length)
         this.framebuffer_u8 = new Uint8ClampedArray(buffer)
         this.framebuffer_u32 = new Uint32Array(buffer)
+        this.reset()
     }
 
     onFrame(frameBuffer: number[]) {
@@ -43,6 +44,12 @@ class Animation {
             this.cvs.style.width = `${width}px`
             this.cvs.style.height = `${height}px`
         }
+    }
+
+    reset() {
+        this.ctx.strokeStyle = 'black'
+        this.ctx.fillStyle = 'black'
+        this.ctx.fillRect(0, 0, Animation.WIDTH, Animation.HEIGHT)
     }
 }
 

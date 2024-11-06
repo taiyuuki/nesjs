@@ -9,14 +9,12 @@ let emulator: NESEmulator
 let clip = false
 let enableGamepad = true
 onMounted(() => {
-    emulator = new NESEmulator(cvs.value)
+    emulator = new NESEmulator(cvs.value, { clip })
 })
 
 function start() {
     emulator.start('Super Mario Bros (JU).nes').then(() => {
         emulator.resizeScreen(800)
-        const cheatCode = '079F-01-01'
-        emulator.nes.cheat.onCheat(cheatCode)
     })
 }
 
@@ -24,12 +22,8 @@ function stop() {
     emulator.stop()
 }
 
-function pause() {
-    emulator.pause()
-}
-
 function play() {
-    emulator.play()
+    emulator.toggle()
 }
 
 function reset() {
@@ -46,14 +40,13 @@ function playVideo() {
 function stopVideo() {
     emulator.stopVideo()
 }
-let saveState: ReturnType<NESEmulator['saveState']> | null = null
+
 function save() {
-    saveState = emulator.saveState()
+    emulator.saveState('mario', true)
 }
 
 function load() {
-    if (!saveState) return
-    emulator.loadState(saveState)
+    emulator.loadState('mario')
 }
 function toggleClip() {
     clip = !clip
@@ -63,6 +56,14 @@ function toggleClip() {
 function toggleGamepad() {
     enableGamepad = !enableGamepad
     emulator.updateOptions({ enableGamepad })
+}
+
+function addCheat() {
+    emulator.setCheat('079F-01-01')
+}
+
+function removeCheat() {
+    emulator.removeCheat('079F-01-01')
 }
 </script>
 
@@ -79,9 +80,6 @@ function toggleGamepad() {
   </button>
   <button @click="stop">
     Stop
-  </button>
-  <button @click="pause">
-    Pause
   </button>
   <button @click="play">
     Play
@@ -106,5 +104,11 @@ function toggleGamepad() {
   </button>
   <button @click="toggleGamepad">
     Gamepad
+  </button>
+  <button @click="addCheat">
+    Add Cheat
+  </button>
+  <button @click="removeCheat">
+    Remove Cheat
   </button>
 </template>

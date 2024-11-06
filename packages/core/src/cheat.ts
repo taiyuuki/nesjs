@@ -54,7 +54,7 @@ class Cheat {
         this.on(cheatAddress, cheatType, cheatValue)
     }
 
-    removeCheat(cheatAddress: number) {
+    removeCheatCode(cheatAddress: number) {
         delete this.fixed[cheatAddress]
         delete this.greater[cheatAddress]
         delete this.lesser[cheatAddress]
@@ -66,7 +66,7 @@ class Cheat {
             return
         }
         const cheatAddress = toHexNumber(matchs[1])
-        this.removeCheat(cheatAddress)
+        this.removeCheatCode(cheatAddress)
     }
 
     reset() {

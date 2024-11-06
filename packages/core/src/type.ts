@@ -14,15 +14,15 @@ type To<O extends HasJSON, K extends string = From<O>['JSON_PROPERTIES'][number]
 
 type NESOption = {
     onFrame: (frameBuffer: number[])=> void
-    onAudioSample: (left: number, right: number)=> void
-    onStatusUpdate: ()=> void
-    onBatteryRamWrite: (address: number, value: number)=> void
-    preferredFrameRate: number
-    emulateSound: boolean
-    sampleRate: number
+    onAudioSample?: (left: number, right: number)=> void
+    onStatusUpdate?: ()=> void
+    onBatteryRamWrite?: (address: number, value: number)=> void
+    preferredFrameRate?: number
+    emulateSound?: boolean
+    sampleRate?: number
 }
 
-type NESOptionParams = Partial<NESOption>
+// type NESOptionParams = Partial<NESOption>
 
 type Mapper = {
     nes: NES
@@ -67,7 +67,6 @@ export type {
     From,
     To,
     NESOption,
-    NESOptionParams,
     Mapper,
     MappersType,
     CheatCodeMap,

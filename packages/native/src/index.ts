@@ -4,8 +4,19 @@ import { Animation } from './animation'
 import type { ControllerOptions } from './gamepad'
 import { NESGamepad } from './gamepad'
 import { keyIn } from './utils'
+import { DB } from './db'
 
 type EmulatorOptions = {
+
+    /** Screen options. */
+    screen?: {
+
+        /** The width of the canvas. */
+        width: number
+
+        /** The height of the canvas */
+        height?: number
+    }
 
     /** Gamepad options. */
     gamepad?: { 
@@ -30,7 +41,7 @@ type EmulatorOptions = {
     /** Audio options. */
     volume?: number
 
-    /** Clip 8 pixels around the screen to the TV size. */
+    /** Clip 8 pixels around the screen. */
     clip?: boolean
 
     /** Enable gamepad support. */
@@ -43,6 +54,19 @@ type VideoOptions = {
     URL?: string
 }
 
+/**
+ * # NES Emulator
+ * 
+ * The NES emulator is a JavaScript library that runs Nintendo Entertainment System (NES) games in a web browser. It uses the Web Audio API to generate sound and the Canvas API to render graphics. It also supports gamepads and keyboards for controller input.
+ * @example
+ * ```typescript
+ * import { NESEmulator } from '@nesjs/native'
+ * 
+ * const cvs = document.getElementById('canvas') // Get the canvas element.
+ * const nes = new NESEmulator(cvs) // Create a new emulator instance.
+ * nes.start('rom.nes') // Start the emulator with the specified ROM URL.
+ * ```
+ */
 class NESEmulator {
     nes: NES
     currentURL: string | undefined = void 0
@@ -51,9 +75,11 @@ class NESEmulator {
     animation: Animation
     gamepad: NESGamepad
     paused = false
+    cheats: Record<string, string> = {}
+    private _db: DB<{ data: string, compress: boolean }>
 
     constructor(cvs: HTMLCanvasElement, opt?: EmulatorOptions) {
-        if (!cvs || !(cvs instanceof HTMLCanvasElement)) {
+        if (!cvs || cvs.tagName !== 'CANVAS') {
             throw new Error('[@nesjs/native] Please specify a canvas element.')
         }
         this.audio = new Audio()
@@ -64,6 +90,7 @@ class NESEmulator {
             sampleRate: this.audio.getSampleRate(),
         })
         this.gamepad = new NESGamepad(this.nes)
+        this._db = new DB('nesjs', 'save_data')
         if (opt) {
             this.updateOptions(opt)
         }
@@ -71,9 +98,10 @@ class NESEmulator {
     }
 
     /**
-     * Resize the canvas and the screen.
-     * @param width
-     * @param height 
+     * Resize the screen of the canvas.
+     * Please keep the ratio of 256×240 for width and height.
+     * @param width - The new width of the canvas.
+     * @param height - Optional. The new height of the canvas. If not specified, the height will be calculated based on the width.
      */
     resizeScreen(width: number, height?: number) {
         this.animation.resize(width, height)
@@ -116,7 +144,7 @@ class NESEmulator {
             this.stop()
         }
         try {
-            this.rom = await this.getROM(romURL)
+            this.rom = await this._getROM(romURL)
             this.nes.loadROM(this.rom)
             if (this.paused) {
                 this.play()
@@ -131,7 +159,7 @@ class NESEmulator {
         }
     }
 
-    getROM(romURL?: string) {
+    private async _getROM(romURL?: string) {
         if (romURL === this.currentURL && this.rom) {
             return this.rom
         }
@@ -163,19 +191,49 @@ class NESEmulator {
         })
     }
 
+    /**
+     * Pause the emulator.
+     */
     pause() {
         this.audio.pause()
+        this.paused = true
     }
 
+    /**
+     * Resume the emulator.
+     */
     play() {
         this.audio.resume()
+        this.paused = false
     }
 
+    /**
+     * Toggle the emulator between paused and playing.
+     * @returns Whether the emulator is paused or not.
+     */
+    toggle() {
+        if (this.paused) {
+            this.play()
+        }
+        else {
+            this.pause()
+        }
+
+        return this.paused
+    }
+
+    /**
+     * Stop the emulator.
+     */
     stop() {
         this.audio.stop()
         this.nes.stop()
+        this.animation.reset()
     }
 
+    /**
+     * Reset the emulator.
+     */
     reset() {
         if (this.currentURL) {
             this.stop()
@@ -187,19 +245,40 @@ class NESEmulator {
     }
 
     /**
-     * Save the current emulator state.
-     * @param compress - Whether to compress the state or not.
+     * Save the current game state.
+     * @param id - A unique ID for the saved state.
+     * @param compress - Whether to compress the saved state, default to true.
      */
-    saveState(compress = true) {
-        return this.nes.toJSON(compress)
+    saveState(id: string, compress = true) {
+        const state = this.nes.toJSON(compress)
+        this._db.setItem(id, state)
     }
 
     /**
-     * Load the emulator state.
-     * @param state - The saved state.
+     * Load the game state.
+     * @param id - The ID of the saved state.
      */
-    loadState(state: ReturnType<NES['toJSON']>) {
+    async loadState(id: string) {
+        const state = await this._db.getItem(id)
+        if (!state) {
+            return Promise.reject(`[@nesjs/native] No saved state found with ID ${id}.`)
+        }
         this.nes.fromJSON(state)
+    }
+
+    /**
+     * Remove the saved game state.
+     * @param id - The ID of the saved state.
+     */
+    removeState(id: string) {
+        this._db.removeItem(id)
+    }
+
+    /**
+     * Remove all saved game states.
+     */
+    removeAllStates() {
+        this._db.clear()
     }
 
     /**
@@ -209,17 +288,21 @@ class NESEmulator {
     async playVideo<T extends VideoOptions>(opt: T extends Required<VideoOptions> ? never : T) {
         this.gamepad.removeKeyboardEvent()
         this.gamepad.removeGamepadEvent()
-        if (opt.type === 'fm2') {
-            if (opt.text) {
-                this.playVideoByFM2Text(opt.text)
-            }
-            else if (opt.URL) {
-                await this.playVideoByFM2URL(opt.URL)
-            }
-            else {
-                this.stopVideo()
-                throw new Error('[@nesjs/native] Please specify a URL or text for the FM2 file.')
-            }
+
+        switch (opt.type) {
+            case 'fm2':
+                if (opt.text) {
+                    this.playVideoByFM2Text(opt.text)
+                }
+                else if (opt.URL) {
+                    await this.playVideoByFM2URL(opt.URL)
+                }
+                else {
+                    this.stopVideo()
+
+                    return Promise.reject('[@nesjs/native] Please specify a text or URL for the FM2 file.')
+                }
+                break
         }
     }
 
@@ -238,6 +321,7 @@ class NESEmulator {
         return new Promise<void>((resolve, reject) => {
             const xhr = new XMLHttpRequest()
             xhr.open('GET', fm2URL, true)
+            xhr.responseType = 'text'
             xhr.onload = () => {
                 if (xhr.status === 200) {
                     const fm2Text = xhr.response
@@ -253,13 +337,43 @@ class NESEmulator {
             }
             xhr.send()
         })
-        
     }
 
+    /**
+     * Stop the replay video.
+     */
     stopVideo() {
         this.nes.video.stop()
         this.gamepad.addKeyboadEvent()
-        this.gamepad.addGamepadEvent()
+        if (this.gamepad.enableGamepad) {
+            this.gamepad.addGamepadEvent()
+        }
+    }
+
+    /**
+     * Set a cheat code.
+     * @param code - The cheat code.
+     */
+    setCheat(code: string) {
+        this.nes.cheat.onCheat(code)
+        this.cheats[code] = code
+    }
+
+    /**
+     * Remove a cheat code.
+     * @param code - The cheat code.
+     */
+    removeCheat(code: string) {
+        if (this.cheats[code]) {
+            this.nes.cheat.disableCheat(this.cheats[code])
+        }
+    }
+
+    /**
+     * Reset all cheat codes.
+     */
+    resetCheats() {
+        this.nes.cheat.reset()
     }
 }
 export { NESEmulator }

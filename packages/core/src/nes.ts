@@ -5,7 +5,7 @@ import { PPU } from './ppu'
 import { PAPU } from './papu'
 import { ROM } from './rom'
 import { Cheat } from './cheat'
-import type { Mapper, NESOption, NESOptionParams, Player } from './type'
+import type { Mapper, NESOption, Player } from './type'
 import { Video } from './video'
 
 class NES {
@@ -14,7 +14,7 @@ class NES {
     romData!: string // Loaded ROM data
     break = false // Flag to break out of frame loop
     lastFpsTime = 0 // Time of last FPS calculation
-    opts: NESOption = {
+    opts: Required<NESOption> = {
         onFrame: function() {},
         onAudioSample: function() {},
         onStatusUpdate: function() {},
@@ -42,7 +42,7 @@ class NES {
     }
     frameTime: number
 
-    constructor(public opt: NESOptionParams) {
+    constructor(public opt: NESOption) {
         Object.assign(this.opts, opt)
 
         this.frameTime = 1000 / this.opts.preferredFrameRate
