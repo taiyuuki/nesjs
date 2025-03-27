@@ -21,12 +21,18 @@ class ROM {
     romCount = 0
     vromCount = 0
     mirroring = 0
-    batteryRam = false
+    batteryRam: boolean = false
+    batteryRamData: Uint8Array | null = null
     trainer = false
+    trainerData: Uint8Array | null = null
     fourScreen = false
     mapperType = 0
     valid = false
-    mapperName = new Array<string>(92)
+    mapperName = new Array<string[] | string>(92)
+    submapper = -1
+    isNES20 = false
+
+    // crc32 = 0
 
     constructor(public nes: NES) {
         for (let i = 0; i < 92; i++) {
@@ -36,7 +42,14 @@ class ROM {
         this.mapperName[1] = 'Nintendo MMC1'
         this.mapperName[2] = 'UNROM'
         this.mapperName[3] = 'CNROM'
-        this.mapperName[4] = 'Nintendo MMC3'
+        this.mapperName[4] = [
+            'Nintendo MMC3',
+            'Nintendo MMC6',
+            'MMC3C',
+            'MC-ACC',
+            'NEC MMC3',
+            'T9552',
+        ]
         this.mapperName[5] = 'Nintendo MMC5'
         this.mapperName[6] = 'FFE F4xxx'
         this.mapperName[7] = 'AOROM'
@@ -75,14 +88,18 @@ class ROM {
         let i, 
             j, 
             v
-    
-        if (data.indexOf('NES\x1a') === -1) {
+
+        const buffer = new Uint8Array(data.length)
+        for (let i = 0; i < data.length; i++) {
+            buffer[i] = data.charCodeAt(i) & 0xFF
+        }
+
+        this.header = Array.from(buffer.subarray(0, 16))
+
+        if (String.fromCharCode(...buffer.subarray(0, 4)) !== 'NES\x1a') {
             throw new Error('Not a valid NES ROM.')
         }
-        this.header = new Array(16)
-        for (i = 0; i < 16; i++) {
-            this.header[i] = data.charCodeAt(i) & 0xff
-        }
+
         this.romCount = this.header[4]
         this.vromCount = this.header[5] * 2 // Get the number of 4kB banks, not 8kB
         this.mirroring = (this.header[6] & 1) === 0 ? 0 : 1
@@ -90,6 +107,10 @@ class ROM {
         this.trainer = (this.header[6] & 4) !== 0
         this.fourScreen = (this.header[6] & 8) !== 0
         this.mapperType = this.header[6] >> 4 | this.header[7] & 0xf0
+        this.isNES20 = (this.header[7] & 0x0C) === 0x08
+        if (this.isNES20) {
+            this.submapper = this.header[8] >> 4
+        }
 
         /* TODO
             if (this.batteryRam)
@@ -106,31 +127,28 @@ class ROM {
             this.mapperType &= 0xf // Ignore byte 7
         }
 
+        // Load trainer data:
+        let offset = 16
+        if (this.trainer) {
+            this.trainerData = buffer.subarray(offset, offset + 512)
+            offset += 512
+        }
+
         // Load PRG-ROM banks:
         this.rom = new Array(this.romCount)
-        let offset = 16
-        for (i = 0; i < this.romCount; i++) {
-            this.rom[i] = new Array(16384)
-            for (j = 0; j < 16384; j++) {
-                if (offset + j >= data.length) {
-                    break
-                }
-                this.rom[i][j] = data.charCodeAt(offset + j) & 0xff
-            }
-            offset += 16384
+        for (let i = 0; i < this.romCount; i++) {
+            const start = offset + i * 16384
+            const end = start + 16384
+            this.rom[i] = Array.from(buffer.subarray(start, end))
         }
+        offset += this.romCount * 16384
 
         // Load CHR-ROM banks:
         this.vrom = new Array(this.vromCount)
-        for (i = 0; i < this.vromCount; i++) {
-            this.vrom[i] = new Array(4096)
-            for (j = 0; j < 4096; j++) {
-                if (offset + j >= data.length) {
-                    break
-                }
-                this.vrom[i][j] = data.charCodeAt(offset + j) & 0xff
-            }
-            offset += 4096
+        for (let i = 0; i < this.vromCount; i++) {
+            const start = offset + i * 4096
+            const end = start + 4096
+            this.vrom[i] = Array.from(buffer.subarray(start, end))
         }
     
         // Create VROM tiles:
@@ -167,6 +185,8 @@ class ROM {
         }
     
         this.valid = true
+
+        // this.crc32 = this.calculateCRC32(buffer)
     }
     
     getMirroringType() {
@@ -182,6 +202,14 @@ class ROM {
     
     getMapperName() {
         if (this.mapperType >= 0 && this.mapperType < this.mapperName.length) {
+            if (Array.isArray(this.mapperName[this.mapperType])) {
+                if (this.isNES20 && this.submapper >= 0 && this.submapper < this.mapperName[this.mapperType].length) {
+                    return this.mapperName[this.mapperType][this.submapper]
+                }
+
+                return this.mapperName[this.mapperType][0]
+            }
+
             return this.mapperName[this.mapperType]
         }
 
@@ -197,11 +225,53 @@ class ROM {
             return new Mappers[this.mapperType](this.nes)
         }
         else {
-            throw new Error(`This ROM uses a mapper not supported: ${
-                this.getMapperName()
-            }(${
-                this.mapperType
-            })`)
+            this.notSupportError()
+        }
+    }
+
+    notSupportError() {
+        throw new Error(`This ROM uses a mapper not supported: ${
+            this.getMapperName()
+        }(${
+            this.mapperType
+        })`)
+    }
+
+    // private calculateCRC32(buffer: Uint8Array) {
+
+    //     const polynomial = 0xEDB88320
+    //     let crc = 0xFFFFFFFF
+
+    //     // 计算整个ROM数据（包含PRG和CHR）
+    //     for (let i = 16; i < buffer.length; i++) { // 跳过16字节头
+    //         crc ^= buffer[i]
+    //         for (let j = 0; j < 8; j++) {
+    //             crc = crc >>> 1 ^ (crc & 1 ? polynomial : 0)
+    //         }
+    //     }
+
+    //     return crc ^ 0xFFFFFFFF // 取反得到最终CRC32
+    // }
+
+    // getPRGCrc32() {
+    //     return this.crc32
+    // }
+
+    toJSON() {
+        return {
+            header: this.header,
+            rom: this.rom,
+            vrom: this.vrom,
+            vromTile: this.vromTile,
+            romCount: this.romCount,
+            vromCount: this.vromCount,
+            mirroring: this.mirroring,
+            batteryRam: this.batteryRam,
+            trainer: this.trainer,
+            fourScreen: this.fourScreen,
+            mapperType: this.mapperType,
+            valid: this.valid,
+            mapperName: this.mapperName,
         }
     }
 }

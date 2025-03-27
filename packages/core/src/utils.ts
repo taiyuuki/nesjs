@@ -2,10 +2,12 @@ import type { NameTable } from './ppu'
 import type { Tile } from './tile'
 import type { From, HasJSON, To } from './type'
 
+type TypedArray = Float32Array | Float64Array | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array
+
 function copyArrayElements<T>(
-    src: Array<T>,
+    src: Array<T> | TypedArray,
     srcPos: number,
-    dest: Array<T>, 
+    dest: Array<T> | TypedArray, 
     destPos: number, length: number,
 ) {
     for (let i = 0; i < length; ++i) {

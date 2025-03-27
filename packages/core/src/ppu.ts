@@ -302,6 +302,7 @@ class PPU {
     nameTable: NameTable[]
     vramMirrorTable: number[]
     palTable: PaletteTable
+    chrBankOffset: number = 0
 
     // Rendering Options:
     showSpr0Hit = false
@@ -391,6 +392,7 @@ class PPU {
         'nmiCounter',
         'validTileData',
         'scanlineAlreadyRendered',
+        'chrBankOffset',
     ]
 
     KEEP_OPTIONS = [
@@ -532,6 +534,11 @@ class PPU {
             instance[prop] = this[prop]
         }
         Object.assign(this, instance)
+    }
+
+    setChrBankOffset(offset: number) {
+        this.chrBankOffset = offset
+        this.triggerRendering()
     }
 
     setMirroring(mirroring: number) {
@@ -1042,21 +1049,26 @@ class PPU {
         this.cntsToAddress()
         this.regsToAddress()
     
+        // 应用CHR bank偏移
+        const finalAddress = this.vramAddress + this.chrBankOffset
+    
         // If address is in range 0x0000-0x3EFF, return buffered values:
-        if (this.vramAddress <= 0x3eff) {
+        if (finalAddress <= 0x3eff) {
             tmp = this.vramBufferedReadValue
     
             // Update buffered value:
-            if (this.vramAddress < 0x2000) {
-                this.vramBufferedReadValue = this.vramMem[this.vramAddress]
+            if (finalAddress < 0x2000) {
+
+                // 应用偏移后的地址（关键修改点2/3）
+                this.vramBufferedReadValue = this.vramMem[finalAddress & 0x3FFF]
             }
             else {
-                this.vramBufferedReadValue = this.mirroredLoad(this.vramAddress)
+                this.vramBufferedReadValue = this.mirroredLoad(finalAddress)
             }
     
             // Mapper latch access:
-            if (this.vramAddress < 0x2000) {
-                this.nes.mmap.latchAccess(this.vramAddress)
+            if (finalAddress < 0x2000) {
+                this.nes.mmap.latchAccess(finalAddress)
             }
     
             // Increment by either 1 or 32, depending on d2 of Control Register 1:
@@ -1069,14 +1081,15 @@ class PPU {
         }
     
         // No buffering in this mem range. Read normally.
-        tmp = this.mirroredLoad(this.vramAddress)
+        // 应用偏移后的地址（关键修改点3/3）
+        tmp = this.mirroredLoad(finalAddress)
     
         // Increment by either 1 or 32, depending on d2 of Control Register 1:
         this.vramAddress += this.f_addrInc === 1 ? 32 : 1
     
         this.cntsFromAddress()
         this.regsFromAddress()
-    
+
         return tmp
     }
     
@@ -1842,6 +1855,10 @@ class PPU {
         this.triggerRendering()
 
         return this.nes.ppu.buffer[(y << 8) + x] === 0xffffff
+    }
+
+    isDispON() {
+        return (this.vramMem[0x2000] & 0x80) !== 0
     }
     
     toJSON() {

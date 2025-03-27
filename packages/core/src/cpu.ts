@@ -2147,6 +2147,19 @@ class CPU {
         this.REG_PC_NEW--
     }
 
+    jmp(address: number) {
+        this.REG_PC = address & 0xFFFF
+    }
+
+    jsr(address: number) {
+
+        // 压入返回地址-1（NES的JSR行为）
+        const returnAddr = this.REG_PC - 1
+        this.push(returnAddr >> 8 & 0xFF) // 高字节
+        this.push(returnAddr & 0xFF) // 低字节
+        this.jmp(address)
+    }
+
     toJSON() {
         const state = toJSON(this)
         state.mem = compressArray(this.mem)

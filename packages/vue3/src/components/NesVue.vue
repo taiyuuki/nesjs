@@ -13,7 +13,7 @@ onMounted(() => {
 })
 
 function start() {
-    emulator.start('Super Mario Bros (JU).nes').then(() => {
+    emulator.start('m249/Bao Qing Tian by WaiXing (ChT).nes').then(() => {
         emulator.resizeScreen(800)
     })
 }
