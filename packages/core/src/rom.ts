@@ -225,7 +225,7 @@ class ROM {
             return new Mappers[this.mapperType](this.nes)
         }
         else {
-            this.notSupportError()
+            throw this.notSupportError()
         }
     }
 

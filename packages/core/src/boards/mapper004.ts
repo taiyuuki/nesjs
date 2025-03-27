@@ -275,9 +275,7 @@ class MMC3 extends Mapper0 {
 const Mapper4 = class {
     constructor(public nes: NES) {
         if (this.nes.rom.isNES20 && this.nes.rom.submapper !== 0) {
-            this.nes.rom.notSupportError()
-
-            return
+            throw this.nes.rom.notSupportError()
         }
 
         return new MMC3(nes)
