@@ -202,6 +202,14 @@ class NESEmulator {
     }
 
     /**
+     * Get the current frame rate of the emulator.
+     * @returns The current frame rate of the emulator.
+     */
+    getFPS() {
+        return this.nes.getFPS()
+    }
+
+    /**
      * Pause the emulator.
      */
     pause() {

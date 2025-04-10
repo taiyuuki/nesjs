@@ -30,13 +30,13 @@ class Animation {
     resize(width: number | string, height?: number | string) {
         let wUnit = 'px'
         let hUnit = 'px'
-        const reg = /^\d+(\.\d+)?(%|px|em|rem|vw|vh|vmin|vmax)$/
+        const reg = /^\d+(\.\d+)?(%|px|em|rem|vw|vh|vmin|vmax)?$/
         if (typeof width === 'string') {
             const match = width.match(reg)
             if (!match) {
                 throw new Error(`[@nesjs/native] Invalid width value: ${width}.`)
             }
-            wUnit = match[2]
+            wUnit = match[2] || 'px'
             width = Number.parseFloat(width)
         }
         if (height) {
@@ -45,7 +45,7 @@ class Animation {
                 if (!match) {
                     throw new Error(`[@nesjs/native] Invalid height value: ${height}.`)
                 }
-                hUnit = match[2]
+                hUnit = match[2] || 'px'
                 height = Number.parseFloat(height)
             }
         

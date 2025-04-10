@@ -90,14 +90,20 @@ class ROM {
         this.mapperName[91] = 'Pirate HK-SF3 chip'
     }
 
-    load(data: string) {
+    load(data: Uint8Array | string) {
         let i, 
             j, 
             v
 
-        const buffer = new Uint8Array(data.length)
-        for (let i = 0; i < data.length; i++) {
-            buffer[i] = data.charCodeAt(i) & 0xFF
+        let buffer: Uint8Array
+        if (typeof data === 'string') {
+            buffer = new Uint8Array(data.length)
+            for (let i = 0; i < data.length; i++) {
+                buffer[i] = data.charCodeAt(i) & 0xFF
+            }
+        }
+        else {
+            buffer = data
         }
 
         this.header = Array.from(buffer.subarray(0, 16))

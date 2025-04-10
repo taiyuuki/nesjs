@@ -11,7 +11,7 @@ import { Video } from './video'
 class NES {
     fpsFrameCount = 0 // FPS counter
     frameCount = 0 // Frame counter
-    romData!: string // Loaded ROM data
+    romData!: Uint8Array | string // Loaded ROM data
     break = false // Flag to break out of frame loop
     lastFpsTime = 0 // Time of last FPS calculation
     opts: Required<NESOption> = {
@@ -187,7 +187,7 @@ class NES {
     
     getFPS() {
         const now = +new Date()
-        let fps = null
+        let fps = 0
         if (this.lastFpsTime) {
             fps = this.fpsFrameCount / ((now - this.lastFpsTime) / 1000)
         }
@@ -205,7 +205,7 @@ class NES {
     
     // Loads a ROM file into the CPU and PPU.
     // The ROM file is validated first.
-    loadROM(data: string) {
+    loadROM(data: Uint8Array | string) {
 
         // Load ROM file:
         this.rom = new ROM(this)
