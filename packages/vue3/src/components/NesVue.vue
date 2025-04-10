@@ -42,7 +42,7 @@ function stopVideo() {
 }
 
 function save() {
-    emulator.saveState('mario', true)
+    emulator.saveState('mario')
 }
 
 function load() {

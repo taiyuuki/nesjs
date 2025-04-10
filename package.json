@@ -17,11 +17,11 @@
   "dependencies": {
     "@nesjs/core": "workspace:^",
     "@taiyuuki/eslint-config": "^1.4.18",
-    "@types/node": "^20.17.28",
-    "eslint": "^9.23.0",
+    "@types/node": "^22.14.0",
+    "eslint": "^9.24.0",
     "pako": "^2.1.0",
-    "typescript": "^5.8.2",
-    "vitest": "^3.0.9"
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
   },
   "pnpm": {
     "peerDependencyRules": {

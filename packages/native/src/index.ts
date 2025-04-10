@@ -79,7 +79,7 @@ class NESEmulator {
     gamepad: NESGamepad
     paused = false
     cheats: Record<string, string> = {}
-    private _db: DB<{ data: string, compress: boolean }>
+    private _db: DB<{ data: Uint8Array | string, compress: boolean }>
 
     constructor(cvs: HTMLCanvasElement, opt?: EmulatorOptions) {
         if (!cvs || cvs.tagName !== 'CANVAS') {
