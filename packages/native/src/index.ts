@@ -46,6 +46,9 @@ type EmulatorOptions = {
 
     /** Enable gamepad support. */
     enableGamepad?: boolean
+
+    /** Whether to compress the saved state, default to true. */
+    compressSaveState?: boolean
 }
 
 type VideoOptions = {
@@ -249,8 +252,8 @@ class NESEmulator {
      * @param id - A unique ID for the saved state.
      * @param compress - Whether to compress the saved state, default to true.
      */
-    saveState(id: string, compress = true) {
-        const state = this.nes.toJSON(compress)
+    saveState(id: string) {
+        const state = this.nes.toJSON()
         this._db.setItem(id, state)
     }
 
