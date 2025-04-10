@@ -3,7 +3,7 @@ import { Audio } from './audio'
 import { Animation } from './animation'
 import type { ControllerOptions } from './gamepad'
 import { NESGamepad } from './gamepad'
-import { keyIn } from './utils'
+import { keyIn, randomString } from './utils'
 import { DB } from './db'
 
 type EmulatorOptions = {
@@ -12,10 +12,10 @@ type EmulatorOptions = {
     screen?: {
 
         /** The width of the canvas. */
-        width: number
+        width: number | string
 
         /** The height of the canvas */
-        height?: number
+        height?: number | string
     }
 
     /** Gamepad options. */
@@ -106,7 +106,8 @@ class NESEmulator {
      * @param width - The new width of the canvas.
      * @param height - Optional. The new height of the canvas. If not specified, the height will be calculated based on the width.
      */
-    resizeScreen(width: number, height?: number) {
+    resizeScreen(width: number | string, height?: number | string) {
+
         this.animation.resize(width, height)
     }
 
@@ -135,6 +136,12 @@ class NESEmulator {
         }
         if (keyIn('enableGamepad', opt)) {
             this.gamepad.setEnableGamepad(opt.enableGamepad!)
+        }
+        if (keyIn('screen', opt)) {
+            const { width, height } = opt.screen!
+            if (width) {
+                this.resizeScreen(width, height)
+            }
         }
     }
 
@@ -377,6 +384,24 @@ class NESEmulator {
      */
     resetCheats() {
         this.nes.cheat.reset()
+    }
+
+    /**
+     * Sreenshot the current frame.
+     */
+    screenshot(download = false) {
+        const canvas = this.animation.cvs
+        const context = canvas.getContext('2d')!
+        const data = context.getImageData(0, 0, canvas.width, canvas.height)
+        if (download) {
+            const url = canvas.toDataURL()
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `${randomString()}.png`
+            a.click()
+        }
+
+        return data
     }
 }
 export { NESEmulator }

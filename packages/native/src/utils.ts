@@ -10,8 +10,19 @@ function fiilArray<T>(length: number, value: T) {
     return Array.from<T>({ length }).fill(value)
 }
 
+function randomString(length = 10) {
+    const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    let result = ''
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+
+    return result
+}
+
 export {
     obejctKeys, 
     fiilArray,
     keyIn,
+    randomString,
 }

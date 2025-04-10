@@ -27,22 +27,42 @@ class Animation {
         this.ctx.putImageData(this.imageData, 0, 0)
     }
 
-    resize(width: number, height?: number) {
+    resize(width: number | string, height?: number | string) {
+        let wUnit = 'px'
+        let hUnit = 'px'
+        const reg = /^\d+(\.\d+)?(%|px|em|rem|vw|vh|vmin|vmax)$/
+        if (typeof width === 'string') {
+            const match = width.match(reg)
+            if (!match) {
+                throw new Error(`[@nesjs/native] Invalid width value: ${width}.`)
+            }
+            wUnit = match[2]
+            width = Number.parseFloat(width)
+        }
         if (height) {
+            if (typeof height === 'string') {
+                const match = height.match(reg)
+                if (!match) {
+                    throw new Error(`[@nesjs/native] Invalid height value: ${height}.`)
+                }
+                hUnit = match[2]
+                height = Number.parseFloat(height)
+            }
+        
             const ratio = width / height
             if (ratio > Animation.RATIO) {
-                this.cvs.style.width = `${width}px`
-                this.cvs.style.height = `${Math.round(width / Animation.RATIO)}px`
+                this.cvs.style.width = `${width}${wUnit}`
+                this.cvs.style.height = `${Math.round(width / Animation.RATIO)}${hUnit}`
             }
             else {
-                this.cvs.style.height = `${height}px`
-                this.cvs.style.width = `${Math.round(height * Animation.RATIO)}px`
+                this.cvs.style.height = `${height}${wUnit}`
+                this.cvs.style.width = `${Math.round(height * Animation.RATIO)}${hUnit}`
             }
         }
         else {
             height = Math.round(width / Animation.RATIO)
-            this.cvs.style.width = `${width}px`
-            this.cvs.style.height = `${height}px`
+            this.cvs.style.width = `${width}${wUnit}`
+            this.cvs.style.height = `${height}${hUnit}`
         }
     }
 
