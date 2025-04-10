@@ -1,4 +1,4 @@
-import pako from 'pako'
+import { gzip, ungzip } from 'pako'
 import { CPU } from './cpu'
 import { Controller } from './controller'
 import { PPU } from './ppu'
@@ -234,7 +234,7 @@ class NES {
         })
 
         return {
-            data: this.opts.compressSaveState ? pako.gzip(json) : json,
+            data: this.opts.compressSaveState ? gzip(json) : json,
             compress: this.opts.compressSaveState ? true : false,
         }
     }
@@ -242,7 +242,7 @@ class NES {
     fromJSON(s: ReturnType<NES['toJSON']>) {
         this.reset()
 
-        const data = s.compress ? pako.ungzip(s.data as Uint8Array, { to: 'string' }) : s.data
+        const data = s.compress ? ungzip(s.data as Uint8Array, { to: 'string' }) : s.data
         const state = JSON.parse(data as string)
 
         // this.romData = s.romData;
