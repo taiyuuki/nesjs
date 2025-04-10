@@ -633,9 +633,9 @@ class OpData {
     setOp(inst: number, op: number, addr: number, size: number, cycles: number) {
         this.opdata[op]
           = inst & 0xff
-          | (addr & 0xff) << 8
-          | (size & 0xff) << 16
-          | (cycles & 0xff) << 24
+              | (addr & 0xff) << 8
+              | (size & 0xff) << 16
+              | (cycles & 0xff) << 24
     }
 }
 
@@ -770,13 +770,13 @@ class CPU {
         if (this.irqRequested) {
             temp
             = this.F_CARRY
-            | (this.F_ZERO === 0 ? 1 : 0) << 1
-            | this.F_INTERRUPT << 2
-            | this.F_DECIMAL << 3
-            | this.F_BRK << 4
-            | this.F_NOTUSED << 5
-            | this.F_OVERFLOW << 6
-            | this.F_SIGN << 7
+                | (this.F_ZERO === 0 ? 1 : 0) << 1
+                | this.F_INTERRUPT << 2
+                | this.F_DECIMAL << 3
+                | this.F_BRK << 4
+                | this.F_NOTUSED << 5
+                | this.F_OVERFLOW << 6
+                | this.F_SIGN << 7
     
             this.REG_PC_NEW = this.REG_PC
             this.F_INTERRUPT_NEW = this.F_INTERRUPT
@@ -946,13 +946,13 @@ class CPU {
                 if (addr < 0x1fff) {
                     addr
                 = this.mem[addr]
-                + (this.mem[addr & 0xff00 | (addr & 0xff) + 1 & 0xff] << 8) // Read from address given in op
+                    + (this.mem[addr & 0xff00 | (addr & 0xff) + 1 & 0xff] << 8) // Read from address given in op
                 }
                 else {
                     addr
                 = this.nes.mmap.load(addr)
-                + (this.nes.mmap.load(addr & 0xff00 | (addr & 0xff) + 1 & 0xff)
-                    << 8)
+                    + (this.nes.mmap.load(addr & 0xff00 | (addr & 0xff) + 1 & 0xff)
+                        << 8)
                 }
                 break
             }

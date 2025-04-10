@@ -15,7 +15,7 @@ class Mapper99 extends Mapper0 {
         super.reset()
 
         // 初始化PRG banks
-        const prgBanks = this.nes.rom.romCount
+        const prgBanks = this.nes.rom.prgCount
         if (prgBanks >= 4) {
             this.loadRomBank(0, 0x8000)
             this.loadRomBank(1, 0xA000)
@@ -36,7 +36,7 @@ class Mapper99 extends Mapper0 {
         }
 
         // 初始化CHR bank
-        if (this.nes.rom.vromCount > 0) {
+        if (this.nes.rom.chrCount > 0) {
             this.loadVromBank(0, 0x0000)
             this.currentChrBank = 0
         }
@@ -48,21 +48,22 @@ class Mapper99 extends Mapper0 {
 
             // 处理CHR bank切换
             const newChrBank = value & 0x04 ? 1 : 0
-            if (newChrBank !== this.currentChrBank && this.nes.rom.vromCount > 1) {
+            if (newChrBank !== this.currentChrBank && this.nes.rom.chrCount > 1) {
                 this.loadVromBank(newChrBank, 0x0000)
                 this.currentChrBank = newChrBank
             }
 
-            // 处理特定游戏的IRQ（例如VS Raid on Bungeling Bay）
-            // const crc = this.nes.rom.getPRGCrc32()
-            // if (crc === 0xC99EC059) { 
-            //     if (value & 0x02) {
-            //         this.nes.cpu.requestIrq(this.nes.cpu.IRQ_NORMAL)
-            //     }
-            //     else {
-            //         this.nes.cpu.doIrq(this.nes.cpu.IRQ_NORMAL)
-            //     }
-            // }
+            // 处理特定游戏的IRQ
+            const crc = this.nes.rom.crc
+            if (crc === 0xC99EC059) { // VS Raid on Bungeling Bay
+                if (value & 0x02) {
+                    this.nes.cpu.requestIrq(this.nes.cpu.IRQ_NORMAL)
+                }
+                else {
+                    this.nes.cpu.irqRequested = false
+                    this.nes.cpu.irqType = null
+                }
+            }
         }
 
         // 处理硬币插入状态（0x4020）
@@ -92,14 +93,14 @@ class Mapper99 extends Mapper0 {
     }
 
     override loadVromBank(bank: number, address: number) {
-        if (this.nes.rom.vromCount === 0) return
-        bank %= this.nes.rom.vromCount
+        if (this.nes.rom.chrCount === 0) return
+        bank %= this.nes.rom.chrCount
         copyArrayElements(
-            this.nes.rom.vrom[bank],
+            this.nes.rom.chr[bank],
             0,
             this.nes.ppu.vramMem,
             address,
-            8192,
+            0x2000,
         )
     }
 }

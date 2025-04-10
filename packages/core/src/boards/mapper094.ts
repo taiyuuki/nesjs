@@ -29,7 +29,7 @@ class Mapper94 extends Mapper0 {
       
         // Load PRG-ROM:
         this.loadRomBank(0, 0x8000)
-        this.loadRomBank(this.nes.rom.romCount - 1, 0xc000)
+        this.loadRomBank(this.nes.rom.prgCount - 1, 0xc000)
       
         // Load CHR-ROM:
         this.loadCHRROM()

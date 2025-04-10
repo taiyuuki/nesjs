@@ -654,7 +654,7 @@ class PPU {
         this.lastRenderedScanline = -1
     }
     
-    endScanline() {
+    endScanline(cycles: number) {
         switch (this.scanline) {
             case 19:
 
@@ -705,7 +705,7 @@ class PPU {
                 if (this.f_bgVisibility === 1 || this.f_spVisibility === 1) {
 
                     // Clock mapper IRQ Counter:
-                    this.nes.mmap.clockIrqCounter()
+                    this.nes.mmap.clockIrqCounter(cycles)
                 }
                 break
     
@@ -755,7 +755,7 @@ class PPU {
                     if (this.f_bgVisibility === 1 || this.f_spVisibility === 1) {
 
                         // Clock mapper IRQ Counter:
-                        this.nes.mmap.clockIrqCounter()
+                        this.nes.mmap.clockIrqCounter(cycles)
                     }
                 }
         }

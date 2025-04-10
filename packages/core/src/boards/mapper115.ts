@@ -51,21 +51,22 @@ class Mapper115 extends MMC3 {
         else {
             this.load8kRomBank(this.getPrgValue(6), 0x8000)
             this.load8kRomBank(this.getPrgValue(7), 0xA000)
-            this.load8kRomBank((this.nes.rom.romCount << 1) - 2, 0xC000)
-            this.load8kRomBank((this.nes.rom.romCount << 1) - 1, 0xE000)
+            this.load8kRomBank((this.nes.rom.prgCount << 1) - 2, 0xC000)
+            this.load8kRomBank((this.nes.rom.prgCount << 1) - 1, 0xE000)
         }
     }
 
-    override clockIrqCounter() {
+    override clockIrqCounter(cycles: number) {
         if (this.irqEnable) {
-            if (this.irqLatchValue === 0) {
+            if (this.irqLatch === 0) {
                 this.nes.cpu.requestIrq(this.nes.cpu.IRQ_NORMAL)
 
                 return
             }
-            if (--this.irqCounter < 0) {
+            this.irqCounter -= cycles
+            if (this.irqCounter < 0) {
                 this.nes.cpu.requestIrq(this.nes.cpu.IRQ_NORMAL)
-                this.irqCounter = this.irqLatchValue
+                this.irqCounter = this.irqLatch
             }
         }
     }

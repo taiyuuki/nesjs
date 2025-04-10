@@ -1,6 +1,8 @@
+
 import type { NES } from './nes'
 import { Tile } from './tile'
 import { Mappers } from './mappers'
+import { CRC } from './crc'
 
 class ROM {
 
@@ -12,14 +14,15 @@ class ROM {
     SINGLESCREEN_MIRRORING2 = 4
     SINGLESCREEN_MIRRORING3 = 5
     CHRROM_MIRRORING = 7
+    TRAINER_SIZE = 512
 
     header: number[] = []
-    rom: number[][] = []
-    vrom: number[][] = []
+    prg: number[][] = []
+    chr: number[][] = []
     vromTile: Tile[][] = []
 
-    romCount = 0
-    vromCount = 0
+    prgCount = 0
+    chrCount = 0
     mirroring = 0
     batteryRam: boolean = false
     batteryRamData: Uint8Array | null = null
@@ -32,7 +35,10 @@ class ROM {
     submapper = -1
     isNES20 = false
 
-    // crc32 = 0
+    // crc32
+    crc = 0
+    crcall = 0
+    crcvrom = 0
 
     constructor(public nes: NES) {
         for (let i = 0; i < 92; i++) {
@@ -100,8 +106,8 @@ class ROM {
             throw new Error('Not a valid NES ROM.')
         }
 
-        this.romCount = this.header[4]
-        this.vromCount = this.header[5] * 2 // Get the number of 4kB banks, not 8kB
+        this.prgCount = this.header[4]
+        this.chrCount = this.header[5] * 2 // Get the number of 4kB banks, not 8kB
         this.mirroring = (this.header[6] & 1) === 0 ? 0 : 1
         this.batteryRam = (this.header[6] & 2) !== 0
         this.trainer = (this.header[6] & 4) !== 0
@@ -111,6 +117,8 @@ class ROM {
         if (this.isNES20) {
             this.submapper = this.header[8] >> 4
         }
+
+        // console.log(`Mapper${this.mapperType}`)
 
         /* TODO
             if (this.batteryRam)
@@ -130,30 +138,30 @@ class ROM {
         // Load trainer data:
         let offset = 16
         if (this.trainer) {
-            this.trainerData = buffer.subarray(offset, offset + 512)
-            offset += 512
+            this.trainerData = buffer.subarray(offset, offset + this.TRAINER_SIZE)
+            offset += this.TRAINER_SIZE
         }
 
         // Load PRG-ROM banks:
-        this.rom = new Array(this.romCount)
-        for (let i = 0; i < this.romCount; i++) {
-            const start = offset + i * 16384
-            const end = start + 16384
-            this.rom[i] = Array.from(buffer.subarray(start, end))
+        this.prg = new Array(this.prgCount)
+        for (let i = 0; i < this.prgCount; i++) {
+            const start = offset + i * 0x4000
+            const end = start + 0x4000
+            this.prg[i] = Array.from(buffer.subarray(start, end))
         }
-        offset += this.romCount * 16384
+        offset += this.prgCount * 0x4000
 
         // Load CHR-ROM banks:
-        this.vrom = new Array(this.vromCount)
-        for (let i = 0; i < this.vromCount; i++) {
-            const start = offset + i * 4096
-            const end = start + 4096
-            this.vrom[i] = Array.from(buffer.subarray(start, end))
+        this.chr = new Array(this.chrCount)
+        for (let i = 0; i < this.chrCount; i++) {
+            const start = offset + i * 0x1000
+            const end = start + 0x1000
+            this.chr[i] = Array.from(buffer.subarray(start, end))
         }
     
         // Create VROM tiles:
-        this.vromTile = new Array(this.vromCount)
-        for (i = 0; i < this.vromCount; i++) {
+        this.vromTile = new Array(this.chrCount)
+        for (i = 0; i < this.chrCount; i++) {
             this.vromTile[i] = new Array(256)
             for (j = 0; j < 256; j++) {
                 this.vromTile[i][j] = new Tile()
@@ -163,22 +171,22 @@ class ROM {
         // Convert CHR-ROM banks to tiles:
         let tileIndex
         let leftOver
-        for (v = 0; v < this.vromCount; v++) {
-            for (i = 0; i < 4096; i++) {
+        for (v = 0; v < this.chrCount; v++) {
+            for (i = 0; i < 0x1000; i++) {
                 tileIndex = i >> 4
                 leftOver = i % 16
                 if (leftOver < 8) {
                     this.vromTile[v][tileIndex].setScanline(
                         leftOver,
-                        this.vrom[v][i],
-                        this.vrom[v][i + 8],
+                        this.chr[v][i],
+                        this.chr[v][i + 8],
                     )
                 }
                 else {
                     this.vromTile[v][tileIndex].setScanline(
                         leftOver - 8,
-                        this.vrom[v][i - 8],
-                        this.vrom[v][i],
+                        this.chr[v][i - 8],
+                        this.chr[v][i],
                     )
                 }
             }
@@ -186,7 +194,41 @@ class ROM {
     
         this.valid = true
 
-        // this.crc32 = this.calculateCRC32(buffer)
+        // CRC验证
+        const dataWithoutHeader = buffer.subarray(16)
+        const prgSize = this.prgCount * 0x4000
+        const chrSize = this.chrCount * 0x1000
+        if (this.trainer) {
+
+            // 包含训练器的情况
+            this.crc = CRC.CrcRev(this.TRAINER_SIZE + prgSize, dataWithoutHeader)
+    
+            // 计算全部数据（头之后的训练器+PRG+CHR）
+            this.crcall = CRC.CrcRev(this.TRAINER_SIZE + prgSize + chrSize, dataWithoutHeader)
+    
+            // 计算CHR的CRC
+            if (this.chrCount > 0) {
+                const chrStart = this.TRAINER_SIZE + prgSize
+                const chrData = dataWithoutHeader.subarray(chrStart, chrStart + chrSize)
+
+                this.crcvrom = CRC.CrcRev(chrSize, chrData)
+            }
+        }
+        else {
+
+            // 不包含训练器的情况
+            this.crc = CRC.CrcRev(prgSize, dataWithoutHeader)
+    
+            // 计算全部数据（PRG+CHR）
+            this.crcall = CRC.CrcRev(prgSize + chrSize, dataWithoutHeader)
+    
+            // 计算CHR的CRC
+            if (this.chrCount > 0) {
+                const chrData = dataWithoutHeader.subarray(prgSize, prgSize + chrSize)
+
+                this.crcvrom = CRC.CrcRev(chrSize, chrData)
+            }
+        }
     }
     
     getMirroringType() {
@@ -237,34 +279,14 @@ class ROM {
         })`)
     }
 
-    // private calculateCRC32(buffer: Uint8Array) {
-
-    //     const polynomial = 0xEDB88320
-    //     let crc = 0xFFFFFFFF
-
-    //     // 计算整个ROM数据（包含PRG和CHR）
-    //     for (let i = 16; i < buffer.length; i++) { // 跳过16字节头
-    //         crc ^= buffer[i]
-    //         for (let j = 0; j < 8; j++) {
-    //             crc = crc >>> 1 ^ (crc & 1 ? polynomial : 0)
-    //         }
-    //     }
-
-    //     return crc ^ 0xFFFFFFFF // 取反得到最终CRC32
-    // }
-
-    // getPRGCrc32() {
-    //     return this.crc32
-    // }
-
     toJSON() {
         return {
             header: this.header,
-            rom: this.rom,
-            vrom: this.vrom,
+            rom: this.prg,
+            vrom: this.chr,
             vromTile: this.vromTile,
-            romCount: this.romCount,
-            vromCount: this.vromCount,
+            romCount: this.prgCount,
+            vromCount: this.chrCount,
             mirroring: this.mirroring,
             batteryRam: this.batteryRam,
             trainer: this.trainer,

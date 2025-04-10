@@ -1,4 +1,4 @@
-import lz from 'lz-string'
+import pako from 'pako'
 import { CPU } from './cpu'
 import { Controller } from './controller'
 import { PPU } from './ppu'
@@ -25,6 +25,7 @@ class NES {
     
         emulateSound: true,
         sampleRate: 48000, // Sound sample rate in hz
+        compressSaveState: true,
     }
 
     cpu: CPU
@@ -150,7 +151,7 @@ class NES {
                 ppu.curX++
                 if (ppu.curX === 341) {
                     ppu.curX = 0
-                    ppu.endScanline()
+                    ppu.endScanline(cycles)
                 }
             }
         }
@@ -222,32 +223,34 @@ class NES {
         this.frameTime = 1000 / rate
     }
     
-    toJSON(compress = true) {
+    toJSON() {
 
         const json = JSON.stringify({
             frameCount: this.frameCount,
             cpu: this.cpu.toJSON(),
             mmap: this.mmap.toJSON(),
             ppu: this.ppu.toJSON(),
+            papu: this.papu.toJSON(),
         })
 
         return {
-            data: compress ? lz.compressToEncodedURIComponent(json) : json,
-            compress: compress ? true : false,
+            data: this.opts.compressSaveState ? pako.gzip(json) : json,
+            compress: this.opts.compressSaveState ? true : false,
         }
     }
     
     fromJSON(s: ReturnType<NES['toJSON']>) {
         this.reset()
 
-        const data = s.compress ? lz.decompressFromEncodedURIComponent(s.data) : s.data
-        const state = JSON.parse(data)
+        const data = s.compress ? pako.ungzip(s.data as Uint8Array, { to: 'string' }) : s.data
+        const state = JSON.parse(data as string)
 
         // this.romData = s.romData;
         this.ppu.reset()
         this.cpu.fromJSON(state.cpu)
         this.mmap.fromJSON(state.mmap)
         this.ppu.fromJSON(state.ppu)
+        this.papu.fromJSON(state.papu)
         this.frameCount = state.frameCount
     }
 }

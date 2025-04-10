@@ -16,11 +16,12 @@
   "license": "ISC",
   "dependencies": {
     "@nesjs/core": "workspace:^",
-    "@taiyuuki/eslint-config": "^1.4.15",
-    "@types/node": "^20.17.5",
-    "eslint": "^9.13.0",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "@taiyuuki/eslint-config": "^1.4.18",
+    "@types/node": "^20.17.28",
+    "eslint": "^9.23.0",
+    "pako": "^2.1.0",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
   },
   "pnpm": {
     "peerDependencyRules": {
@@ -30,9 +31,10 @@
     }
   },
   "devDependencies": {
+    "@types/pako": "^2.0.3",
     "@types/prompts": "^2.4.9",
     "esno": "^4.8.0",
-    "fast-glob": "^3.3.2",
+    "fast-glob": "^3.3.3",
     "kolorist": "^1.8.0",
     "prompts": "^2.4.2"
   }

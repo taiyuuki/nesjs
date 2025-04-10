@@ -20,6 +20,7 @@ type NESOption = {
     preferredFrameRate?: number
     emulateSound?: boolean
     sampleRate?: number
+    compressSaveState?: boolean
 }
 
 // type NESOptionParams = Partial<NESOption>
@@ -51,7 +52,7 @@ type Mapper = {
     load1kVromBank(bank1k: number, address: number): void
     load2kVromBank(bank2k: number, address: number): void
     load8kRomBank(bank8k: number, address: number): void
-    clockIrqCounter(): void
+    clockIrqCounter(cycles: number): void
     latchAccess(address: number): void
     toJSON(): any
     fromJSON(s: Mapper): void

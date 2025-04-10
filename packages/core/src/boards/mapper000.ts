@@ -61,7 +61,7 @@ class Mapper0 extends BaseMapper {
         else if (address >= 0x2000) {
 
             // I/O Ports.
-            return this.regLoad(address) as number
+            return this.regLoad(address)
         }
         else {
 
@@ -159,7 +159,7 @@ class Mapper0 extends BaseMapper {
                         // 0x4017:
                         // Joystick 2 + Strobe
                         // https://wiki.nesdev.com/w/index.php/Zapper
-                        // eslint-disable-next-line
+                         
                         let w = 0
       
                         if (
@@ -354,7 +354,7 @@ class Mapper0 extends BaseMapper {
     }
       
     loadROM() {
-        if (!this.nes.rom.valid || this.nes.rom.romCount < 1) {
+        if (!this.nes.rom.valid || this.nes.rom.prgCount < 1) {
             throw new Error('NoMapper: Invalid ROM! Unable to load.')
         }
       
@@ -373,7 +373,7 @@ class Mapper0 extends BaseMapper {
     }
     
     loadPRGROM() {
-        if (this.nes.rom.romCount > 1) {
+        if (this.nes.rom.prgCount > 1) {
 
             // Load the two first banks into memory.
             this.loadRomBank(0, 0x8000)
@@ -390,8 +390,8 @@ class Mapper0 extends BaseMapper {
     loadCHRROM() {
 
         // console.log("Loading CHR ROM..");
-        if (this.nes.rom.vromCount > 0) {
-            if (this.nes.rom.vromCount === 1) {
+        if (this.nes.rom.chrCount > 0) {
+            if (this.nes.rom.chrCount === 1) {
                 this.loadVromBank(0, 0x0000)
                 this.loadVromBank(0, 0x1000)
             }
@@ -421,30 +421,30 @@ class Mapper0 extends BaseMapper {
     loadRomBank(bank: number, address: number) {
 
         // Loads a ROM bank into the specified address.
-        bank %= this.nes.rom.romCount
+        bank %= this.nes.rom.prgCount
 
         // var data = this.nes.rom.rom[bank];
         // cpuMem.write(address,data,data.length);
         copyArrayElements(
-            this.nes.rom.rom[bank],
+            this.nes.rom.prg[bank],
             0,
             this.nes.cpu.mem,
             address,
-            16384,
+            0x4000,
         )
     }
       
     loadVromBank(bank: number, address: number) {
-        if (this.nes.rom.vromCount === 0) return
-        bank = bank % this.nes.rom.vromCount
+        if (this.nes.rom.chrCount === 0) return
+        bank = bank % this.nes.rom.chrCount
         this.nes.ppu.triggerRendering()
       
         copyArrayElements(
-            this.nes.rom.vrom[bank],
+            this.nes.rom.chr[bank],
             0,
             this.nes.ppu.vramMem,
             address,
-            4096,
+            0x1000,
         )
       
         const vromTile = this.nes.rom.vromTile[bank]
@@ -458,8 +458,8 @@ class Mapper0 extends BaseMapper {
     }
       
     load32kRomBank(bank: number, address: number) {
-        this.loadRomBank(bank * 2 % this.nes.rom.romCount, address)
-        this.loadRomBank((bank * 2 + 1) % this.nes.rom.romCount, address + 16384)
+        this.loadRomBank(bank * 2 % this.nes.rom.prgCount, address)
+        this.loadRomBank((bank * 2 + 1) % this.nes.rom.prgCount, address + 0x4000)
     }
 
     load16kRomBank(bank: number, address: number) {
@@ -470,7 +470,7 @@ class Mapper0 extends BaseMapper {
         }
 
         // 计算ROM总页数（每页8KB）
-        const totalPages = this.nes.rom.romCount * 2
+        const totalPages = this.nes.rom.prgCount * 2
         bank = bank % totalPages
 
         // 加载两个连续的8KB bank
@@ -479,28 +479,28 @@ class Mapper0 extends BaseMapper {
     }
       
     load8kVromBank(bank4kStart: number, address: number) {
-        if (this.nes.rom.vromCount === 0) {
+        if (this.nes.rom.chrCount === 0) {
             return
         }
         this.nes.ppu.triggerRendering()
       
-        this.loadVromBank(bank4kStart % this.nes.rom.vromCount, address)
+        this.loadVromBank(bank4kStart % this.nes.rom.chrCount, address)
         this.loadVromBank(
-            (bank4kStart + 1) % this.nes.rom.vromCount,
-            address + 4096,
+            (bank4kStart + 1) % this.nes.rom.chrCount,
+            address + 0x1000,
         )
     }
       
     load1kVromBank(bank1k: number, address: number) {
-        if (this.nes.rom.vromCount === 0) {
+        if (this.nes.rom.chrCount === 0) {
             return
         }
         this.nes.ppu.triggerRendering()
       
-        const bank4k = Math.floor(bank1k / 4) % this.nes.rom.vromCount
+        const bank4k = Math.floor(bank1k / 4) % this.nes.rom.chrCount
         const bankoffset = bank1k % 4 * 1024
         copyArrayElements(
-            this.nes.rom.vrom[bank4k],
+            this.nes.rom.chr[bank4k],
             bankoffset,
             this.nes.ppu.vramMem,
             address,
@@ -516,15 +516,15 @@ class Mapper0 extends BaseMapper {
     }
       
     load2kVromBank(bank2k: number, address: number) {
-        if (this.nes.rom.vromCount === 0) {
+        if (this.nes.rom.chrCount === 0) {
             return
         }
         this.nes.ppu.triggerRendering()
       
-        const bank4k = Math.floor(bank2k / 2) % this.nes.rom.vromCount
+        const bank4k = Math.floor(bank2k / 2) % this.nes.rom.chrCount
         const bankoffset = bank2k % 2 * 2048
         copyArrayElements(
-            this.nes.rom.vrom[bank4k],
+            this.nes.rom.chr[bank4k],
             bankoffset,
             this.nes.ppu.vramMem,
             address,
@@ -540,20 +540,20 @@ class Mapper0 extends BaseMapper {
     }
       
     load8kRomBank(bank8k: number, address: number) {
-        const bank16k = Math.floor(bank8k / 2) % this.nes.rom.romCount
-        const offset = bank8k % 2 * 8192
+        const bank16k = Math.floor(bank8k / 2) % this.nes.rom.prgCount
+        const offset = bank8k % 2 * 0x2000
       
-        // this.nes.cpu.mem.write(address,this.nes.rom.rom[bank16k],offset,8192);
+        // this.nes.cpu.mem.write(address,this.nes.rom.rom[bank16k],offset,0x2000);
         copyArrayElements(
-            this.nes.rom.rom[bank16k],
+            this.nes.rom.prg[bank16k],
             offset,
             this.nes.cpu.mem,
             address,
-            8192,
+            0x2000,
         )
     }
       
-    clockIrqCounter() {
+    clockIrqCounter(_cycles: number) {
 
         // Does nothing. This is used by the MMC3 mapper.
     }
@@ -562,23 +562,6 @@ class Mapper0 extends BaseMapper {
 
         // Does nothing. This is used by MMC2.
     }
-      
-    toJSON() {
-        const keys = Object.keys(this) as Array<keyof Mapper0>
-        const obj: any = {}
-        for (const key of keys) {
-            if (key === 'nes') {
-                continue
-            }
-            obj[key] = this[key]
-        }
-
-        return obj
-    }
-      
-    fromJSON(s: Mapper0) {
-        Object.assign(this, s)
-    }  
 }
 
 export { Mapper0 }

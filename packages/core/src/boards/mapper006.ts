@@ -101,7 +101,7 @@ class Mapper6 extends Mapper0 {
         this.updateBanks()
 
         // 初始化CHR Banks
-        if (this.nes.rom.vromCount > 0) {
+        if (this.nes.rom.chrCount > 0) {
             this.loadVromBank(0, 0x0000)
         }
 

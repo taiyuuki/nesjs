@@ -57,7 +57,7 @@ class Mapper1 extends Mapper0 {
             // regBuffer = (regBuffer & (0xFF-(1<<regBufferCounter))) | ((value & (1<<regBufferCounter))<<regBufferCounter);
             this.regBuffer
             = this.regBuffer & 0xff - (1 << this.regBufferCounter)
-            | (value & 1) << this.regBufferCounter
+                | (value & 1) << this.regBufferCounter
             this.regBufferCounter++
       
             if (this.regBufferCounter === 5) {
@@ -130,7 +130,7 @@ class Mapper1 extends Mapper0 {
                 this.romSelectionReg0 = value >> 4 & 1
       
                 // Check whether the cart has VROM:
-                if (this.nes.rom.vromCount > 0) {
+                if (this.nes.rom.chrCount > 0) {
 
                     // Select VROM bank at 0x0000:
                     if (this.vromSwitchingSize === 0) {
@@ -141,7 +141,7 @@ class Mapper1 extends Mapper0 {
                         }
                         else {
                             this.load8kVromBank(
-                                Math.floor(this.nes.rom.vromCount / 2) + (value & 0xf),
+                                Math.floor(this.nes.rom.chrCount / 2) + (value & 0xf),
                                 0x0000,
                             )
                         }
@@ -153,7 +153,7 @@ class Mapper1 extends Mapper0 {
                     }
                     else {
                         this.loadVromBank(
-                            Math.floor(this.nes.rom.vromCount / 2) + (value & 0xf),
+                            Math.floor(this.nes.rom.chrCount / 2) + (value & 0xf),
                             0x0000,
                         )
                     }
@@ -168,7 +168,7 @@ class Mapper1 extends Mapper0 {
                 this.romSelectionReg1 = value >> 4 & 1
       
                 // Check whether the cart has VROM:
-                if (this.nes.rom.vromCount > 0) {
+                if (this.nes.rom.chrCount > 0) {
 
                     // Select VROM bank at 0x1000:
                     if (this.vromSwitchingSize === 1) {
@@ -179,7 +179,7 @@ class Mapper1 extends Mapper0 {
                         }
                         else {
                             this.loadVromBank(
-                                Math.floor(this.nes.rom.vromCount / 2) + (value & 0xf),
+                                Math.floor(this.nes.rom.chrCount / 2) + (value & 0xf),
                                 0x1000,
                             )
                         }
@@ -193,7 +193,7 @@ class Mapper1 extends Mapper0 {
                 // -------------------------
                 tmp = value & 0xf
       
-                if (this.nes.rom.romCount >= 32) {
+                if (this.nes.rom.prgCount >= 32) {
 
                     // 1024 kB cart
                     if (this.vromSwitchingSize === 0) {
@@ -206,7 +206,7 @@ class Mapper1 extends Mapper0 {
                   = (this.romSelectionReg0 | this.romSelectionReg1 << 1) << 3
                     }
                 }
-                else if (this.nes.rom.romCount >= 16) {
+                else if (this.nes.rom.prgCount >= 16) {
 
                     // 512 kB cart
                     if (this.romSelectionReg0 === 1) {
@@ -256,7 +256,7 @@ class Mapper1 extends Mapper0 {
       
         // Load PRG-ROM:
         this.loadRomBank(0, 0x8000) //   First ROM bank..
-        this.loadRomBank(this.nes.rom.romCount - 1, 0xc000) // ..and last ROM bank.
+        this.loadRomBank(this.nes.rom.prgCount - 1, 0xc000) // ..and last ROM bank.
       
         // Load CHR-ROM:
         this.loadCHRROM()

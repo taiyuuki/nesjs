@@ -16,7 +16,7 @@ class MMC3 extends Mapper0 {
     prgAddressSelect = 0
     chrAddressSelect = 0
     irqCounter = 0
-    irqLatchValue = 0
+    irqLatch = 0
     irqEnable = 0
     prgAddressChanged = false
 
@@ -93,7 +93,7 @@ class MMC3 extends Mapper0 {
             case 0xc001:
 
                 // IRQ Latch register
-                this.irqLatchValue = value
+                this.irqLatch = value
                 this.prgBanks[5] = value
                 break
       
@@ -198,10 +198,10 @@ class MMC3 extends Mapper0 {
 
                     // Load the two hardwired banks:
                     if (this.prgAddressSelect === 0) {
-                        this.load8kRomBank((this.nes.rom.romCount - 1) * 2, 0xc000)
+                        this.load8kRomBank((this.nes.rom.prgCount - 1) * 2, 0xc000)
                     }
                     else {
-                        this.load8kRomBank((this.nes.rom.romCount - 1) * 2, 0x8000)
+                        this.load8kRomBank((this.nes.rom.prgCount - 1) * 2, 0x8000)
                     }
                     this.prgAddressChanged = false
                 }
@@ -225,10 +225,10 @@ class MMC3 extends Mapper0 {
 
                     // Load the two hardwired banks:
                     if (this.prgAddressSelect === 0) {
-                        this.load8kRomBank((this.nes.rom.romCount - 1) * 2, 0xc000)
+                        this.load8kRomBank((this.nes.rom.prgCount - 1) * 2, 0xc000)
                     }
                     else {
-                        this.load8kRomBank((this.nes.rom.romCount - 1) * 2, 0x8000)
+                        this.load8kRomBank((this.nes.rom.prgCount - 1) * 2, 0x8000)
                     }
                     this.prgAddressChanged = false
                 }
@@ -241,8 +241,8 @@ class MMC3 extends Mapper0 {
         }
       
         // Load hardwired PRG banks (0xC000 and 0xE000):
-        this.load8kRomBank((this.nes.rom.romCount - 1) * 2, 0xc000)
-        this.load8kRomBank((this.nes.rom.romCount - 1) * 2 + 1, 0xe000)
+        this.load8kRomBank((this.nes.rom.prgCount - 1) * 2, 0xc000)
+        this.load8kRomBank((this.nes.rom.prgCount - 1) * 2 + 1, 0xe000)
       
         // Load swappable PRG banks (0x8000 and 0xA000):
         this.load8kRomBank(0, 0x8000)
@@ -258,15 +258,15 @@ class MMC3 extends Mapper0 {
         this.nes.cpu.requestIrq(this.nes.cpu.IRQ_RESET)
     }
 
-    clockIrqCounter() {
+    clockIrqCounter(cycles: number) {
         if (this.irqEnable === 1) {
-            this.irqCounter--
+            this.irqCounter -= cycles
             if (this.irqCounter < 0) {
 
                 // Trigger IRQ:
                 // this.nes.cpu.doIrq()
                 this.nes.cpu.requestIrq(this.nes.cpu.IRQ_NORMAL)
-                this.irqCounter = this.irqLatchValue
+                this.irqCounter = this.irqLatch
             }
         }
     }

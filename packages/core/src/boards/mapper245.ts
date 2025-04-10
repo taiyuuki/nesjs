@@ -25,7 +25,7 @@ class Mapper245 extends MMC3 {
         this.irqRequest = false
 
         // Initialize PRG banks (last two banks in upper 512KiB)
-        const lastBank = (this.nes.rom.romCount - 1) * 2
+        const lastBank = (this.nes.rom.prgCount - 1) * 2
 
         this.load8kRomBank(lastBank | this.reg3, 0xC000)
         this.load8kRomBank(lastBank + 1 | this.reg3, 0xE000)
@@ -78,45 +78,26 @@ class Mapper245 extends MMC3 {
                 break
             case 0xC000:
                 this.irqCounter = value
-
-                // this.nes.cpu.clearIrq(this.nes.cpu.IRQ_MAPPER)
-                this.nes.cpu.doIrq(this.nes.cpu.IRQ_RESET)
+                this.nes.cpu.irqRequested = false
+                this.nes.cpu.irqType = null
                 break
             case 0xC001:
                 this.irqLatch = value
-
-                // this.nes.cpu.clearIrq(this.nes.cpu.IRQ_MAPPER)
-                this.nes.cpu.doIrq(this.nes.cpu.IRQ_RESET)
+                this.nes.cpu.irqRequested = false
+                this.nes.cpu.irqType = null
                 break
             case 0xE000:
                 this.irqEnable = 0
-
-                // this.nes.cpu.clearIrq(this.nes.cpu.IRQ_MAPPER)
-                this.nes.cpu.doIrq(this.nes.cpu.IRQ_RESET)
+                this.nes.cpu.irqRequested = false
+                this.nes.cpu.irqType = null
                 break
             case 0xE001:
                 this.irqEnable = 1
-
-                // this.nes.cpu.clearIrq(this.nes.cpu.IRQ_MAPPER)
-                this.nes.cpu.doIrq(this.nes.cpu.IRQ_RESET)
+                this.nes.cpu.irqRequested = false
+                this.nes.cpu.irqType = null
                 break
             default:
                 super.write(address, value)
-        }
-    }
-
-    hSync(scanline: number): void {
-        if (scanline >= 0 && scanline <= 239 && this.nes.ppu.isDispON()) {
-            if (this.irqEnable && !this.irqRequest) {
-                if (scanline === 0 && this.irqCounter > 0) {
-                    this.irqCounter--
-                }
-                if (--this.irqCounter <= 0) {
-                    this.irqRequest = true
-                    this.irqCounter = this.irqLatch
-                    this.nes.cpu.requestIrq(this.nes.cpu.IRQ_RESET)
-                }
-            }
         }
     }
 }

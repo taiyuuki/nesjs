@@ -44,6 +44,22 @@ class BaseMapper {
         this.zapperX = 0
         this.zapperY = 0
     }
+          
+    toJSON() {
+        const obj: any = {}
+        for (const key in this) {
+            if (key === 'nes') {
+                continue
+            }
+            obj[key] = this[key]
+        }
+
+        return obj
+    }
+      
+    fromJSON(s: BaseMapper) {
+        Object.assign(this, s)
+    }  
 }
 
 export { BaseMapper }

@@ -8,13 +8,17 @@ import { Mapper5 } from './boards/mapper005'
 import { Mapper6 } from './boards/mapper006'
 import { Mapper7 } from './boards/mapper007'
 import { Mapper9 } from './boards/mapper009'
+import { Mapper10 } from './boards/mapper010'
 import { Mapper11 } from './boards/mapper011'
+import { Mapper15 } from './boards/mapper015'
+import { Mapper18 } from './boards/mapper018'
+import { Mapper33 } from './boards/mapper033'
 import { Mapper34 } from './boards/mapper034'
 import { Mapper38 } from './boards/mapper038'
+import { Mapper48 } from './boards/mapper048'
 import { Mapper66 } from './boards/mapper066'
 import { Mapper94 } from './boards/mapper094'
 import { Mapper99 } from './boards/mapper099'
-import { Mapper115 } from './boards/mapper115'
 import { Mapper140 } from './boards/mapper140'
 import { Mapper180 } from './boards/mapper180'
 import { Mapper240 } from './boards/mapper240'
@@ -33,19 +37,22 @@ const Mappers: MappersType = {
     7: Mapper7,
     8: Mapper6,
     9: Mapper9,
+    10: Mapper10,
     11: Mapper11,
+    15: Mapper15,
+    18: Mapper18,
+    33: Mapper33,
     34: Mapper34,
     38: Mapper38,
+    48: Mapper48,
     66: Mapper66,
     94: Mapper94,
     99: Mapper99,
-    115: Mapper115,
     140: Mapper140,
     180: Mapper180,
     240: Mapper240,
     241: Mapper241,
     245: Mapper245,
-    248: Mapper115,
     250: Mapper250,
 }
 

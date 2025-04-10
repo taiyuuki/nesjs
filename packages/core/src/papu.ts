@@ -1,4 +1,5 @@
 import type { NES } from './nes'
+import { fromJSON, toJSON } from './utils'
 
 class ChannelDM {
     papu: any
@@ -25,6 +26,29 @@ class ChannelDM {
     sample: number | null = null
     dacLsb: number | null = null
     data: number | null = null
+
+    JSON_PROPERTIES = [
+        'MODE_NORMAL',
+        'MODE_LOOP',
+        'MODE_IRQ',
+        'isEnabled',
+        'hasSample',
+        'irqGenerated',
+        'playMode',
+        'dmaFrequency',
+        'dmaCounter',
+        'deltaCounter',
+        'playStartAddress',
+        'playAddress',
+        'playLength',
+        'playLengthCounter',
+        'shiftCounter',
+        'reg4012',
+        'reg4013',
+        'sample',
+        'dacLsb',
+        'data',
+    ]  
 
     constructor(papu: any) {
         this.papu = papu
@@ -166,6 +190,14 @@ class ChannelDM {
         this.reg4013 = 0
         this.data = 0
     }
+
+    toJSON() {
+        return toJSON(this)
+    }
+    
+    fromJSON(s: ReturnType<ChannelDM['toJSON']>) {
+        fromJSON(this, s)
+    }
 }
 
 class ChannelNoise {
@@ -192,6 +224,29 @@ class ChannelNoise {
     accValue: number = 0
     accCount: number = 1
     tmp: number | null = null
+
+    JSON_PROPERTIES = [
+        'isEnabled',
+        'envDecayDisable',
+        'envDecayLoopEnable',
+        'lengthCounterEnable',
+        'envReset',
+        'shiftNow',
+        'lengthCounter',
+        'progTimerCount',
+        'progTimerMax',
+        'envDecayRate',
+        'envDecayCounter',
+        'envVolume',
+        'masterVolume',
+        'shiftReg',
+        'randomBit',
+        'randomMode',
+        'sampleValue',
+        'accValue',
+        'accCount',
+        'tmp',
+    ]
 
     constructor(papu: any) {
         this.papu = papu
@@ -301,6 +356,14 @@ class ChannelNoise {
     getLengthStatus(): number {
         return this.lengthCounter === 0 || !this.isEnabled ? 0 : 1
     }
+
+    toJSON() {
+        return toJSON(this)
+    }
+    
+    fromJSON(s: ReturnType<ChannelNoise['toJSON']>) {
+        fromJSON(this, s)
+    }
 }
 
 class ChannelSquare {
@@ -332,6 +395,33 @@ class ChannelSquare {
     dutyMode: number
     sampleValue: number
     vol: number
+
+    JSON_PROPERTIES = [
+        'isEnabled',
+        'lengthCounterEnable',
+        'sweepActive',
+        'envDecayDisable',
+        'envDecayLoopEnable',
+        'envReset',
+        'sweepCarry',
+        'updateSweepPeriod',
+        'progTimerCount',
+        'progTimerMax',
+        'lengthCounter',
+        'squareCounter',
+        'sweepCounter',
+        'sweepCounterMax',
+        'sweepMode',
+        'sweepShiftAmount',
+        'envDecayRate',
+        'envDecayCounter',
+        'envVolume',
+        'masterVolume',
+        'dutyMode',
+        'sweepResult',
+        'sampleValue',
+        'vol',
+    ]
 
     constructor(papu: any, square1: boolean) {
         this.papu = papu
@@ -567,6 +657,14 @@ class ChannelSquare {
     getLengthStatus(): number {
         return this.lengthCounter === 0 || !this.isEnabled ? 0 : 1
     }
+
+    toJSON() {
+        return toJSON(this)
+    }
+    
+    fromJSON(s: ReturnType<ChannelSquare['toJSON']>) {
+        fromJSON(this, s)
+    }
 }
 
 class ChannelTriangle {
@@ -586,6 +684,22 @@ class ChannelTriangle {
     lcLoadValue: number
     sampleValue: number
     tmp: number
+
+    JSON_PROPERTIES = [
+        'isEnabled',
+        'sampleCondition',
+        'lengthCounterEnable',
+        'lcHalt',
+        'lcControl',
+        'progTimerCount',
+        'progTimerMax',
+        'triangleCounter',
+        'lengthCounter',
+        'linearCounter',
+        'lcLoadValue',
+        'sampleValue',
+        'tmp',
+    ]
 
     constructor(papu: PAPU) {
         this.papu = papu
@@ -711,9 +825,17 @@ class ChannelTriangle {
     updateSampleCondition(): void {
         this.sampleCondition
             = this.isEnabled
-            && this.progTimerMax > 7
-            && this.linearCounter > 0
-            && this.lengthCounter > 0
+                && this.progTimerMax > 7
+                && this.linearCounter > 0
+                && this.lengthCounter > 0
+    }
+
+    toJSON() {
+        return toJSON(this)
+    }
+    
+    fromJSON(s: ReturnType<ChannelTriangle['toJSON']>) {
+        fromJSON(this, s)
     }
 }
 
@@ -790,6 +912,52 @@ class PAPU {
     minSample: number | null
 
     panning: number[]
+
+    JSON_PROPERTIES = [
+        'frameIrqCounter',
+        'frameIrqCounterMax',
+        'initCounter',
+        'channelEnableValue',
+        'sampleRate',
+        'frameIrqEnabled',
+        'frameIrqActive',
+        'frameClockNow',
+        'startedPlaying',
+        'recordOutput',
+        'initingHardware',
+        'masterFrameCounter',
+        'derivedFrameCounter',
+        'countSequence',
+        'sampleTimer',
+        'frameTime',
+        'sampleTimerMax',
+        'sampleCount',
+        'triValue',
+        'smpSquare1',
+        'smpSquare2',
+        'smpTriangle',
+        'smpDmc',
+        'accCount',
+        'prevSampleL',
+        'prevSampleR',
+        'smpAccumL',
+        'smpAccumR',
+        'masterVolume',
+        'stereoPosLSquare1',
+        'stereoPosLSquare2',
+        'stereoPosLTriangle',
+        'stereoPosLNoise',
+        'stereoPosLDMC',
+        'stereoPosRSquare1',
+        'stereoPosRSquare2',
+        'stereoPosRTriangle',
+        'stereoPosRNoise',
+        'stereoPosRDMC',
+        'extraCycles',
+        'maxSample',
+        'minSample',
+        'panning',
+    ]
 
     constructor(nes: NES) {
         this.nes = nes
@@ -1443,6 +1611,26 @@ class PAPU {
 
         this.dacRange = Math.max(...this.squareTable) + Math.max(...this.tndTable)
         this.dcValue = this.dacRange / 2
+    }
+    
+    toJSON() {
+        const obj = toJSON(this)
+        obj.dmc = this.dmc.toJSON()
+        obj.noise = this.noise.toJSON()
+        obj.square1 = this.square1.toJSON()
+        obj.square2 = this.square2.toJSON()
+        obj.triangle = this.triangle.toJSON()
+
+        return obj
+    }
+    
+    fromJSON(s: any) {
+        fromJSON(this, s)
+        this.dmc.fromJSON(s.dmc)
+        this.noise.fromJSON(s.noise)
+        this.square1.fromJSON(s.square1)
+        this.square2.fromJSON(s.square2)
+        this.triangle.fromJSON(s.triangle)
     }
 }
 

@@ -271,7 +271,7 @@ class Mapper9 extends Mapper0 {
         }
 
         // Get number of 8K banks:
-        const num_8k_banks = this.nes.rom.romCount * 2
+        const num_8k_banks = this.nes.rom.prgCount * 2
 
         // Load PRG-ROM:
         this.load8kRomBank(0, 0x8000)

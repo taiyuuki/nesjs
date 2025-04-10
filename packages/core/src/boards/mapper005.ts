@@ -169,10 +169,10 @@ class Mapper5 extends Mapper0 {
         }
       
         // Load PRG-ROM:
-        this.load8kRomBank(this.nes.rom.romCount * 2 - 1, 0x8000)
-        this.load8kRomBank(this.nes.rom.romCount * 2 - 1, 0xa000)
-        this.load8kRomBank(this.nes.rom.romCount * 2 - 1, 0xc000)
-        this.load8kRomBank(this.nes.rom.romCount * 2 - 1, 0xe000)
+        this.load8kRomBank(this.nes.rom.prgCount * 2 - 1, 0x8000)
+        this.load8kRomBank(this.nes.rom.prgCount * 2 - 1, 0xa000)
+        this.load8kRomBank(this.nes.rom.prgCount * 2 - 1, 0xc000)
+        this.load8kRomBank(this.nes.rom.prgCount * 2 - 1, 0xe000)
       
         // Load CHR-ROM:
         this.loadCHRROM()
