@@ -9,11 +9,12 @@ let emulator: NESEmulator
 let clip = false
 let enableGamepad = true
 onMounted(() => {
-    emulator = new NESEmulator(cvs.value, { clip })
+    emulator = new NESEmulator(cvs.value)
 })
 
 function start() {
-    emulator.start('m249/Bao Qing Tian by WaiXing (ChT).nes').then(() => {
+    emulator.start('Super Mario Bros (JU).nes').then(() => {
+
         emulator.resizeScreen(800)
     })
 }

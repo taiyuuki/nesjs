@@ -49,12 +49,16 @@ type EmulatorOptions = {
 
     /** Whether to compress the saved state, default to true. */
     compressSaveState?: boolean
+
+    /** The name of the IndexedDB database, default to 'nesjs'. */
+    dbName?: string
 }
 
 type VideoOptions = {
     type: 'fm2'
     text?: string
     URL?: string
+    offset?: number
 }
 
 /**
@@ -82,9 +86,6 @@ class NESEmulator {
     private _db: DB<{ data: Uint8Array | string, compress: boolean }>
 
     constructor(cvs: HTMLCanvasElement, opt?: EmulatorOptions) {
-        if (!cvs || cvs.tagName !== 'CANVAS') {
-            throw new Error('[@nesjs/native] Please specify a canvas element.')
-        }
         this.audio = new Audio()
         this.animation = new Animation(cvs)
         this.nes = new NES({ 
@@ -93,7 +94,7 @@ class NESEmulator {
             sampleRate: this.audio.getSampleRate(),
         })
         this.gamepad = new NESGamepad(this.nes)
-        this._db = new DB('nesjs', 'save_data')
+        this._db = new DB(opt?.dbName ?? 'nesjs', 'save_data')
         if (opt) {
             this.updateOptions(opt)
         }
@@ -117,10 +118,10 @@ class NESEmulator {
      */
     updateOptions(opt: EmulatorOptions) {
         if (opt.controller?.p1) {
-            this.gamepad.p1 = opt.controller.p1
+            Object.assign(this.gamepad.p1, opt.controller.p1)
         }
         if (opt.controller?.p2) {
-            this.gamepad.p2 = opt.controller.p2
+            Object.assign(this.gamepad.p2, opt.controller.p2)
         }
         if (opt.gamepad?.turbo) {
             this.gamepad.setInterval(opt.gamepad.turbo)
@@ -132,10 +133,10 @@ class NESEmulator {
             this.audio.setVolume(opt.volume!)
         }
         if (keyIn('clip', opt)) {
-            this.nes.ppu.clipToTvSize = opt.clip!
+            this.nes.ppu.clipToTvSize = !!opt.clip
         }
         if (keyIn('enableGamepad', opt)) {
-            this.gamepad.setEnableGamepad(opt.enableGamepad!)
+            this.gamepad.setEnableGamepad(!!opt.enableGamepad)
         }
         if (keyIn('screen', opt)) {
             const { width, height } = opt.screen!
@@ -154,15 +155,14 @@ class NESEmulator {
             this.stop()
         }
         try {
-            this.rom = await this._getROM(romURL)
-            this.nes.loadROM(this.rom)
-            if (this.paused) {
-                this.play()
+            if (!this.rom || romURL !== this.currentURL) {
+                this.rom = await this._getROM(romURL)
             }
+            this.nes.loadROM(this.rom)
             this.audio.createAudioProgressor(() => {
                 this.nes.frame()
             })
-
+            this.play()
         }
         catch (error) {
             throw new Error(`[@nesjs/native] ${error}`)
@@ -310,10 +310,10 @@ class NESEmulator {
         switch (opt.type) {
             case 'fm2':
                 if (opt.text) {
-                    this.playVideoByFM2Text(opt.text)
+                    this.playVideoByFM2Text(opt.text, opt.offset)
                 }
                 else if (opt.URL) {
-                    await this.playVideoByFM2URL(opt.URL)
+                    await this.playVideoByFM2URL(opt.URL, opt.offset)
                 }
                 else {
                     this.stopVideo()
@@ -321,21 +321,25 @@ class NESEmulator {
                     return Promise.reject('[@nesjs/native] Please specify a text or URL for the FM2 file.')
                 }
                 break
+            default:
+                this.stopVideo()
+
+                return Promise.reject('[@nesjs/native] Invalid video type.')
         }
     }
 
-    playVideoByFM2Text(fm2Text: string) {
+    playVideoByFM2Text(fm2Text: string, offset = 0) {
         this.start(this.currentURL)
         const check = this.nes.video.parseFM2(fm2Text)
         if (check) {
-            this.nes.video.run()
+            this.nes.video.run(offset)
         }
         else {
             console.warn('[@nesjs/native] Not a valid FM2 file.')
         }
     }
 
-    playVideoByFM2URL(fm2URL: string) {
+    playVideoByFM2URL(fm2URL: string, offset = 0) {
         return new Promise<void>((resolve, reject) => {
             const xhr = new XMLHttpRequest()
             xhr.open('GET', fm2URL, true)
@@ -343,7 +347,7 @@ class NESEmulator {
             xhr.onload = () => {
                 if (xhr.status === 200) {
                     const fm2Text = xhr.response
-                    this.playVideoByFM2Text(fm2Text)
+                    this.playVideoByFM2Text(fm2Text, offset)
                     resolve()
                 }
                 else {

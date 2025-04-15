@@ -208,14 +208,16 @@ class NES {
     loadROM(data: Uint8Array | string) {
 
         // Load ROM file:
-        this.rom = new ROM(this)
-        this.rom.load(data)
+        if (!this.romData || !this.rom) {
+            this.rom = new ROM(this)
+            this.rom.load(data)
+            this.romData = data
+        }
     
         this.reset()
         this.mmap = this.rom.createMapper()
         this.mmap.loadROM()
         this.ppu.setMirroring(this.rom.getMirroringType())
-        this.romData = data
     }
     
     setFramerate(rate: number) {
@@ -231,6 +233,7 @@ class NES {
             mmap: this.mmap.toJSON(),
             ppu: this.ppu.toJSON(),
             papu: this.papu.toJSON(),
+            controllers: this.controllers,
         })
 
         return {
@@ -247,11 +250,12 @@ class NES {
 
         // this.romData = s.romData;
         this.ppu.reset()
+        this.frameCount = state.frameCount
         this.cpu.fromJSON(state.cpu)
         this.mmap.fromJSON(state.mmap)
         this.ppu.fromJSON(state.ppu)
         this.papu.fromJSON(state.papu)
-        this.frameCount = state.frameCount
+        Object.assign(this.controllers, state.controllers)
     }
 }
 
