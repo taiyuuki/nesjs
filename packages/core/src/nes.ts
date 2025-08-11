@@ -78,7 +78,19 @@ class NES {
         this.break = true
     }
 
-    reset() {
+    playVideo(fm2: string, offset = 0) {
+        if (!this.video.parseFM2(fm2)) {
+            console.error('[@nes/core] Invalid fm2 data.')
+
+            return false
+        }
+        this.video.run(offset)
+        this.ui.updateStatus('Playing video.')
+
+        return true
+    }
+
+    reset(keep = false) {
         if (this.mmap != null) {
             this.mmap.reset()
         }
@@ -86,7 +98,10 @@ class NES {
         this.cpu.reset()
         this.ppu.reset()
         this.papu.reset()
-        this.cheat.reset()
+        if (!keep) {
+            this.cheat.reset()
+            this.video.reset()
+        }
     
         this.lastFpsTime = 0
         this.fpsFrameCount = 0
@@ -243,7 +258,8 @@ class NES {
     }
     
     fromJSON(s: ReturnType<NES['toJSON']>) {
-        this.reset()
+
+        this.reset(true)
 
         const data = s.compress ? ungzip(s.data as Uint8Array, { to: 'string' }) : s.data
         const state = JSON.parse(data as string)
