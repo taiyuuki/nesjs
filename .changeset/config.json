@@ -1,0 +1,21 @@
+{
+    "changelog": [
+        "@changesets/changelog-github",
+        {
+            "repo": "taiyuuki/nesjs"
+        }
+    ],
+    "commit": false,
+    "fixed": [],
+    "linked": [
+        [
+            "@nesjs/core",
+            "@nesjs/native",
+            "@nesjs/vue3"
+        ]
+    ],
+    "access": "public",
+    "baseBranch": "main",
+    "updateInternalDependencies": "patch",
+    "ignore": []
+}

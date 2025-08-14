@@ -19,6 +19,7 @@ import { Mapper48 } from './boards/mapper048'
 import { Mapper66 } from './boards/mapper066'
 import { Mapper94 } from './boards/mapper094'
 import { Mapper99 } from './boards/mapper099'
+import { Mapper115 } from './boards/mapper115'
 import { Mapper140 } from './boards/mapper140'
 import { Mapper180 } from './boards/mapper180'
 import { Mapper240 } from './boards/mapper240'
@@ -48,11 +49,13 @@ const Mappers: MappersType = {
     66: Mapper66,
     94: Mapper94,
     99: Mapper99,
+    115: Mapper115,
     140: Mapper140,
     180: Mapper180,
     240: Mapper240,
     241: Mapper241,
     245: Mapper245,
+    248: Mapper115, // Mapper115 is used for some games with 32k PRG banks
     250: Mapper250,
 }
 

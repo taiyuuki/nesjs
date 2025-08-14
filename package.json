@@ -1,24 +1,61 @@
 {
   "name": "nesjs",
   "version": "1.0.10",
-  "description": "",
-  "main": "index.js",
+  "description": "A NES emulator library for JavaScript",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "vitest",
-    "lint": "eslint --fix",
+    "build": "pnpm --filter=\"@nesjs/core\" build && pnpm --filter=\"@nesjs/native\" build && pnpm --filter=\"@nesjs/vue3\" build",
+    "build:core": "pnpm --filter=\"@nesjs/core\" build",
+    "build:native": "pnpm --filter=\"@nesjs/native\" build",
+    "build:vue3": "pnpm --filter=\"@nesjs/vue3\" build",
+    "dev": "pnpm --parallel --filter=\"!@nesjs/vue3\" dev",
+    "dev:vue3": "pnpm --filter=\"@nesjs/vue3\" dev",
+    "test": "pnpm --recursive test",
+    "test:core": "pnpm --filter=\"@nesjs/core\" test",
+    "test:native": "pnpm --filter=\"@nesjs/native\" test",
+    "test:vue3": "pnpm --filter=\"@nesjs/vue3\" test",
+    "lint": "pnpm --recursive lint",
+    "lint:fix": "pnpm --recursive lint --fix",
+    "clean": "pnpm --recursive clean",
+    "typecheck": "pnpm --recursive typecheck",
     "patch": "esno scripts/bump.ts patch",
     "minor": "esno scripts/bump.ts minor",
     "major": "esno scripts/bump.ts major",
-    "prepublishOnly": "npm run build"
+    "health": "esno scripts/health-check.ts",
+    "publish:all": "pnpm --filter=\"@nesjs/core\" publish && pnpm --filter=\"@nesjs/native\" publish",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
+  "keywords": [
+    "nes",
+    "emulator",
+    "javascript",
+    "typescript",
+    "retro",
+    "games"
+  ],
+  "author": "taiyuuki <taiyuuki@qq.com>",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.1",
     "@nesjs/core": "workspace:^",
     "@taiyuuki/eslint-config": "^1.5.0",
     "@types/node": "^22.14.0",
+    "@types/pako": "^2.0.3",
+    "@types/prompts": "^2.4.9",
     "eslint": "^9.24.0",
+    "esno": "^4.8.0",
+    "fast-glob": "^3.3.3",
+    "kolorist": "^1.8.0",
+    "prompts": "^2.4.2",
+    "rollup": "^4.39.0",
     "typescript": "^5.8.3",
     "vitest": "^3.1.1"
   },
@@ -28,13 +65,5 @@
         "eslint": "9"
       }
     }
-  },
-  "devDependencies": {
-    "@types/pako": "^2.0.3",
-    "@types/prompts": "^2.4.9",
-    "esno": "^4.8.0",
-    "fast-glob": "^3.3.3",
-    "kolorist": "^1.8.0",
-    "prompts": "^2.4.2"
   }
 }

@@ -26,7 +26,11 @@
     "lint": "eslint --fix",
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "test": "vitest"
+    "clean": "rimraf dist",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@nesjs/native": "workspace:*"
@@ -38,6 +42,7 @@
     "eslint": "^9.13.0",
     "eslint-plugin-import": "^2.31.0",
     "jsnes": "^1.2.1",
+    "rimraf": "^6.0.1",
     "rollup-plugin-delete": "^2.1.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
