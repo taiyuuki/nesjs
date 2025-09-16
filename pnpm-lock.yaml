@@ -6,39 +6,12 @@ settings:
 
 catalogs:
   default:
-    '@babel/core':
-      specifier: ^7.28.4
-      version: 7.28.4
-    '@changesets/changelog-github':
-      specifier: ^0.5.0
-      version: 0.5.1
-    '@changesets/cli':
-      specifier: ^2.27.1
-      version: 2.29.7
-    '@rollup/plugin-babel':
-      specifier: ^6.0.4
-      version: 6.0.4
-    '@rollup/plugin-commonjs':
-      specifier: ^28.0.6
-      version: 28.0.6
-    '@rollup/plugin-node-resolve':
-      specifier: ^16.0.1
-      version: 16.0.1
-    '@rollup/plugin-terser':
-      specifier: ^0.4.4
-      version: 0.4.4
     '@taiyuuki/eslint-config':
       specifier: ^1.5.0
       version: 1.5.0
     '@types/node':
       specifier: ^22.14.0
       version: 22.18.4
-    '@types/pako':
-      specifier: ^2.0.3
-      version: 2.0.4
-    '@types/prompts':
-      specifier: ^2.4.9
-      version: 2.4.9
     '@vitejs/plugin-vue':
       specifier: ^5.1.4
       version: 5.2.4
@@ -48,48 +21,12 @@ catalogs:
     eslint-plugin-import:
       specifier: ^2.31.0
       version: 2.32.0
-    esno:
-      specifier: ^4.8.0
-      version: 4.8.0
-    fast-glob:
-      specifier: ^3.3.3
-      version: 3.3.3
-    jsnes:
-      specifier: ^1.2.1
-      version: 1.2.1
-    kolorist:
-      specifier: ^1.8.0
-      version: 1.8.0
-    prompts:
-      specifier: ^2.4.2
-      version: 2.4.2
     rimraf:
       specifier: ^6.0.1
       version: 6.0.1
-    rollup:
-      specifier: ^4.50.2
-      version: 4.50.2
-    rollup-plugin-copy:
-      specifier: ^3.5.0
-      version: 3.5.0
     rollup-plugin-delete:
       specifier: ^3.0.1
       version: 3.0.1
-    rollup-plugin-dts:
-      specifier: ^6.2.3
-      version: 6.2.3
-    rollup-plugin-glob-import:
-      specifier: ^0.5.0
-      version: 0.5.0
-    rollup-plugin-node-builtins:
-      specifier: ^2.1.2
-      version: 2.1.2
-    rollup-plugin-node-globals:
-      specifier: ^1.4.0
-      version: 1.4.0
-    rollup-plugin-typescript2:
-      specifier: ^0.36.0
-      version: 0.36.0
     typescript:
       specifier: ^5.9.2
       version: 5.9.2
@@ -283,9 +220,6 @@ importers:
       eslint-plugin-import:
         specifier: 'catalog:'
         version: 2.32.0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)
-      jsnes:
-        specifier: 'catalog:'
-        version: 1.2.1
       rimraf:
         specifier: 'catalog:'
         version: 6.0.1
@@ -2427,9 +2361,6 @@ packages:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
     engines: {node: '>=6'}
     hasBin: true
-
-  jsnes@1.2.1:
-    resolution: {integrity: sha512-Gn+lnv5B5c/TVwFSc8vzo7amiSogRyfMI9UL7VjYgKDrlTLf7GKuK2WD+t0gEcLbzh/NfMpkIlopzN/3cq760A==}
 
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
@@ -6024,8 +5955,6 @@ snapshots:
   jsesc@3.0.2: {}
 
   jsesc@3.1.0: {}
-
-  jsnes@1.2.1: {}
 
   json-buffer@3.0.1: {}
 

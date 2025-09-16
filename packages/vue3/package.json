@@ -40,8 +40,6 @@
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-import": "catalog:",
-    "jsnes": "catalog:",
     "rimraf": "catalog:",
     "rollup-plugin-delete": "catalog:",
     "typescript": "catalog:",
