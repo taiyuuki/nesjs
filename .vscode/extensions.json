@@ -1,7 +1,6 @@
 {
     "recommendations": [
         "ms-vscode.vscode-typescript-next",
-        "bradlc.vscode-tailwindcss",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "Vue.volar",

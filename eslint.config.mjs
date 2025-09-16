@@ -5,6 +5,7 @@ export default tyk_eslint({
     vue: true,
     rules: {
         'no-console': 'off',
+        'no-undef': 'off',
         '@stylistic/array-element-newline': 'off', 
     },
     markdown: false,

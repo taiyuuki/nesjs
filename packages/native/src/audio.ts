@@ -30,7 +30,6 @@ class WebNESAudioOutput implements AudioOutputInterface {
         this.gainNode = this.audioContext.createGain()
         this.gainNode.gain.value = this.volume
         this.gainNode.connect(this.audioContext.destination)
-
     }
 
     async initialize() {
@@ -134,9 +133,9 @@ class WebNESAudioOutput implements AudioOutputInterface {
                     samples: samples,
                 })
                 
-                this.audiobuf.length = 0
-                this.bufptr = 0
             }
+            this.audiobuf.length = 0
+            this.bufptr = 0
         }
     }
 

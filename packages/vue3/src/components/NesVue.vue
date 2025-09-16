@@ -8,10 +8,10 @@ let emulator: NESEmulator
 function handleFileChange(event: Event) {
     const target = event.target as HTMLInputElement
     const file = target.files?.[0]
-    file?.arrayBuffer().then(buffer => {
+    file?.arrayBuffer().then(async buffer => {
         const romData = new Uint8Array(buffer)
-        emulator.loadROM(romData)
-        emulator.start()
+        await emulator.loadROM(romData)
+        await emulator.start()
     })
 }
 

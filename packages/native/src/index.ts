@@ -44,7 +44,7 @@ class NESEmulator {
         const deltaTime = now - this.lastFrameTime
         if (this.status === 1 && deltaTime >= this.frameDuration) {
             this.nes.runFrame()
-            this.lastFrameTime = now
+            this.lastFrameTime += this.frameDuration
         }
 
         this.animationFrameId = requestAnimationFrame(() => this.mainLoop())
@@ -56,10 +56,10 @@ class NESEmulator {
                 if (!this.romData) {
                     throw new Error('ROM not loaded')
                 }
-                await this.audioOutput.start()
                 this.status = 1
                 this.lastFrameTime = performance.now()
                 this.mainLoop()
+                await this.audioOutput.start()
                 break
             case 2: // Paused
                 this.resume()
