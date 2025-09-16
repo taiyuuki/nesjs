@@ -52,18 +52,18 @@ export interface GamepadInterface {
      * @param button 按键类型
      * @param pressed 按键状态 (0或1)
      */
-    setButton?(button: GamepadButton, pressed: GamepadButtonState): void
+    setButton(button: GamepadButton, pressed: GamepadButtonState): void
     
     /**
      * 批量设置按键状态
      * @param buttons 按键状态对象
      */
-    setButtons?(buttons: GamepadButtonState[]): void
+    setButtons(buttons: GamepadButtonState[]): void
     
     /**
      * 获取当前按键状态
      */
-    getButtonStates?(): {
+    getButtonStates(): {
         A: number
         B: number
         SELECT: number
@@ -77,7 +77,7 @@ export interface GamepadInterface {
     /**
      * 重置所有按键
      */
-    reset?(): void
+    reset(): void
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { EmulatorConfig } from '@nesjs/core'
+import type { EmulatorConfig, GamepadInterface } from '@nesjs/core'
 import { NES } from '@nesjs/core'
 
 import { CanvasRenderer } from './renderer'
@@ -16,6 +16,8 @@ class NESEmulator {
     status = 0 // 0: stopped, 1: running, 2: paused
     animationFrameId: number | null = null
     romData: Uint8Array | null = null
+    gamepad1: GamepadInterface
+    gamepad2: GamepadInterface
 
     constructor(cvs: HTMLCanvasElement, config: NESEmulatorOptions = {}) {
         this.nes = new NES(config)
@@ -25,6 +27,11 @@ class NESEmulator {
 
         this.nes.setAudioInterface(this.audioOutput)
         this.nes.setRenderer(this.renderer)
+
+        this.gamepad1 = this.nes.getGamepad(1)
+        this.gamepad2 = this.nes.getGamepad(2)
+
+        this.setUpKeyboadEvents()
     }
 
     async loadROM(romData: Uint8Array) {
@@ -87,6 +94,51 @@ class NESEmulator {
 
     reset() {
         this.nes.reset()
+    }
+
+    setUpKeyboadEvents() {
+        const player1KeyMap: { [key: string]: number } = {
+            KeyK: 0, // A
+            KeyJ: 1, // B
+            Space: 2, // SELECT
+            Enter: 3, // START
+            KeyW: 4, // UP
+            KeyS: 5, // DOWN
+            KeyA: 6, // LEFT
+            KeyD: 7, // RIGHT
+        }
+        const player2KeyMap: { [key: string]: number } = {
+            Numpad1: 0, // A
+            Numpad2: 1, // B
+            // Numpad0: 2, // SELECT
+            // NumpadEnter: 3, // START
+            ArrowUp: 4, // UP
+            ArrowDown: 5, // DOWN
+            ArrowLeft: 6, // LEFT
+            ArrowRight: 7, // RIGHT
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.code in player1KeyMap) {
+                this.gamepad1.setButton(player1KeyMap[e.code], 1)
+                e.preventDefault()
+            }
+            if (e.code in player2KeyMap) {
+                this.gamepad2.setButton(player2KeyMap[e.code], 1)
+                e.preventDefault()
+            }
+        })
+
+        document.addEventListener('keyup', e => {
+            if (e.code in player1KeyMap) {
+                this.gamepad1.setButton(player1KeyMap[e.code], 0)
+                e.preventDefault()
+            }
+            if (e.code in player2KeyMap) {
+                this.gamepad2.setButton(player2KeyMap[e.code], 0)
+                e.preventDefault()
+            }
+        })
     }
 }
 
