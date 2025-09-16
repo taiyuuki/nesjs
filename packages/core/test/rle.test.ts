@@ -53,7 +53,6 @@ describe('RLE Compression Tests', () => {
                 expect(compressed).toEqual(data) // 没有压缩
             }
             else{
-                console.info(`Compression for ${name}: original ${data.length}, compressed ${compressed._data.length}`)
                 expect(compressed._data.length).toBeLessThan(data.length)
             }
         })

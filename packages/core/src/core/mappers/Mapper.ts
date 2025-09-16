@@ -21,10 +21,27 @@ function _shouldSerializeProperty(key: string, value: any): boolean {
     
     // 排除特定的系统属性
     const excludeList = [
-        'loader', 'nes', 'cpu', 'cpuram', 'ppu', 'crc', 'region',
-        'prg', 'chrsize', 'prgsize', 'prgoff', 'chroff', 'mappertype', 'submapper',
-        'haschrram', 'hasprgram', 'savesram',
-        'nt0', 'nt1', 'nt2', 'nt3', // nametable 指针
+        'loader',
+        'nes',
+        'cpu',
+        'cpuram',
+        'ppu',
+        'crc',
+        'region',
+        'prg',
+        'chrsize',
+        'prgsize',
+        'prgoff',
+        'chroff',
+        'mappertype',
+        'submapper',
+        'haschrram',
+        'hasprgram',
+        'savesram',
+        'nt0',
+        'nt1',
+        'nt2',
+        'nt3', // nametable 指针
         'soundchip', // 声音芯片
     ]
     

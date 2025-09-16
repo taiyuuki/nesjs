@@ -118,15 +118,8 @@ export class VideoPlayer {
         if (this.enabled && this.videoData?.frames[fixFrame]) {
             const frame = this.videoData.frames[fixFrame]
             
-            if (this.debug) {
-                console.log(`Playing frame ${frameNumber}:`, frame)
-            }
-            
             // 处理重置标志
             if (frame.reset) {
-                if (this.debug) {
-                    console.log(`Reset at frame ${frameNumber}`)
-                }
                 this.nes.reset()
                 
                 return
