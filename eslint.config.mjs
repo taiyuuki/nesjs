@@ -5,5 +5,7 @@ export default tyk_eslint({
     vue: true,
 }, {
     files: ['scripts/**/*.ts'],
-    rules: { 'no-console': 'off' },
+    rules: { 
+        'no-console': 'off',
+     },
 })

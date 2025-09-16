@@ -1,7 +1,7 @@
 {
   "name": "@nesjs/vue3",
   "private": true,
-  "version": "1.0.10",
+  "version": "2.0.0",
   "module": "./dist/index.es.js",
   "main": "./dist/index.umd.js",
   "types": "./dist/index.d.ts",
@@ -36,19 +36,19 @@
     "@nesjs/native": "workspace:*"
   },
   "devDependencies": {
-    "@taiyuuki/eslint-config": "^1.4.15",
-    "@types/node": "^20.17.5",
-    "@vitejs/plugin-vue": "^5.1.4",
-    "eslint": "^9.13.0",
-    "eslint-plugin-import": "^2.31.0",
-    "jsnes": "^1.2.1",
-    "rimraf": "^6.0.1",
-    "rollup-plugin-delete": "^2.1.0",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.10",
-    "vite-plugin-dts": "^4.3.0",
-    "vitest": "^2.1.4",
-    "vue": "^3.5.12",
-    "vue-tsc": "^2.1.10"
+    "@taiyuuki/eslint-config": "catalog:",
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-import": "catalog:",
+    "jsnes": "catalog:",
+    "rimraf": "catalog:",
+    "rollup-plugin-delete": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:",
+    "vue": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

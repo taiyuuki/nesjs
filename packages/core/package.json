@@ -1,6 +1,6 @@
 {
   "name": "@nesjs/core",
-  "version": "1.0.10",
+  "version": "2.0.0",
   "description": "",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -8,19 +8,15 @@
   "types": "./dist/types/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/taiyuuki/core"
+    "url": "https://github.com/taiyuuki/nes-core"
   },
-  "bugs": "https://github.com/taiyuuki/core/issues",
-  "homepage": "https://github.com/taiyuuki/core#readme",
+  "bugs": "https://github.com/taiyuuki/nes-core/issues",
+  "homepage": "https://github.com/taiyuuki/nes-core#readme",
   "scripts": {
     "lint": "eslint --fix",
-    "dev": "rollup -cw",
+    "dev": "rollup -c -w",
     "build": "rollup -c",
-    "clean": "rimraf dist",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "publish": "pnpm publish --registry=https://registry.npmjs.org --access=public"
+    "test": "vitest"
   },
   "keywords": [],
   "sideEffects": false,
@@ -37,20 +33,24 @@
     "dist"
   ],
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-commonjs": "^28.0.3",
-    "@taiyuuki/eslint-config": "^1.5.0",
-    "@types/node": "^22.14.0",
-    "eslint": "^9.24.0",
-    "rimraf": "^6.0.1",
-    "rollup": "^4.39.0",
-    "rollup-plugin-dts": "^6.2.1",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.1"
-  },
-  "dependencies": {
-    "pako": "^2.1.0"
+    "@babel/core": "catalog:",
+    "@rollup/plugin-babel": "catalog:",
+    "@rollup/plugin-commonjs": "catalog:",
+    "@rollup/plugin-node-resolve": "catalog:",
+    "@rollup/plugin-terser": "catalog:",
+    "@taiyuuki/eslint-config": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "fast-glob": "catalog:",
+    "rollup": "catalog:",
+    "rollup-plugin-copy": "catalog:",
+    "rollup-plugin-delete": "catalog:",
+    "rollup-plugin-dts": "catalog:",
+    "rollup-plugin-glob-import": "catalog:",
+    "rollup-plugin-node-builtins": "catalog:",
+    "rollup-plugin-node-globals": "catalog:",
+    "rollup-plugin-typescript2": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
