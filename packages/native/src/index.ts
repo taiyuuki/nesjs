@@ -16,7 +16,6 @@ class NESEmulator {
     nes: NES
     renderer: CanvasRenderer
     audioOutput: WebNESAudioOutput
-    audioEnabled = false
     frameDuration: number
     lastFrameTime = 0
     targetFPS = 60
@@ -92,9 +91,8 @@ class NESEmulator {
                 this.status = 1
                 this.lastFrameTime = performance.now()
                 this.mainLoop()
-                if (this.audioEnabled) {
-                    await this.audioOutput.start()
-                }
+                await this.audioOutput.start()
+                
                 break
             case 2: // Paused
                 this.resume()
@@ -167,7 +165,6 @@ class NESEmulator {
     public async enableAudio() {
         try {
             await this.audioOutput.start()
-            this.audioEnabled = true
 
             return true
         }
@@ -180,7 +177,6 @@ class NESEmulator {
 
     public disableAudio() {
         this.audioOutput.pause()
-        this.audioEnabled = false
     }
 
     public setVolume(volume: number) {
