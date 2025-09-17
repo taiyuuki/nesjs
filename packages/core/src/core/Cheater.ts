@@ -33,12 +33,6 @@ export enum CheatLength {
  */
 export interface CheatCode {
 
-    /** 金手指ID */
-    id: string
-
-    /** 金手指名称 */
-    name: string
-
     /** 金手指代码（VirtuaNES格式，如：079F-01-01） */
     code: string
 
@@ -81,37 +75,40 @@ export class Cheater {
     /**
      * 添加金手指
      */
-    public addCheat(cheat: CheatCode): void {
+    public addCheat(code: string): void {
 
         // 验证金手指代码格式
         try {
-            this.parseCheatCode(cheat.code)
+            const cheat = this.parseCheatCode(code)
+        
+            this.cheats.set(
+                code, 
+                cheat,
+            )
         }
         catch (_error) {
-            throw new Error(`Invalid cheat code format: ${cheat.code}`)
+            throw new Error(`Invalid cheat code format: ${code}`)
         }
-        
-        this.cheats.set(cheat.id, { ...cheat })
     }
 
     /**
      * 移除金手指
      */
-    public removeCheat(id: string): void {
-        const cheat = this.cheats.get(id)
+    public removeCheat(code: string): void {
+        const cheat = this.cheats.get(code)
         if (cheat && cheat.enabled && cheat.originalValue !== undefined) {
 
             // 恢复原始值
             this.writeMemory(cheat.address, cheat.originalValue, cheat.length)
         }
-        this.cheats.delete(id)
+        this.cheats.delete(code)
     }
 
     /**
      * 启用/禁用金手指
      */
-    public setCheatEnabled(id: string, enabled: boolean): void {
-        const cheat = this.cheats.get(id)
+    public setCheatEnabled(code: string, enabled: boolean): void {
+        const cheat = this.cheats.get(code)
         if (!cheat) {
             return
         }
@@ -125,6 +122,24 @@ export class Cheater {
 
         cheat.enabled = enabled
         cheat.applied = false // 重置应用状态
+    }
+
+    /**
+     * 检查金手指是否启用
+     */
+    public isCheatEnabled(code: string): boolean {
+        const cheat = this.getCheat(code)
+
+        return cheat ? cheat.enabled : false
+    }
+
+    /**
+     * 获取单个金手指
+     * @param code 金手指代码
+     * @returns 金手指对象或undefined
+     */
+    public getCheat(code: string): CheatCode | undefined {
+        return this.cheats.get(code)
     }
 
     /**
@@ -142,7 +157,7 @@ export class Cheater {
      * Z: 数值长度（1=1字节, 2=2字节, 4=4字节）
      * VVVV: 目标数值（十六进制）
      */
-    public parseCheatCode(code: string): Omit<CheatCode, 'code' | 'enabled' | 'id' | 'name'> {
+    public parseCheatCode(code: string): CheatCode {
         const parts = code.trim()
             .toUpperCase()
             .split('-')
@@ -197,10 +212,12 @@ export class Cheater {
         }
 
         return {
+            code,
             address,
             length,
             type,
             value,
+            enabled: true,
         }
     }
 
@@ -316,7 +333,6 @@ export class Cheater {
      */
     public loadCheatsFromString(cheatsText: string): void {
         const lines = cheatsText.split('\n')
-        let cheatCount = 0
 
         for (const line of lines) {
             const trimmedLine = line.trim()
@@ -331,21 +347,7 @@ export class Cheater {
                 // 解析行：代码 名称（可选）
                 const parts = trimmedLine.split(/\s+/)
                 const code = parts[0]
-                const name = parts.slice(1).join(' ') || `Cheat ${cheatCount + 1}`
-
-                // 解析金手指代码
-                const parsedCheat = this.parseCheatCode(code)
-                
-                const cheat: CheatCode = {
-                    id: `cheat_${Date.now()}_${cheatCount}`,
-                    name,
-                    code,
-                    enabled: true,
-                    ...parsedCheat,
-                }
-
-                this.addCheat(cheat)
-                cheatCount++
+                this.addCheat(code)
             }
             catch (error) {
                 console.warn(`Failed to parse cheat line: "${trimmedLine}"`, error)
@@ -361,7 +363,7 @@ export class Cheater {
         
         for (const cheat of this.cheats.values()) {
             const status = cheat.enabled ? '' : '# DISABLED: '
-            lines.push(`${status}${cheat.code} ${cheat.name}`)
+            lines.push(`${status}${cheat.code}`)
         }
 
         return lines.join('\n')

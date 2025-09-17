@@ -1,3 +1,5 @@
+import type { Cheater } from './Cheater'
+
 /**
  * 渲染器接口 - 抽象化UI渲染
  * 允许不同平台实现自己的渲染逻辑
@@ -163,9 +165,6 @@ export interface SaveStateData {
     /** 存档版本号 */
     version: number
     
-    /** 存档创建时间 */
-    timestamp: number
-    
     /** ROM信息 */
     romInfo: {
         crc32: number
@@ -293,3 +292,4 @@ export interface VideoParserInterface {
     serializeMovie(movieData: VideoData): string
 }
 
+export type CheaterInstance = Cheater

@@ -103,8 +103,6 @@ export class NES {
     // 录像播放器
     // private videoPlayer: VideoPlayer | null
 
-    now: ()=> number
-
     constructor(config: EmulatorConfig = {}, events: EmulatorEvents = {}) {
         this.config = Object.assign({
             audioBufferSize: 1024,
@@ -121,8 +119,6 @@ export class NES {
         this.cheater = null
 
         // this.videoPlayer = null
-
-        this.now = () => Date.now()
     }
 
     /**
@@ -409,6 +405,17 @@ export class NES {
     }
 
     /**
+     * 开启cheat功能
+     */
+    public async enableCheat() {
+        if (!this.cheater) {
+            const { Cheater } = await import('./Cheater')
+            this.cheater = new Cheater(this)
+            this.config.enableCheat = true
+        }
+    }
+
+    /**
      * 获取控制器存档状态
      */
     private getControllerSaveState(controller: ControllerAdapter): SaveControllerState {
@@ -469,7 +476,6 @@ export class NES {
 
         const saveData: SaveStateData = {
             version: 1,
-            timestamp: this.now(),
             romInfo: {
                 crc32: this.mapper.getCRC(),
                 mapperType: this.mapper.getMapperType(),

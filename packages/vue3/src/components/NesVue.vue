@@ -15,8 +15,12 @@ function handleFileChange(event: Event) {
     })
 }
 
+function cheatCode(code: string) {
+    emulator.addCheat(code)
+}
+
 onMounted(() => {
-    emulator = new NESEmulator(cvs.value)
+    emulator = new NESEmulator(cvs.value, { clip8px: true })
 })
 </script>
 
@@ -32,4 +36,7 @@ onMounted(() => {
     type="file"
     @change="handleFileChange"
   >
+  <button @click="cheatCode('079F-01-01')">
+    无限星星
+  </button>
 </template>
