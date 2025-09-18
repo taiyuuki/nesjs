@@ -3,7 +3,10 @@ import NesVue from './components/NesVue.vue'
 </script>
 
 <template>
-  <NesVue />
+  <NesVue
+    rom="https://taiyuuki.github.io/nes-vue/Super Mario Bros (JU).nes"
+    label="开始游戏"
+  />
 </template>
 
 <style scoped>
