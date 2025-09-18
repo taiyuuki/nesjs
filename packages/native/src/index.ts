@@ -36,11 +36,11 @@ class NESEmulator {
         this.controller = new NESController(this.nes.getGamepad(1), this.nes.getGamepad(2))
 
         if (config?.player1KeyMap) {
-            this.controller.setupController(1, config.player1KeyMap)
+            this.controller.setupKeyboadController(1, config.player1KeyMap)
         }
         
         if (config?.player2KeyMap) {
-            this.controller.setupController(2, config.player2KeyMap)
+            this.controller.setupKeyboadController(2, config.player2KeyMap)
         }
     }
 
@@ -170,8 +170,8 @@ class NESEmulator {
         cheater.clearCheats()
     }
 
-    public setControllerKeyMap(player: Player, keyMap: Record<string, string>) {
-        this.controller.setupController(player, keyMap)
+    public setupKeyboadController(player: Player, keyMap: Record<string, string>) {
+        this.controller.setupKeyboadController(player, keyMap)
     }
 }
 

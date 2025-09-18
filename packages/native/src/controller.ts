@@ -36,7 +36,7 @@ const GAMEPAD_AXES_MAP = {
     },
 }
 
-export const P1_DEFAULT = {
+export const P1_DEFAULT: Record<string, string> = {
     UP: 'KeyW',
     DOWN: 'KeyS',
     LEFT: 'KeyA',
@@ -49,7 +49,7 @@ export const P1_DEFAULT = {
     START: 'Digit1',
 }
 
-export const P2_DEFAULT = {
+export const P2_DEFAULT: Record<string, string> = {
     UP: 'ArrowUp',
     DOWN: 'ArrowDown',
     LEFT: 'ArrowLeft',
@@ -233,14 +233,17 @@ export class NESController {
         2: GamepadInterface
     }
 
+    p1KeyMap = P1_DEFAULT
+    p2KeyMap = P2_DEFAULT
+
     constructor(p1: GamepadInterface, p2: GamepadInterface) {
         this.controllers = { 1: p1, 2: p2 }
         this.setupKeyboadEvents()
         this.setupGampad()
         this.adapter = new ControllerAdapter(this.controllers)
         
-        this.setupController(1, P1_DEFAULT)
-        this.setupController(2, P2_DEFAULT)
+        this.setupKeyboadController(1, this.p1KeyMap)
+        this.setupKeyboadController(2, this.p2KeyMap)
     }
 
     private get gamepads() {
@@ -336,14 +339,25 @@ export class NESController {
         this.animationFrameID = requestAnimationFrame(this.run.bind(this))
     }
 
-    public setupController(player: Player, keyMap: Record<string, string>) {
+    public setupKeyboadController(player: Player, keyMap: Record<string, string>) {
         this.adapter.init()
+        if (player === 1) {
+            this.p1KeyMap = keyMap
+        }
+        else if (player === 2) {
+            this.p2KeyMap = keyMap
+        }
         Object.keys(KEYS_INDEX).forEach(key => {
-            if (key in KEYS_INDEX) {
-                const index = KEYS_INDEX[key]
-                this.adapter.addEvent(keyMap[key], {
-                    player: player,
-                    index,
+            if (key in this.p1KeyMap) {
+                this.adapter.addEvent(this.p1KeyMap[key], {
+                    player: 1,
+                    index: KEYS_INDEX[key],
+                })
+            }
+            if (key in this.p2KeyMap) {
+                this.adapter.addEvent(this.p2KeyMap[key], {
+                    player: 2,
+                    index: KEYS_INDEX[key],
                 })
             }
         })
