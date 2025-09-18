@@ -19,7 +19,7 @@ import type {
     SaveControllerState,
     SaveStateData,
 } from './interfaces'
-import { GamepadButton } from './interfaces'
+import { NESControllerButton } from './interfaces'
 import { ControllerAdapter } from './ControllerAdapter'
 import { BinarySaveState } from './BinarySaveState'
 import type { Cheater } from './Cheater'
@@ -30,7 +30,7 @@ import type { Cheater } from './Cheater'
 export class NESGamepad implements GamepadInterface {
     buttonStates: GamepadButtons = Array(8).fill(0) as GamepadButtons
 
-    public setButton(button: GamepadButton, pressed: GamepadButtonState): void {
+    public setButton(button: NESControllerButton, pressed: GamepadButtonState): void {
         this.buttonStates[button] = pressed
     }
 
@@ -40,14 +40,14 @@ export class NESGamepad implements GamepadInterface {
 
     public getButtonStates() {
         return {
-            A: this.buttonStates[GamepadButton.A],
-            B: this.buttonStates[GamepadButton.B],
-            SELECT: this.buttonStates[GamepadButton.SELECT],
-            START: this.buttonStates[GamepadButton.START],
-            UP: this.buttonStates[GamepadButton.UP],
-            DOWN: this.buttonStates[GamepadButton.DOWN],
-            LEFT: this.buttonStates[GamepadButton.LEFT],
-            RIGHT: this.buttonStates[GamepadButton.RIGHT],
+            A: this.buttonStates[NESControllerButton.A],
+            B: this.buttonStates[NESControllerButton.B],
+            SELECT: this.buttonStates[NESControllerButton.SELECT],
+            START: this.buttonStates[NESControllerButton.START],
+            UP: this.buttonStates[NESControllerButton.UP],
+            DOWN: this.buttonStates[NESControllerButton.DOWN],
+            LEFT: this.buttonStates[NESControllerButton.LEFT],
+            RIGHT: this.buttonStates[NESControllerButton.RIGHT],
         }
     }
 

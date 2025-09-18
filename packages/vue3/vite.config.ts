@@ -43,7 +43,7 @@ export default defineConfig({
             },
             plugins: [
                 rollupDelete({
-                    targets: ['dist/*.{ico,txt,svg,nes,NES,fm2}'],
+                    targets: ['dist/**/*.{ico,txt,svg,nes,NES,fm2}'],
                     hook: 'generateBundle',
                 }),
             ],

@@ -25,7 +25,7 @@ export interface ExpansionSoundChip {
 /**
  * 游戏手柄按键枚举
  */
-export enum GamepadButton {
+export enum NESControllerButton {
     A = 0,
     B = 1,
     SELECT = 2,
@@ -40,7 +40,7 @@ export enum GamepadButton {
  * 按键状态对象
  */
 export type GamepadButtonState = 0 | 1
-export type GamepadButtons = number[] & Record<GamepadButton, GamepadButtonState>
+export type GamepadButtons = number[] & Record<NESControllerButton, GamepadButtonState>
 
 /**
  * 控制器接口
@@ -54,7 +54,7 @@ export interface GamepadInterface {
      * @param button 按键类型
      * @param pressed 按键状态 (0或1)
      */
-    setButton(button: GamepadButton, pressed: GamepadButtonState): void
+    setButton(button: NESControllerButton, pressed: GamepadButtonState): void
     
     /**
      * 批量设置按键状态

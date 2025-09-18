@@ -1,15 +1,15 @@
-import type { EmulatorConfig, GamepadInterface } from '@nesjs/core'
-import { GamepadButton, NES } from '@nesjs/core'
+import type { EmulatorConfig } from '@nesjs/core'
+import { NES } from '@nesjs/core'
 
 import type { CanvasRendererOptions } from './renderer'
 import { CanvasRenderer } from './renderer'
 import { WebNESAudioOutput } from './audio'
-
-type KeyMap = { [key: string]: GamepadButton }
+import type { Player } from './controller'
+import { NESController } from './controller'
 
 type NESEmulatorOptions = CanvasRendererOptions & EmulatorConfig & {
-    player1KeyMap?: KeyMap
-    player2KeyMap?: KeyMap
+    player1KeyMap?: Record<string, string>
+    player2KeyMap?: Record<string, string>
 }
 
 class NESEmulator {
@@ -22,26 +22,7 @@ class NESEmulator {
     status = 0 // 0: stopped, 1: running, 2: paused
     animationFrameId: number | null = null
     romData: Uint8Array | null = null
-    gamepad1: GamepadInterface
-    gamepad2: GamepadInterface
-    player1KeyMap: KeyMap = {
-        KeyK: GamepadButton.A,
-        KeyJ: GamepadButton.B, 
-        Space: GamepadButton.SELECT, 
-        Enter: GamepadButton.START, 
-        KeyW: GamepadButton.UP, 
-        KeyS: GamepadButton.DOWN, 
-        KeyA: GamepadButton.LEFT, 
-        KeyD: GamepadButton.RIGHT, 
-    }
-    player2KeyMap: KeyMap = {
-        Numpad1: GamepadButton.A,
-        Numpad2: GamepadButton.B,
-        ArrowUp: GamepadButton.UP, 
-        ArrowDown: GamepadButton.DOWN, 
-        ArrowLeft: GamepadButton.LEFT, 
-        ArrowRight: GamepadButton.RIGHT, 
-    }
+    controller: NESController
 
     constructor(cvs: HTMLCanvasElement, config?: NESEmulatorOptions) {
         this.nes = new NES(config || {})
@@ -52,18 +33,15 @@ class NESEmulator {
         this.nes.setAudioInterface(this.audioOutput)
         this.nes.setRenderer(this.renderer)
 
-        this.gamepad1 = this.nes.getGamepad(1)
-        this.gamepad2 = this.nes.getGamepad(2)
+        this.controller = new NESController(this.nes.getGamepad(1), this.nes.getGamepad(2))
 
         if (config?.player1KeyMap) {
-            Object.assign(this.player1KeyMap, config.player1KeyMap)
+            this.controller.setupController(1, config.player1KeyMap)
         }
-
+        
         if (config?.player2KeyMap) {
-            Object.assign(this.player2KeyMap, config.player2KeyMap)
+            this.controller.setupController(2, config.player2KeyMap)
         }
-
-        this.setUpKeyboadEvents()
     }
 
     async loadROM(romData: Uint8Array) {
@@ -129,39 +107,6 @@ class NESEmulator {
         this.nes.reset()
     }
 
-    private setUpKeyboadEvents() {
-
-        document.addEventListener('keydown', e => {
-            let callPreventDefault = false
-            if (e.code in this.player1KeyMap) {
-                this.gamepad1.setButton(this.player1KeyMap[e.code], 1)
-                callPreventDefault = true
-            }
-            if (e.code in this.player2KeyMap) {
-                this.gamepad2.setButton(this.player2KeyMap[e.code], 1)
-                callPreventDefault = true
-            }
-            if (callPreventDefault) {
-                e.preventDefault()
-            }
-        })
-
-        document.addEventListener('keyup', e => {
-            let callPreventDefault = false
-            if (e.code in this.player1KeyMap) {
-                this.gamepad1.setButton(this.player1KeyMap[e.code], 0)
-                callPreventDefault = true
-            }
-            if (e.code in this.player2KeyMap) {
-                this.gamepad2.setButton(this.player2KeyMap[e.code], 0)
-                callPreventDefault = true
-            }
-            if (callPreventDefault) {
-                e.preventDefault()
-            }
-        })
-    }
-
     public async enableAudio() {
         try {
             await this.audioOutput.start()
@@ -225,13 +170,8 @@ class NESEmulator {
         cheater.clearCheats()
     }
 
-    public setKeyMap(player: number, keyMap: KeyMap) {
-        if (player === 1) {
-            Object.assign(this.player1KeyMap, keyMap)
-        }
-        else if (player === 2) {
-            Object.assign(this.player2KeyMap, keyMap)
-        }
+    public setControllerKeyMap(player: Player, keyMap: Record<string, string>) {
+        this.controller.setupController(player, keyMap)
     }
 }
 
