@@ -17,7 +17,6 @@ export class BinarySaveState {
         // 写入文件头
         writer.writeUint32(this.MAGIC_HEADER)
         writer.writeUint32(this.VERSION)
-        writer.writeUint64(saveData.timestamp)
         
         // 写入ROM信息
         writer.writeUint32(saveData.romInfo.crc32)
@@ -82,8 +81,6 @@ export class BinarySaveState {
         if (version > this.VERSION) {
             throw new Error(`Unsupported save file version: ${version}`)
         }
-        
-        const timestamp = reader.readUint64()
         
         // 读取ROM信息
         const romCrc32 = reader.readUint32()
@@ -154,7 +151,6 @@ export class BinarySaveState {
         // 构造SaveStateData对象
         const saveData: SaveStateData = {
             version: 1,
-            timestamp,
             romInfo: {
                 crc32: romCrc32,
                 mapperType,
