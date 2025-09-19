@@ -7,7 +7,7 @@ import { WebNESAudioOutput } from './audio'
 import type { Player } from './controller'
 import { NESController } from './controller'
 
-type NESEmulatorOptions = CanvasRendererOptions & EmulatorConfig & {
+export type NESEmulatorOptions = CanvasRendererOptions & EmulatorConfig & {
     player1KeyMap?: Record<string, string>
     player2KeyMap?: Record<string, string>
 }
@@ -27,7 +27,7 @@ class NESEmulator {
     constructor(cvs: HTMLCanvasElement, config?: NESEmulatorOptions) {
         this.nes = new NES(config || {})
         this.renderer = new CanvasRenderer(cvs, config)
-        this.audioOutput = new WebNESAudioOutput()
+        this.audioOutput = new WebNESAudioOutput(config?.audioSampleRate)
         this.frameDuration = 1000 / this.targetFPS
 
         this.nes.setAudioInterface(this.audioOutput)

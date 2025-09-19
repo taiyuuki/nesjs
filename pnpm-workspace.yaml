@@ -1,53 +1,37 @@
 packages:
-  - "packages/*"
-  - "test/*"
+  - packages/*
+  - test/*
 
-# 确保构建顺序：core -> native -> vue3
 catalog:
-  # 构建工具
   typescript: ^5.9.2
   rollup: ^4.50.2
   vite: ^7.1.6
-
-  # 测试工具
   vitest: ^3.2.4
   eslint: ^9.35.0
-
-  # Babel 相关
-  "@babel/core": ^7.28.4
-
-  # Rollup 插件
-  "@rollup/plugin-babel": ^6.0.4
-  "@rollup/plugin-commonjs": ^28.0.6
-  "@rollup/plugin-node-resolve": ^16.0.1
-  "@rollup/plugin-terser": ^0.4.4
-  "rollup-plugin-copy": ^3.5.0
-  "rollup-plugin-delete": ^3.0.1
-  "rollup-plugin-dts": ^6.2.3
-  "rollup-plugin-glob-import": ^0.5.0
-  "rollup-plugin-node-builtins": ^2.1.2
-  "rollup-plugin-node-globals": ^1.4.0
-  "rollup-plugin-typescript2": ^0.36.0
-
-  # Vue 相关
+  '@babel/core': ^7.28.4
+  '@rollup/plugin-babel': ^6.0.4
+  '@rollup/plugin-commonjs': ^28.0.6
+  '@rollup/plugin-node-resolve': ^16.0.1
+  '@rollup/plugin-terser': 0.4.4
+  rollup-plugin-copy: ^3.5.0
+  rollup-plugin-delete: ^3.0.1
+  rollup-plugin-dts: ^6.2.3
+  rollup-plugin-glob-import: ^0.5.0
+  rollup-plugin-node-builtins: ^2.1.2
+  rollup-plugin-node-globals: ^1.4.0
+  rollup-plugin-typescript2: ^0.36.0
   vue: ^3.5.21
-  "vue-tsc": ^3.0.7
-  "@vitejs/plugin-vue": ^6.0.1
-  "vite-plugin-dts": ^4.5.4
-
-  # 类型定义
-  "@types/node": ^22.18.4
-  "@types/pako": ^2.0.4
-  "@types/prompts": ^2.4.9
-
-  # 工具库
-  "@taiyuuki/eslint-config": ^1.5.0
+  vue-tsc: ^3.0.7
+  '@vitejs/plugin-vue': ^6.0.1
+  vite-plugin-dts: ^4.5.4
+  '@types/node': ^22.18.4
+  '@types/pako': ^2.0.4
+  '@types/prompts': ^2.4.9
+  '@taiyuuki/eslint-config': ^1.5.0
   esno: ^4.8.0
-  "fast-glob": ^3.3.3
+  fast-glob: ^3.3.3
   kolorist: ^1.8.0
   prompts: ^2.4.2
   rimraf: ^6.0.1
-
-  # Changesets
-  "@changesets/changelog-github": ^0.5.1
-  "@changesets/cli": ^2.29.7
+  '@changesets/changelog-github': ^0.5.1
+  '@changesets/cli': ^2.29.7

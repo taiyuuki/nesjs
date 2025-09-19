@@ -3,6 +3,7 @@ import ts from 'rollup-plugin-typescript2'
 import commonjs from '@rollup/plugin-commonjs'
 import babelPlugin from '@rollup/plugin-babel'
 import dts from 'rollup-plugin-dts'
+import terser from '@rollup/plugin-terser'
 
 const config = defineConfig([
     {
@@ -25,6 +26,7 @@ const config = defineConfig([
                 extensions: ['.ts'],
             }),
             commonjs(),
+            terser(),
         ],
     },
     {

@@ -114,7 +114,6 @@ class WebNESAudioOutput implements AudioOutputInterface {
 
     outputSample(sample: number) {
         if (!this.isInitialized || !this.isPlaying) return
-        
         const normalizedSample = sample / 0x7FFF
 
         this.audiobuf[this.bufptr] = normalizedSample
@@ -125,7 +124,6 @@ class WebNESAudioOutput implements AudioOutputInterface {
 
     flushFrame() {
         if (this.bufptr > 0) {
-
             if (this.audioWorkletNode?.port) {
                 const samples = this.audiobuf.slice(0, this.bufptr)
                 this.audioWorkletNode.port.postMessage({

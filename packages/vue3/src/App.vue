@@ -1,173 +1,94 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import BaseEmu from './components/BaseEmu.vue'
+import { computed, reactive, ref } from 'vue'
+import { NESComponentExpose } from './types'
+import NesVue from './components/nes-vue.vue'
 
-const nesPlayer = ref()
+const nesRef = ref<NESComponentExpose>()
+const romUrl = 'Super Mario Bros (JU).nes'
 
-function handleFullscreen() {
-    const player = nesPlayer.value?.$el
-    if (player) {
-        if (document.fullscreenElement) {
-            document.exitFullscreen()
-        }
-        else {
-            player.requestFullscreen()
-        }
-    }
+// 模拟器配置
+const emulatorConfig = reactive({
+    scale: 3,
+    smoothing: false,
+    clip8px: true,
+    audioBufferSize: 1024,
+    audioSampleRate: 44100,
+})
+
+const isPlaying = computed(() => nesRef.value?.isPlaying || false)
+
+const togglePlay = async() => {
+    await nesRef.value?.togglePlay()
 }
 
-function handleReset() {
-    nesPlayer.value?.reset()
+const reset = () => {
+    nesRef.value?.reset()
 }
 
-function handleScreenshot() {
-    nesPlayer.value?.screenshot(true)
+const screenshot = () => {
+    nesRef.value?.screenshot(true) // true = 自动下载
+}
+
+const downloadSave = () => {
+    nesRef.value?.downloadSaveState()
 }
 </script>
 
 <template>
-  <div class="app">
-    <main class="app-main">
-      <div class="player-container">
-        <BaseEmu
-          ref="nesPlayer"
-          rom="Super Mario Bros (JU).nes"
-          :scale="3"
-          :volume="70"
-          :clip8px="false"
-          :auto-start="true"
-          :smoothing="false"
-        />
-      </div>
-    </main>
+  <div class="nes-container">
+    <NesVue 
+      ref="nesRef"
+      :rom="romUrl" 
+      :volume="100"
+      :auto-start="true"
+      :emulator-config="emulatorConfig"
+      class="nes-emulator"
+    />
+    <div class="controls">
+      <button @click="togglePlay">
+        {{ isPlaying ? '暂停' : '开始' }}
+      </button>
+      <button @click="reset">
+        重置
+      </button>
+      <button @click="screenshot">
+        截图
+      </button>
+      <button @click="downloadSave">
+        下载存档
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.app {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.app-header {
-  text-align: center;
-  color: white;
-  margin-bottom: 40px;
-}
-
-.app-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.app-header p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin: 0;
-}
-
-.app-main {
-  display: flex;
-  gap: 40px;
-  max-width: 1200px;
-  margin: 0 auto;
-  align-items: flex-start;
-}
-
-.player-container {
-  flex: 1;
+.nes-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
 }
 
-.external-controls {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.control-btn {
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.nes-emulator {
+  border: 2px solid #333;
   border-radius: 8px;
-  color: white;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f0f0f0;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  font-size: 14px;
+  color: #000;
 }
 
-.control-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-.info-panel {
-  flex: 0 0 300px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 20px;
-  color: white;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.info-panel h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  color: #fff;
-  font-size: 1.2rem;
-}
-
-.info-panel ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.info-panel li {
-  margin-bottom: 6px;
-  line-height: 1.4;
-}
-
-@media (max-width: 768px) {
-  .app-main {
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .info-panel {
-    flex: none;
-  }
-
-  .app-header h1 {
-    font-size: 2rem;
-  }
-
-  .app-header p {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .app {
-    padding: 16px;
-  }
-
-  .external-controls {
-    gap: 8px;
-  }
-
-  .control-btn {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
+button:hover {
+  background: #e0e0e0;
 }
 </style>

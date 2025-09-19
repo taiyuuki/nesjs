@@ -23,6 +23,10 @@ const GAMEPAD_BUTTON_MAP: Record<number, NESControllerButton> = {
     3: NESControllerButton.B, // XBox - Y (auto B)
     8: NESControllerButton.SELECT, // XBox - Select
     9: NESControllerButton.START, // XBox - Start
+    12: NESControllerButton.UP, // XBox - Up
+    13: NESControllerButton.DOWN, // XBox - Down
+    14: NESControllerButton.LEFT, // XBox - Left
+    15: NESControllerButton.RIGHT, // XBox - Right
 }
 
 const GAMEPAD_AXES_MAP = {
@@ -288,7 +292,7 @@ export class NESController {
         const hold = this.btnHolding[player]?.[index]
         const nesButton = GAMEPAD_BUTTON_MAP[index]
         
-        if (!nesButton) return
+        if (nesButton == null) return
         
         if (btn.pressed) {
             if (!hold) {

@@ -43,6 +43,7 @@
     "@babel/core": "catalog:",
     "@rollup/plugin-babel": "catalog:",
     "@rollup/plugin-commonjs": "catalog:",
+    "@rollup/plugin-terser": "catalog:",
     "@taiyuuki/eslint-config": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:",
