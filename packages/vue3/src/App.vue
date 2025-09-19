@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import NesVue from './components/NesVue.vue'
+import BaseEmu from './components/BaseEmu.vue'
 
 const nesPlayer = ref()
 
@@ -27,65 +27,17 @@ function handleScreenshot() {
 
 <template>
   <div class="app">
-    <header class="app-header">
-      <h1>🎮 NES Emulator - Video Player Style</h1>
-      <p>现代化的 NES 模拟器，具备视频播放器风格的控制界面</p>
-    </header>
-
     <main class="app-main">
       <div class="player-container">
-        <NesVue
+        <BaseEmu
           ref="nesPlayer"
           rom="Super Mario Bros (JU).nes"
           :scale="3"
           :volume="70"
-          :clip8px="true"
+          :clip8px="false"
+          :auto-start="true"
+          :smoothing="false"
         />
-        
-        <div class="external-controls">
-          <button 
-            class="control-btn" 
-            @click="handleFullscreen"
-          >
-            🖥️ 全屏
-          </button>
-          <button 
-            class="control-btn" 
-            @click="handleReset"
-          >
-            🔄 重置
-          </button>
-          <button 
-            class="control-btn" 
-            @click="handleScreenshot"
-          >
-            📷 截图
-          </button>
-        </div>
-      </div>
-
-      <div class="info-panel">
-        <h3>功能特点</h3>
-        <ul>
-          <li>🎮 完整的 NES 模拟器功能</li>
-          <li>🎨 现代化视频播放器风格界面</li>
-          <li>🔊 音量控制和状态显示</li>
-          <li>💾 存档/读档功能</li>
-          <li>📷 游戏截图功能</li>
-          <li>📱 响应式设计</li>
-          <li>⌨️ 键盘和手柄支持</li>
-        </ul>
-
-        <h3>控制说明</h3>
-        <ul>
-          <li>▶️ 播放/暂停: 开始或暂停游戏</li>
-          <li>⏹️ 停止: 停止游戏运行</li>
-          <li>🔄 重置: 重新启动游戏</li>
-          <li>🔊 音量: 调节游戏音量</li>
-          <li>💾 存档: 下载游戏存档文件</li>
-          <li>📁 读档: 加载之前的存档</li>
-          <li>📷 截图: 保存游戏画面</li>
-        </ul>
       </div>
     </main>
   </div>

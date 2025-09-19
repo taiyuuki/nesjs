@@ -2,12 +2,14 @@ export interface CanvasRendererOptions {
     scale?: number
     clip8px?: boolean
     fillColor?: string | [number, number, number, number]
+    smoothing?: boolean
 }
 
 class CanvasRenderer {
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
     scale: number
+    smoothing: boolean
     clip8px: boolean
     fillColor: Uint8ClampedArray
     NES_Width = 256
@@ -24,6 +26,7 @@ class CanvasRenderer {
         this.ctx = canvas.getContext('2d')!
         this.scale = cfg.scale
         this.clip8px = cfg.clip8px
+        this.smoothing = cfg.smoothing ?? false
         this.fillColor = this.parseFillColor(cfg.fillColor)
 
         this.updateClipBounds()
@@ -177,6 +180,22 @@ class CanvasRenderer {
     setClip8px(clip: boolean) {
         this.clip8px = clip
         this.updateClipBounds()
+    }
+
+    setFillColor(color: string | [number, number, number, number]) {
+        this.fillColor = this.parseFillColor(color)
+    }
+
+    setSmoothing(smoothing: boolean) {
+        this.smoothing = smoothing
+        if (smoothing) {
+            this.ctx.imageSmoothingEnabled = true
+            this.canvas.style.imageRendering = 'auto'
+        }
+        else {
+            this.ctx.imageSmoothingEnabled = false
+            this.canvas.style.imageRendering = 'pixelated'
+        }
     }
 }
 

@@ -132,6 +132,10 @@ class NESEmulator {
         this.renderer.setScale(scale)
     }
 
+    public setSmoothing(smoothing: boolean) {
+        this.renderer.setSmoothing(smoothing)
+    }
+
     public addCheat(code: string) {
         const cheater = this.nes.getCheater()
         if (!cheater) return
