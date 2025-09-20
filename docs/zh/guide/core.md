@@ -1,6 +1,7 @@
 # @nesjs/core - NES 模拟器核心库
 
-[![npm version](https://badge.fury.io/js/%40nesjs%2Fcore.svg)](https://badge.fury.io/js/%40nesjs%2Fcore)
+[![npm version](https://badge.fury.io/js/%40nesjs%2Fcore.svg)](https://badge.fury.io/js/%40nesjs%2Fcore) 
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 NES (Nintendo Entertainment System) 模拟器核心库，提供完整的 NES 硬件仿真功能，与 UI 框架无关。
@@ -306,16 +307,3 @@ class WebAudioOutput implements AudioOutputInterface {
     }
 }
 ```
-
-## 许可证
-
-MIT License - 查看 [LICENSE](LICENSE.md) 文件了解详情。
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 相关项目
-
-- [`@nesjs/native`](https://github.com/taiyuuki/nesjs/tree/main/packages/native) - 基于浏览器 API 的完整 NES 模拟器实现
-- [`@nesjs/vue3`](https://github.com/taiyuuki/nesjs/tree/main/packages/vue3) - Vue 3 组件封装

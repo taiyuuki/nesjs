@@ -1,73 +1,74 @@
-# @nesjs/core - NES 模拟器核心库
+# @nesjs/core - NES Emulator Core Library
 
 [![npm version](https://badge.fury.io/js/%40nesjs%2Fcore.svg)](https://badge.fury.io/js/%40nesjs%2Fcore)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-NES (Nintendo Entertainment System) 模拟器核心库，提供完整的 NES 硬件仿真功能，与 UI 框架无关。
+A complete NES (Nintendo Entertainment System) emulator core library that provides full NES hardware emulation functionality, UI framework agnostic.
 
-## 特性
+## Features
 
-- 🎮 完整的 NES 硬件仿真 (CPU, PPU, APU)
-- 🎯 支持多种 Mapper (映射器)
-- 🎵 音频输出支持
-- 🕹️ 双手柄控制
-- 💾 存档/读档功能
-- 🔧 金手指支持
-- 🎨 可自定义渲染器和音频接口
-- 📝 TypeScript 支持
+- 🎮 Complete NES hardware emulation (CPU, PPU, APU)
+- 🎯 Support for multiple Mappers
+- 🎵 Audio output support
+- 🕹️ Dual controller support
+- 💾 Save/Load state functionality
+- 🔧 Cheat code support
+- 🎨 Customizable renderer and audio interfaces
+- 📝 TypeScript support
 
-## ROM 兼容性
+## ROM Compatibility
 
-支持的 Mapper: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 18, 19, 21, 22, 23, 24, 25, 26, 31, 33, 34, 36, 38, 39, 41, 47, 48, 58, 60, 61, 62, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 78, 79, 85, 86, 88, 87, 89, 92, 93, 94, 97, 107, 112, 113, 115, 118, 119, 129, 140, 152, 154, 169, 180, 182, 184, 185, 195, 200, 201, 203, 206, 212, 213, 225, 226, 228, 229, 231, 240, 241, 242, 244, 245, 246, 248, 249, 255
+Supported Mappers: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 18, 19, 21, 22, 23, 24, 25, 26, 31, 33, 34, 36, 38, 39, 41, 47, 48, 58, 60, 61, 62, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 78, 79, 85, 86, 88, 87, 89, 92, 93, 94, 97, 107, 112, 113, 115, 118, 119, 129, 140, 152, 154, 169, 180, 182, 184, 185, 195, 200, 201, 203, 206, 212, 213, 225, 226, 228, 229, 231, 240, 241, 242, 244, 245, 246, 248, 249, 255.
 
-## 安装
+## Installation
 
 ```bash
 npm install @nesjs/core
 ```
 
-## 快速开始
+## Quick Start
 
-### 基础使用
+### Basic Usage
 
 ```typescript
 import { NES } from '@nesjs/core'
 
-// 创建 NES 实例
+// Create NES instance
 const nes = new NES({
     audioSampleRate: 44100,
     audioBufferSize: 1024,
     enableCheat: true
 })
 
-// 实现渲染器接口
+// Implement renderer interface
 class MyRenderer {
     renderFrame(imageData: Uint8Array) {
-        // 处理 256x240 RGBA 图像数据
-        console.log('渲染帧数据:', imageData.length) // 245760 bytes
+        // Handle 256x240 RGBA image data
+        console.log('Frame data:', imageData.length) // 245760 bytes
     }
 }
 
-// 实现音频接口
+// Implement audio interface
 class MyAudioOutput {
     outputSample(sample: number) {
-        // 处理音频采样数据
+        // Handle audio sample data
     }
     
     flushFrame() {
-        // 刷新音频帧
+        // Flush audio frame
     }
 }
 
-// 设置接口
+// Set interfaces
 nes.setRenderer(new MyRenderer())
 nes.setAudioInterface(new MyAudioOutput())
 
-// 加载 ROM
-const romData = new Uint8Array(/* ROM 文件数据 */)
+// Load ROM
+const romData = new Uint8Array(/* ROM file data */)
 await nes.loadROM(romData)
 
-// 运行模拟器
+// Run emulator
 function gameLoop() {
     nes.runFrame()
     requestAnimationFrame(gameLoop)
@@ -75,103 +76,103 @@ function gameLoop() {
 gameLoop()
 ```
 
-### 控制器操作
+### Controller Input
 
 ```typescript
 import { NESControllerButton } from '@nesjs/core'
 
-// 获取玩家手柄
-const gamepad = nes.getGamepad(1) // 玩家1
-const gamepad2 = nes.getGamepad(2) // 玩家2
+// Get player gamepads
+const gamepad = nes.getGamepad(1) // Player 1
+const gamepad2 = nes.getGamepad(2) // Player 2
 
-// 设置按键
-gamepad.setButton(NESControllerButton.A, 1) // 按下 A 键
-gamepad.setButton(NESControllerButton.A, 0) // 释放 A 键
+// Set button states
+gamepad.setButton(NESControllerButton.A, 1) // Press A button
+gamepad.setButton(NESControllerButton.A, 0) // Release A button
 
-// 批量设置按键
-gamepad.setButtons([1, 0, 0, 0, 0, 0, 0, 0]) // 只按下 A 键
+// Set multiple buttons
+gamepad.setButtons([1, 0, 0, 0, 0, 0, 0, 0]) // Only A button pressed
 
-// 获取按键状态
+// Get button states
 const buttonStates = gamepad.getButtonStates()
-console.log('A 键状态:', buttonStates.A)
+console.log('A button state:', buttonStates.A)
 ```
 
-### 存档系统
+### Save State System
 
 ```typescript
-// 创建存档
+// Create save state
 const saveData = nes.createSaveState()
 
-// 加载存档  
+// Load save state  
 const success = nes.loadSaveState(saveData)
 
-// 二进制存档（文件更小）
+// Binary save state (smaller file size)
 const binaryData = nes.createBinarySaveState()
 const loadSuccess = nes.loadBinarySaveState(binaryData)
 
-// SRAM 存档
+// SRAM save
 const sramData = nes.saveSRAM()
 if (sramData) {
-    // 保存 SRAM 数据到文件
+    // Save SRAM data to file
     localStorage.setItem('sram', JSON.stringify(sramData))
 }
 
-// 加载 SRAM
+// Load SRAM
 const savedSram = localStorage.getItem('sram')
 if (savedSram) {
     nes.loadSRAM(JSON.parse(savedSram))
 }
 ```
 
-### 金手指功能
+### Cheat Code Support
 
 ```typescript
-// 启用金手指
+// Enable cheat functionality
 await nes.enableCheat()
 
 const cheater = nes.getCheater()
 if (cheater) {
-    // 添加金手指代码
+    // Add cheat code
     cheater.addCheat('079F-01-01')
     
-    // 启用/禁用金手指
+    // Enable/disable cheat
     cheater.setCheatEnabled('079F-01-01', true)
     
-    // 获取金手指信息
+    // Get cheat info
     const cheat = cheater.getCheat('079F-01-01')
     
-    // 清除所有金手指
+    // Clear all cheats
     cheater.clearCheats()
 }
 ```
 
-## API 参考
+## API Reference
 
-### NES 类
+### NES Class
 
-#### 构造函数
+#### Constructor
 
 ```typescript
 new NES(config?: EmulatorConfig, events?: EmulatorEvents)
 ```
 
-**配置选项 (EmulatorConfig):**
+**Configuration Options (EmulatorConfig):**
 
-- `audioBufferSize?: number` - 音频缓冲区大小，默认 1024
-- `audioSampleRate?: number` - 音频采样率，默认 44100
-- `autoSaveInterval?: number` - 自动保存间隔（帧数），默认 3600
-- `enableCheat?: boolean` - 启用金手指，默认 true
+- `audioBufferSize?: number` - Audio buffer size, default 1024
+- `audioSampleRate?: number` - Audio sample rate, default 44100
+- `autoSaveInterval?: number` - Auto save interval (frames), default 3600
+- `enableCheat?: boolean` - Enable cheat functionality, default true
 
-**事件回调 (EmulatorEvents):**
+**Event Callbacks (EmulatorEvents):**
 
-- `onFrameComplete?: (frameCount: number) => void` - 帧完成回调
-- `onROMLoaded?: (romInfo: ROMInfo) => void` - ROM 加载完成回调  
-- `onError?: (error: Error) => void` - 错误回调
+- `onFrameComplete?: (frameCount: number) => void` - Frame completion callback
+- `onROMLoaded?: (romInfo: ROMInfo) => void` - ROM loaded callback  
+- `onError?: (error: Error) => void` - Error callback
 
-#### 核心方法
+#### Core Methods
 
 ##### setRenderer(renderer: RendererInterface)
-设置渲染器接口。
+Set the renderer interface.
 
 ```typescript
 interface RendererInterface {
@@ -180,7 +181,7 @@ interface RendererInterface {
 ```
 
 ##### setAudioInterface(audioInterface: AudioOutputInterface)  
-设置音频接口。
+Set the audio interface.
 
 ```typescript
 interface AudioOutputInterface {
@@ -190,19 +191,19 @@ interface AudioOutputInterface {
 ```
 
 ##### loadROM(romData: Uint8Array): Promise\<void>
-加载 ROM 文件。
+Load ROM file.
 
 ##### runFrame(): void
-运行一帧模拟。
+Run one emulation frame.
 
 ##### reset(): void  
-重置模拟器。
+Reset the emulator.
 
 ##### getGamepad(player: 1 | 2): GamepadInterface
-获取指定玩家的手柄接口。
+Get the gamepad interface for specified player.
 
 ##### getDebugInfo(): DebugInfo
-获取调试信息。
+Get debug information.
 
 ```typescript
 interface DebugInfo {
@@ -220,21 +221,21 @@ interface DebugInfo {
 }
 ```
 
-### GamepadInterface 接口
+### GamepadInterface
 
 #### setButton(button: NESControllerButton, pressed: GamepadButtonState)
-设置单个按键状态。
+Set individual button state.
 
 #### setButtons(buttons: GamepadButtonState[])
-批量设置按键状态。
+Set multiple button states.
 
 #### getButtonStates()
-获取当前所有按键状态。
+Get current state of all buttons.
 
 #### reset()
-重置所有按键。
+Reset all buttons.
 
-### 按键常量
+### Button Constants
 
 ```typescript
 enum NESControllerButton {
@@ -249,9 +250,9 @@ enum NESControllerButton {
 }
 ```
 
-## 接口实现指南
+## Implementation Guide
 
-### 实现渲染器
+### Implementing a Renderer
 
 ```typescript
 class CanvasRenderer implements RendererInterface {
@@ -262,7 +263,7 @@ class CanvasRenderer implements RendererInterface {
         this.canvas = canvas
         this.ctx = canvas.getContext('2d')!
         
-        // NES 分辨率
+        // NES resolution
         canvas.width = 256
         canvas.height = 240
     }
@@ -275,10 +276,12 @@ class CanvasRenderer implements RendererInterface {
 }
 ```
 
-### 实现音频输出
+### Implementing Audio Output
 
 ```typescript
 class WebAudioOutput implements AudioOutputInterface {
+    private audioContext: AudioContext
+    private buffer: number[] = []
     
     constructor() {
         this.audioCtx = new AudioContext();
@@ -287,13 +290,13 @@ class WebAudioOutput implements AudioOutputInterface {
     }
     
     outputSample(sample: number): void {
-        // 将样本添加到缓冲区
-        this.samples.push(sample / 0x7FFF) // 归一化到 [-1, 1]
+        // Add sample to buffer
+        this.samples.push(sample / 0x7FFF) // Normalize to [-1, 1]
     }
     
     flushFrame(): void {
-        // 将缓冲区数据发送到音频上下文
-        // 具体实现取决于您的音频架构
+        // Send buffer data to audio context
+        // Implementation depends on your audio architecture
         if (this.samples.length > 0) {
             const buffer = this.audioCtx.createBuffer(1, this.samples.length, this.sampleRate);
             buffer.getChannelData(0).set(this.samples);
@@ -306,16 +309,3 @@ class WebAudioOutput implements AudioOutputInterface {
     }
 }
 ```
-
-## 许可证
-
-MIT License - 查看 [LICENSE](LICENSE.md) 文件了解详情。
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 相关项目
-
-- [`@nesjs/native`](https://github.com/taiyuuki/nesjs/tree/main/packages/native) - 基于浏览器 API 的完整 NES 模拟器实现
-- [`@nesjs/vue3`](https://github.com/taiyuuki/nesjs/tree/main/packages/vue3) - Vue 3 组件封装

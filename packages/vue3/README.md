@@ -1,5 +1,7 @@
 # @nesjs/vue3 - Vue 3 NES Emulator Component
 
+English | [中文](./README.zh-CN.md)
+
 [![npm version](https://badge.fury.io/js/%40nesjs%2Fvue3.svg)](https://badge.fury.io/js/%40nesjs%2Fvue3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -562,5 +564,5 @@ MIT License - see [LICENSE](LICENSE.md) file for details.
 
 ## Related Projects
 
-- [`@nesjs/core`](../core) - NES emulator core library
-- [`@nesjs/native`](../native) - Browser native implementation
+- [`@nesjs/core`](https://github.com/taiyuuki/nesjs/tree/main/packages/core) - NES emulator core library
+- [`@nesjs/native`](https://github.com/taiyuuki/nesjs/tree/main/packages/native) - Browser native implementation

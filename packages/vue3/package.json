@@ -6,10 +6,10 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/taiyuuki/vue3"
+    "url": "https://github.com/taiyuuki/nesjs"
   },
-  "bugs": "https://github.com/taiyuuki/vue3/issues",
-  "homepage": "https://github.com/taiyuuki/vue3#readme",
+  "bugs": "https://github.com/taiyuuki/nesjs/issues",
+  "homepage": "https://github.com/taiyuuki/nesjs#readme",
   "type": "module",
   "license": "LICENSE.md",
   "files": [

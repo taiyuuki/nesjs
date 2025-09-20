@@ -1,8 +1,7 @@
 # @nesjs/native - Browser Native NES Emulator
 
-English | [中文](./README.zh-CN.md)
-
 [![npm version](https://badge.fury.io/js/%40nesjs%2Fnative.svg)](https://badge.fury.io/js/%40nesjs%2Fnative)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A browser-native implementation built on `@nesjs/core`, providing ready-to-use Canvas rendering, Web Audio API audio output, and keyboard/gamepad controller support.
@@ -390,17 +389,3 @@ setInterval(() => {
     frameCount = debug.frameCount
 }, 1000)
 ```
-
-## License
-
-MIT License - see [LICENSE](LICENSE.md) file for details.
-
-## Contributing
-
-Issues and Pull Requests are welcome!
-
-## Related Projects
-
-- [`@nesjs/core`](https://github.com/taiyuuki/nesjs/tree/main/packages/core) - NES emulator core library
-- [`@nesjs/vue3`](https://github.com/taiyuuki/nesjs/tree/main/packages/vue3) - Vue 3 component wrapper
-

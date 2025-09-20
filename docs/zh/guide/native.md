@@ -1,9 +1,10 @@
 # @nesjs/native - 浏览器原生 NES 模拟器
 
-[![npm version](https://badge.fury.io/js/%40nesjs%2Fnative.svg)](https://badge.fury.io/js/%40nesjs%2Fnative)
+[![npm version](https://badge.fury.io/js/%40nesjs%2Fnative.svg)](https://badge.fury.io/js/%40nesjs%2Fnative) 
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-基于 `@nesjs/core` 的浏览器原生实现，提供开箱即用的 Canvas 渲染、Web Audio API 音频输出和键盘/手柄控制支持。
+基于 [@nesjs/core](./core) 的浏览器原生实现，提供开箱即用的 Canvas 渲染、Web Audio API 音频输出和键盘/手柄控制支持。
 
 ## 特性
 
@@ -389,16 +390,3 @@ setInterval(() => {
     frameCount = debug.frameCount
 }, 1000)
 ```
-
-## 许可证
-
-MIT License - 查看 [LICENSE](LICENSE.md) 文件了解详情。
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 相关项目
-
-- [`@nesjs/core`](https://github.com/taiyuuki/nesjs/tree/main/packages/core) - NES 模拟器核心库
-- [`@nesjs/vue3`](https://github.com/taiyuuki/nesjs/tree/main/packages/vue3) - Vue 3 组件封装

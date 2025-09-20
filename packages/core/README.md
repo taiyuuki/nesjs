@@ -1,5 +1,7 @@
 # @nesjs/core - NES Emulator Core Library
 
+English | [中文](./README.zh-CN.md)
+
 [![npm version](https://badge.fury.io/js/%40nesjs%2Fcore.svg)](https://badge.fury.io/js/%40nesjs%2Fcore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -189,7 +191,7 @@ interface AudioOutputInterface {
 }
 ```
 
-##### loadROM(romData: Uint8Array): Promise<void>
+##### loadROM(romData: Uint8Array): Promise\<void>
 Load ROM file.
 
 ##### runFrame(): void
@@ -283,18 +285,28 @@ class WebAudioOutput implements AudioOutputInterface {
     private buffer: number[] = []
     
     constructor() {
-        this.audioContext = new AudioContext()
+        this.audioCtx = new AudioContext();
+        this.sampleRate = this.audioCtx.sampleRate;
+        this.samples = [];
     }
     
     outputSample(sample: number): void {
         // Add sample to buffer
-        this.buffer.push(sample / 0x7FFF) // Normalize to [-1, 1]
+        this.samples.push(sample / 0x7FFF) // Normalize to [-1, 1]
     }
     
     flushFrame(): void {
         // Send buffer data to audio context
         // Implementation depends on your audio architecture
-        this.buffer.length = 0
+        if (this.samples.length > 0) {
+            const buffer = this.audioCtx.createBuffer(1, this.samples.length, this.sampleRate);
+            buffer.getChannelData(0).set(this.samples);
+            const source = this.audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(this.audioCtx.destination);
+            source.start();
+            this.samples.length = 0;
+        }
     }
 }
 ```
@@ -309,6 +321,6 @@ Issues and Pull Requests are welcome!
 
 ## Related Projects
 
-- [`@nesjs/native`](../native) - Browser API-based NES emulator implementation
-- [`@nesjs/vue3`](../vue3) - Vue 3 component wrapper
+- [`@nesjs/native`](https://github.com/taiyuuki/nesjs/tree/main/packages/native) - Browser API-based NES emulator implementation
+- [`@nesjs/vue3`](https://github.com/taiyuuki/nesjs/tree/main/packages/vue3) - Vue 3 component wrapper
 

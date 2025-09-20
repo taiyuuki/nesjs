@@ -1,9 +1,10 @@
 # @nesjs/vue3 - Vue 3 NES 模拟器组件
 
-[![npm version](https://badge.fury.io/js/%40nesjs%2Fvue3.svg)](https://badge.fury.io/js/%40nesjs%2Fvue3)
+[![npm version](https://badge.fury.io/js/%40nesjs%2Fvue3.svg)](https://badge.fury.io/js/%40nesjs%2Fvue3) 
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-基于 `@nesjs/native` 的 Vue 3 组件封装，提供开箱即用的 NES 模拟器 Vue 组件。
+基于 [@nesjs/native](./native) 的 Vue 3 组件封装，提供开箱即用的 NES 模拟器 Vue 组件。
 
 ## 特性
 
@@ -555,12 +556,3 @@ export default {
 - Firefox 60+ ✅  
 - Safari 11.1+ ✅
 - Edge 79+ ✅
-
-## 许可证
-
-MIT License - 查看 [LICENSE](LICENSE.md) 文件了解详情。
-
-## 相关项目
-
-- [`@nesjs/core`](https://github.com/taiyuuki/nesjs/tree/main/packages/core) - NES 模拟器核心库
-- [`@nesjs/native`](https://github.com/taiyuuki/nesjs/tree/main/packages/native) - 浏览器原生实现

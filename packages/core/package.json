@@ -8,10 +8,10 @@
   "types": "./dist/types/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/taiyuuki/nes-core"
+    "url": "https://github.com/taiyuuki/nesjs"
   },
-  "bugs": "https://github.com/taiyuuki/nes-core/issues",
-  "homepage": "https://github.com/taiyuuki/nes-core#readme",
+  "bugs": "https://github.com/taiyuuki/nesjs/issues",
+  "homepage": "https://github.com/taiyuuki/nesjs#readme",
   "scripts": {
     "lint": "eslint --fix",
     "dev": "rollup -c -w",

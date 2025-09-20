@@ -1,30 +1,31 @@
-# @nesjs/vue3 - Vue 3 NES 模拟器组件
+# @nesjs/vue3 - Vue 3 NES Emulator Component
 
 [![npm version](https://badge.fury.io/js/%40nesjs%2Fvue3.svg)](https://badge.fury.io/js/%40nesjs%2Fvue3)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-基于 `@nesjs/native` 的 Vue 3 组件封装，提供开箱即用的 NES 模拟器 Vue 组件。
+A Vue 3 component wrapper for [@nesjs/native](./native), providing a ready-to-use NES emulator Vue component.
 
-## 特性
+## Features
 
-- 🎮 基于 `@nesjs/native` 的完整 NES 模拟功能
-- ⚡ Vue 3 Composition API 支持
-- 📦 开箱即用，一个组件搞定
-- 🎯 TypeScript 完整支持
-- 🎨 响应式配置和状态管理
-- 🔧 丰富的 API 和事件回调
-- 📱 移动端适配支持
-- 🎵 自动音频激活处理
+- 🎮 Complete NES emulation functionality based on `@nesjs/native`
+- ⚡ Vue 3 Composition API support
+- 📦 Out of the box, single component solution
+- 🎯 Full TypeScript support
+- 🎨 Reactive configuration and state management
+- 🔧 Rich API and event callbacks
+- 📱 Mobile device adaptation support
+- 🎵 Automatic audio activation handling
 
-## 安装
+## Installation
 
 ```bash
 npm install @nesjs/vue3
 ```
 
-## 快速开始
+## Quick Start
 
-### 基础使用示例
+### Basic Usage
 
 ```vue
 <script setup lang="ts">
@@ -35,7 +36,7 @@ import type { NESComponentExpose } from '@nesjs/vue3'
 const nesRef = ref<NESComponentExpose>()
 const romUrl = '/path/to/your/game.nes'
 
-// 模拟器配置
+// Emulator configuration
 const emulatorConfig = {
   scale: 2,
   smoothing: false,
@@ -46,20 +47,20 @@ const emulatorConfig = {
 
 const isPlaying = computed(() => nesRef.value?.isPlaying || false)
 
-const togglePlay = async() => {
-    await nesRef.value?.togglePlay()
+const togglePlay = async () => {
+  await nesRef.value?.togglePlay()
 }
 
 const reset = () => {
-    nesRef.value?.reset()
+  nesRef.value?.reset()
 }
 
 const screenshot = () => {
-    nesRef.value?.screenshot(true) // true = 自动下载
+  nesRef.value?.screenshot(true) // true = auto download
 }
 
 const downloadSave = () => {
-    nesRef.value?.downloadSaveState()
+  nesRef.value?.downloadSaveState()
 }
 </script>
 
@@ -74,10 +75,10 @@ const downloadSave = () => {
       class="nes-emulator"
     />
     <div class="controls">
-      <button @click="togglePlay">{{ isPlaying ? '暂停' : '开始' }}</button>
-      <button @click="reset">重置</button>
-      <button @click="screenshot">截图</button>
-      <button @click="downloadSave">下载存档</button>
+      <button @click="togglePlay">{{ isPlaying ? 'Pause' : 'Start' }}</button>
+      <button @click="reset">Reset</button>
+      <button @click="screenshot">Screenshot</button>
+      <button @click="downloadSave">Download Save</button>
     </div>
   </div>
 </template>
@@ -115,7 +116,7 @@ button:hover {
 </style>
 ```
 
-### 全局注册
+### Global Registration
 
 ```typescript
 // main.ts
@@ -125,132 +126,132 @@ import App from './App.vue'
 
 const app = createApp(App)
 
-// 全局注册组件
+// Register component globally
 app.use(NesVuePlugin)
 
 app.mount('#app')
 ```
 
 ```vue
-<!-- 在任意组件中直接使用 -->
+<!-- Use directly in any component -->
 <template>
   <NesVue :rom="romData" :scale="3" />
 </template>
 ```
 
-## API 参考
+## API Reference
 
-### Props (配置选项)
+### Props (Configuration Options)
 
-| 属性 | 类型 | 默认值 | 描述 |
-|------|------|--------|------|
-| `rom` | `string | Uint8Array | ArrayBuffer | Blob` | - | ROM 数据源（必需）|
-| `autoStart` | `boolean` | `false` | 是否自动开始游戏 |
-| `volume` | `number` | `50` | 音量大小 (0-100) |
-| `debugMode` | `boolean` | `false` | 是否开启调试模式 |
-| `mashingSpeed` | `number` | `16` | 连发速度 |
-| `emulatorConfig` | `EmulatorConfigOptions` | 见下方 | 模拟器配置对象 |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `rom` | `string | Uint8Array | ArrayBuffer | Blob` | - | ROM data source (required) |
+| `autoStart` | `boolean` | `false` | Auto start the game |
+| `volume` | `number` | `50` | Volume level (0-100) |
+| `debugMode` | `boolean` | `false` | Enable debug mode |
+| `mashingSpeed` | `number` | `16` | Mashing speed for rapid button presses |
+| `emulatorConfig` | `EmulatorConfigOptions` | See below | Emulator configuration object |
 
-### 模拟器配置选项 (EmulatorConfig)
+### EmulatorConfig Options
 
-`emulatorConfig` 属性接受一个包含以下属性的对象：
+The `emulatorConfig` prop accepts an object with the following properties:
 
-| 属性 | 类型 | 默认值 | 描述 |
-|------|------|--------|------|
-| `scale` | `number` | `2` | 画面缩放倍数 |
-| `smoothing` | `boolean` | `false` | 是否启用图像平滑 |
-| `clip8px` | `boolean` | `true` | 是否裁剪边框8像素 |
-| `fillColor` | `string | [number, number, number, number]` | - | 裁剪区域的填充颜色 |
-| `audioBufferSize` | `number` | `1024` | 音频缓冲区大小 |
-| `audioSampleRate` | `number` | `44100` | 音频采样率 |
-| `autoSaveInterval` | `number` | - | SRAM存档自动保存间隔（帧数） |
-| `enableCheat` | `boolean` | - | 是否启用金手指 |
-| `player1KeyMap` | `Record<string, string>` | - | 玩家1键位映射 |
-| `player2KeyMap` | `Record<string, string>` | - | 玩家2键位映射 |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `scale` | `number` | `2` | Screen scaling multiplier |
+| `smoothing` | `boolean` | `false` | Enable image smoothing |
+| `clip8px` | `boolean` | `true` | Clip 8px border |
+| `fillColor` | `string | [number, number, number, number]` | - | Fill color |
+| `audioBufferSize` | `number` | `1024` | Audio buffer size |
+| `audioSampleRate` | `number` | `44100` | Audio sample rate |
+| `autoSaveInterval` | `number` | - | Auto save (SRAM) interval in frames |
+| `enableCheat` | `boolean` | - | Enable cheat codes |
+| `player1KeyMap` | `Record<string, string>` | - | Player 1 key mapping |
+| `player2KeyMap` | `Record<string, string>` | - | Player 2 key mapping |
 
-#### 注意事项：autoStart 与音频播放
+#### Important Note: autoStart & Audio Playback
 
-如果你在配置中启用了 `autoStart`，请注意：
+If you enable `autoStart` in your configuration, please note:
 
-**在用户与页面进行交互（如点击、按键、触摸）之前，浏览器不会允许音频播放，因此在此之前不会有声音输出。**
+**Audio will not play until the user interacts with the page (such as clicking, pressing a key, or touching). Before any user gesture, browsers will block audio playback, so there will be no sound output.**
 
-这是浏览器的安全策略，旨在防止自动播放音频。模拟器画面和游戏逻辑会正常运行，但声音会在用户首次交互后才激活。
+This is a browser security policy to prevent auto-playing audio. The emulator graphics and game logic will run normally, but sound will only be activated after the user's first interaction.
 
-建议在界面上适当提示用户需要操作页面以启用声音。
+It is recommended to show a prompt in your UI to let users know they need to interact with the page to enable sound.
 
-### 方法 (通过 ref 调用)
+### Methods (Via ref)
 
-#### 游戏控制
+#### Game Control
 
 ```typescript
-// 开始游戏
+// Start game
 await nesRef.value?.start()
 
-// 暂停游戏  
+// Pause game  
 nesRef.value?.pause()
 
-// 继续游戏
+// Resume game
 nesRef.value?.play()
 
-// 切换播放状态
+// Toggle play state
 await nesRef.value?.togglePlay()
 
-// 重置游戏
+// Reset game
 nesRef.value?.reset()
 
-// 停止游戏
+// Stop game
 nesRef.value?.stop()
 ```
 
-#### 存档系统
+#### Save System
 
 ```typescript
-// 创建存档数据
+// Create save data
 const saveData = nesRef.value?.save()
 
-// 加载存档数据
+// Load save data
 const success = nesRef.value?.load(saveData)
 
-// 下载存档文件
+// Download save file
 nesRef.value?.downloadSaveState()
 
-// 上传存档文件
+// Upload save file
 await nesRef.value?.uploadSaveState()
 ```
 
-#### 截图功能
+#### Screenshot
 
 ```typescript
-// 获取截图数据URL
+// Get screenshot data URL
 const dataUrl = nesRef.value?.screenshot()
 
-// 自动下载截图
+// Auto download screenshot
 nesRef.value?.screenshot(true)
 ```
 
-#### 信息获取
+#### Information
 
 ```typescript
-// 获取ROM信息
+// Get ROM info
 const romInfo = nesRef.value?.getROMInfo()
-console.log(romInfo?.mapperNumber) // Mapper编号
+console.log(romInfo?.mapperNumber) // Mapper number
 
-// 获取调试信息
+// Get debug info
 const debug = nesRef.value?.getDebugInfo()
-console.log(debug?.frameCount) // 帧数
+console.log(debug?.frameCount) // Frame count
 
-// 获取游戏状态
-const isPlaying = nesRef.value?.isPlaying // 是否在游戏中
-const isLoading = nesRef.value?.isLoading // 是否在加载中
+// Get game state
+const isPlaying = nesRef.value?.isPlaying // Is playing
+const isLoading = nesRef.value?.isLoading // Is loading
 ```
 
-## 高级用法
+## Advanced Usage
 
-### 自定义键位映射
+### Custom Key Mapping
 
 ```vue
 <script setup>
-// 自定义玩家1键位
+// Custom player 1 keys
 const customKeyMap = {
   UP: 'ArrowUp',
   DOWN: 'ArrowDown', 
@@ -271,7 +272,7 @@ const customKeyMap = {
 </template>
 ```
 
-### 响应式配置
+### Reactive Configuration
 
 ```vue
 <script setup>
@@ -285,29 +286,29 @@ const emulatorConfig = reactive({
   audioBufferSize: 1024,
   audioSampleRate: 44100
 })
-const romUrl = '/games/your-rom.nes'
+const romUrl = '/games/mario.nes'
 </script>
 
 <template>
   <div>
-    <!-- 配置面板 -->
+    <!-- Config panel -->
     <div class="config-panel">
       <label>
-        音量: {{ volume }}
+        Volume: {{ volume }}
         <input v-model.number="volume" type="range" min="0" max="100">
       </label>
       
       <label>
-        缩放: {{ emulatorConfig.scale }}x
+        Scale: {{ emulatorConfig.scale }}x
         <input v-model.number="emulatorConfig.scale" type="range" min="1" max="5">
       </label>
       
       <label>
-        <input v-model="emulatorConfig.smoothing" type="checkbox"> 图像平滑
+        <input v-model="emulatorConfig.smoothing" type="checkbox"> Image Smoothing
       </label>
     </div>
     
-    <!-- 模拟器组件 -->
+    <!-- Emulator component -->
     <NesVue 
       :rom="romUrl"
       :volume="volume"
@@ -317,30 +318,16 @@ const romUrl = '/games/your-rom.nes'
 </template>
 ```
 
-### 多种 ROM 数据源支持
+### Multiple ROM Source Support
 
 ```vue
-<template>
-  <div>
-    <!-- 文件上传 -->
-    <input type="file" @change="handleFileUpload" accept=".nes">
-    
-    <!-- 从URL加载 -->
-    <input v-model="romUrl" placeholder="输入ROM URL">
-    <button @click="loadFromUrl">从URL加载</button>
-    
-    <!-- 模拟器 -->
-    <NesVue v-if="romData" :rom="romData" />
-  </div>
-</template>
-
 <script setup>
 import { ref } from 'vue'
 
 const romData = ref(null)
 const romUrl = ref('')
 
-// 文件上传
+// File upload
 const handleFileUpload = async (event) => {
   const file = event.target.files[0]
   if (file) {
@@ -348,24 +335,38 @@ const handleFileUpload = async (event) => {
   }
 }
 
-// URL加载
+// URL loading
 const loadFromUrl = () => {
   if (romUrl.value) {
     romData.value = romUrl.value
   }
 }
 </script>
+
+<template>
+  <div>
+    <!-- File upload -->
+    <input type="file" @change="handleFileUpload" accept=".nes">
+    
+    <!-- Load from URL -->
+    <input v-model="romUrl" placeholder="Enter ROM URL">
+    <button @click="loadFromUrl">Load from URL</button>
+    
+    <!-- Emulator -->
+    <NesVue v-if="romData" :rom="romData" />
+  </div>
+</template>
 ```
 
-### 游戏状态管理示例
+### Game State Management
 
 ```vue
 <template>
   <div>
     <div class="status-bar">
-      <span v-if="isLoading">加载中...</span>
-      <span v-else-if="isPlaying">游戏运行中</span>
-      <span v-else>游戏已暂停</span>
+      <span v-if="isLoading">Loading...</span>
+      <span v-else-if="isPlaying">Game Running</span>
+      <span v-else>Game Paused</span>
       
       <span v-if="romInfo">
         | Mapper: {{ romInfo.mapperNumber }}
@@ -377,12 +378,16 @@ const loadFromUrl = () => {
     <NesVue ref="nesRef" :rom="romUrl" />
     
     <div class="debug-panel" v-if="debugMode">
-      <h3>调试信息</h3>
+      <h3>Debug Info</h3>
       <pre>{{ JSON.stringify(debugInfo, null, 2) }}</pre>
     </div>
   </div>
 </template>
+```
 
+### Mobile Adaptation
+
+```vue
 <script setup>
 import { ref, computed } from 'vue'
 
@@ -394,11 +399,35 @@ const isPlaying = computed(() => nesRef.value?.isPlaying)
 const romInfo = computed(() => nesRef.value?.getROMInfo())
 const debugInfo = computed(() => nesRef.value?.getDebugInfo())
 </script>
-```
 
-### 移动端适配示例
+<template>
+  <div class="mobile-container">
+    <NesVue 
+      ref="nesRef"
+      :rom="romUrl"
+      :scale="isMobile ? 1 : 2"
+      class="mobile-emulator"
+    />
+    
+    <!-- Virtual controls -->
+    <div v-if="isMobile" class="virtual-controls">
+      <div class="dpad">
+        <button @touchstart="pressButton('UP')" @touchend="releaseButton('UP')">↑</button>
+        <div class="dpad-middle">
+          <button @touchstart="pressButton('LEFT')" @touchend="releaseButton('LEFT')">←</button>
+          <button @touchstart="pressButton('RIGHT')" @touchend="releaseButton('RIGHT')">→</button>
+        </div>
+        <button @touchstart="pressButton('DOWN')" @touchend="releaseButton('DOWN')">↓</button>
+      </div>
+      
+      <div class="action-buttons">
+        <button @touchstart="pressButton('B')" @touchend="releaseButton('B')">B</button>
+        <button @touchstart="pressButton('A')" @touchend="releaseButton('A')">A</button>
+      </div>
+    </div>
+  </div>
+</template>
 
-```vue
 <script setup>
 import { ref, computed } from 'vue'
 import { NESControllerButton } from '@nesjs/core'
@@ -419,34 +448,6 @@ const releaseButton = (button) => {
   gamepad?.setButton(NESControllerButton[button], 0)
 }
 </script>
-
-<template>
-  <div class="mobile-container">
-    <NesVue 
-      ref="nesRef"
-      :rom="romUrl"
-      :scale="isMobile ? 1 : 2"
-      class="mobile-emulator"
-    />
-    
-    <!-- 虚拟按键 -->
-    <div v-if="isMobile" class="virtual-controls">
-      <div class="dpad">
-        <button @touchstart="pressButton('UP')" @touchend="releaseButton('UP')">↑</button>
-        <div class="dpad-middle">
-          <button @touchstart="pressButton('LEFT')" @touchend="releaseButton('LEFT')">←</button>
-          <button @touchstart="pressButton('RIGHT')" @touchend="releaseButton('RIGHT')">→</button>
-        </div>
-        <button @touchstart="pressButton('DOWN')" @touchend="releaseButton('DOWN')">↓</button>
-      </div>
-      
-      <div class="action-buttons">
-        <button @touchstart="pressButton('B')" @touchend="releaseButton('B')">B</button>
-        <button @touchstart="pressButton('A')" @touchend="releaseButton('A')">A</button>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .mobile-container {
@@ -494,20 +495,13 @@ const releaseButton = (button) => {
 </style>
 ```
 
-## 常见问题
+## Troubleshooting
 
-### 音频无法播放
+### Audio Not Playing
 
-由于浏览器安全策略，音频需要用户交互后才能激活。组件已自动处理这个问题，但如果仍有问题，可以手动处理：
+Due to browser security policies, audio requires user interaction to activate. The component handles this automatically, but if issues persist, you can manually handle it:
 
 ```vue
-<template>
-  <div>
-    <button v-if="!audioEnabled" @click="enableAudio">启用音频</button>
-    <NesVue ref="nesRef" :rom="romUrl" />
-  </div>
-</template>
-
 <script setup>
 const audioEnabled = ref(false)
 
@@ -516,17 +510,24 @@ const enableAudio = async () => {
   audioEnabled.value = true
 }
 </script>
+
+<template>
+  <div>
+    <button v-if="!audioEnabled" @click="enableAudio">Enable Audio</button>
+    <NesVue ref="nesRef" :rom="romUrl" />
+  </div>
+</template>
 ```
 
-### ROM 文件加载失败
+### ROM File Loading Failed
 
-确保 ROM 文件路径正确，且服务器支持相应的 MIME 类型：
+Ensure ROM file path is correct and server supports appropriate MIME types:
 
 ```javascript
-// vite.config.js 或 webpack 配置
+// vite.config.js or webpack config
 export default {
   server: {
-    // 添加 .nes 文件的 MIME 类型支持
+    // Add MIME type support for .nes files
     mimeTypes: {
       'application/octet-stream': ['nes']
     }
@@ -534,9 +535,9 @@ export default {
 }
 ```
 
-### 性能优化
+### Performance Optimization
 
-对于低端设备，可以调整配置以提升性能：
+For low-end devices, adjust configuration to improve performance:
 
 ```vue
 <NesVue 
@@ -549,18 +550,9 @@ export default {
 />
 ```
 
-## 浏览器支持
+## Browser Support
 
 - Chrome 66+ ✅
 - Firefox 60+ ✅  
 - Safari 11.1+ ✅
 - Edge 79+ ✅
-
-## 许可证
-
-MIT License - 查看 [LICENSE](LICENSE.md) 文件了解详情。
-
-## 相关项目
-
-- [`@nesjs/core`](https://github.com/taiyuuki/nesjs/tree/main/packages/core) - NES 模拟器核心库
-- [`@nesjs/native`](https://github.com/taiyuuki/nesjs/tree/main/packages/native) - 浏览器原生实现
