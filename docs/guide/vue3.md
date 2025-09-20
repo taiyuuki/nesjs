@@ -201,13 +201,25 @@ nesRef.value?.reset()
 
 // Stop game
 nesRef.value?.stop()
+
+// Add cheat
+nesRef.value?.addCheat('07FA-01-01')
+
+// Remove cheat
+nesRef.value?.removeCheat('07FA-01-01')
+
+// Toggle cheat state
+nesRef.value?.toggleCheat('07FA-01-01')
+
+// Remove all cheats
+nesRef.value?.clearAllCheats()
 ```
 
 #### Save System
 
 ```typescript
 // Create save data
-const saveData = nesRef.value?.save()
+const saveData = nesRef.value?.save() // Uint8Array
 
 // Load save data
 const success = nesRef.value?.load(saveData)

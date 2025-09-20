@@ -301,16 +301,11 @@ emulator.clearAllCheats()         // 清除全部
 ### 状态管理
 
 ```typescript
-// 访问底层 NES 实例
-const nes = emulator.nes
-
 // 创建存档
-const saveState = nes.createSaveState()
-localStorage.setItem('game_save', JSON.stringify(saveState))
+const saveState = emulator.saveState()
 
 // 加载存档
-const savedState = JSON.parse(localStorage.getItem('game_save'))
-nes.loadSaveState(savedState)
+const savedState = emulator.loadState(savedState)
 
 // 获取调试信息
 const debug = nes.getDebugInfo()

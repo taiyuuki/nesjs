@@ -177,6 +177,14 @@ class NESEmulator {
     public setupKeyboadController(player: Player, keyMap: Record<string, string>) {
         this.controller.setupKeyboadController(player, keyMap)
     }
+
+    public saveState(): Uint8Array {
+        return this.nes.createBinarySaveState()
+    }
+
+    public loadState(state: Uint8Array) {
+        this.nes.loadBinarySaveState(state)
+    }
 }
 
 export { NESEmulator }

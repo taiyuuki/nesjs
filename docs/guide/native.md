@@ -301,16 +301,11 @@ emulator.clearAllCheats()         // Clear all
 ### State Management
 
 ```typescript
-// Access underlying NES instance
-const nes = emulator.nes
-
 // Create save state
-const saveState = nes.createSaveState()
-localStorage.setItem('game_save', JSON.stringify(saveState))
+const saveState = emulator.saveState()
 
 // Load save state
-const savedState = JSON.parse(localStorage.getItem('game_save'))
-nes.loadSaveState(savedState)
+const savedState = emulator.loadState(savedState)
 
 // Get debug info
 const debug = nes.getDebugInfo()

@@ -34,9 +34,3 @@ TypeScript 实现的现代 NES（红白机）模拟器 Monorepo，包含：
 ## 许可证
 
 MIT — 请参阅各包内的 LICENSE（例如 [packages/core/LICENSE.md](./packages/core/LICENSE.md)）。
-
-## 相关包
-
-- @nesjs/core — 模拟器核心
-- @nesjs/native — 浏览器原生实现
-- @nesjs/vue3 — Vue 3 组件

@@ -4,7 +4,7 @@ import { NESComponentExpose } from './types'
 import NesVue from './components/nes-vue.vue'
 
 const nesRef = ref<NESComponentExpose>()
-const romUrl = 'Super Mario Bros (JU).nes'
+const romUrl = ref<string | Blob>('Super Mario Bros (JU).nes')
 
 // 模拟器配置
 const emulatorConfig = reactive({
@@ -32,6 +32,19 @@ const screenshot = () => {
 const downloadSave = () => {
     nesRef.value?.downloadSaveState()
 }
+
+const selectROM = async(event: Event) => {
+    const input = event.target as HTMLInputElement
+    if (input.files && input.files.length > 0) {
+        const file = input.files[0]
+        romUrl.value = file
+    }
+}
+
+const getROMInfo = async() => {
+    const info = nesRef.value?.getROMInfo()
+    console.log('ROM Info:', info)
+}
 </script>
 
 <template>
@@ -43,8 +56,14 @@ const downloadSave = () => {
       :auto-start="true"
       :emulator-config="emulatorConfig"
       class="nes-emulator"
+      @loaded="getROMInfo"
     />
     <div class="controls">
+      <input
+        type="file"
+        accept="*.nes"
+        @change="selectROM"
+      >
       <button @click="togglePlay">
         {{ isPlaying ? '暂停' : '开始' }}
       </button>

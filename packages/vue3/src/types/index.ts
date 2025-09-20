@@ -78,6 +78,18 @@ export interface NESComponentExpose {
     /** Upload save state */
     uploadSaveState(): Promise<void>
 
+    /** Add a cheat code */
+    addCheat(code: string): void
+
+    /** Toggle a cheat code */
+    toggleCheat(code: string): void
+
+    /** Remove a cheat code */
+    removeCheat(code: string): void
+
+    /** Clear all cheat codes */
+    clearAllCheats(): void
+
     /** Get ROM information */
     getROMInfo(): ROMInfo | null
 

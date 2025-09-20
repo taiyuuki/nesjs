@@ -18,6 +18,8 @@ const props = withDefaults(defineProps<NESOptions>(), {
     }),
 })
 
+const emit = defineEmits<{ loaded: [void] }>()
+
 const cvs = ref() as Ref<HTMLCanvasElement>
 
 // Status
@@ -52,6 +54,7 @@ async function loadROMData(): Promise<void> {
     else if (props.rom instanceof Blob) {
         const buf = await props.rom.arrayBuffer()
         await emulator.loadROM(new Uint8Array(buf))
+        emit('loaded')
     }
     else {
         throw new Error('Invalid ROM format')
@@ -126,7 +129,6 @@ const enableAudioOnInteraction = async() => {
     }
 }
 
-// 初始化模拟器
 onMounted(async() => {
     isLoading.value = true
     errorMessage.value = null
@@ -325,6 +327,22 @@ async function uploadSaveState(): Promise<void> {
     })
 }
 
+function addCheat(code: string) {
+    emulator?.addCheat(code)
+}
+
+function toggleCheat(code: string) {
+    emulator?.toggleCheat(code)
+}
+
+function removeCheat(code: string) {
+    emulator?.removeCheat(code)
+}
+
+function clearAllCheats() {
+    emulator?.clearAllCheats()
+}
+
 function getROMInfo() {
     return emulator?.nes.getROMInfo() || null
 }
@@ -345,6 +363,10 @@ defineExpose<NESComponentExpose>({
     screenshot,
     downloadSaveState,
     uploadSaveState,
+    addCheat,
+    removeCheat,
+    toggleCheat,
+    clearAllCheats,
     getROMInfo,
     getDebugInfo,
     get isPlaying() { return isPlaying.value },

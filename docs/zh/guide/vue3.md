@@ -201,16 +201,32 @@ nesRef.value?.reset()
 
 // 停止游戏
 nesRef.value?.stop()
+
+// 添加金手指
+nesRef.value?.addCheat('07FA-01-01')
+
+// 移除金手指
+nesRef.value?.removeCheat('07FA-01-01')
+
+// 切换金手指状态
+nesRef.value?.toggleCheat('07FA-01-01')
+
+// 移除所有金手指
+nesRef.value?.clearAllCheats()
 ```
 
 #### 存档系统
 
 ```typescript
 // 创建存档数据
-const saveData = nesRef.value?.save()
+const saveData = nesRef.value?.save() // Uint8Array
+
+// 你可以将其保存到任意地方，例如 localStorage 
+localStorage.setItem('nes-save', JSON.stringify(Array.from(saveData)))
 
 // 加载存档数据
-const success = nesRef.value?.load(saveData)
+const data = localStorage.getItem('nes-save')
+const success = nesRef.value?.load(new Uint8Array(JSON.parse(data)))
 
 // 下载存档文件
 nesRef.value?.downloadSaveState()

@@ -35,9 +35,4 @@ Monorepo for a modern NES (Nintendo Entertainment System) emulator written in Ty
 
 MIT — see individual package LICENSE files (e.g. [packages/core/LICENSE.md](./packages/core/LICENSE.md)).
 
-## Related Packages
-
-- @nesjs/core — emulator core
-- @nesjs/native — browser-native implementation
-- @nesjs/vue3 — Vue 3 component
 
