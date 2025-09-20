@@ -151,7 +151,7 @@ app.mount('#app')
 | `mashingSpeed` | `number` | `16` | Mashing speed for rapid button presses |
 | `emulatorConfig` | `EmulatorConfigOptions` | See below | Emulator configuration object |
 
-#### EmulatorConfig Options
+### EmulatorConfig Options
 
 The `emulatorConfig` prop accepts an object with the following properties:
 
@@ -163,10 +163,20 @@ The `emulatorConfig` prop accepts an object with the following properties:
 | `fillColor` | `string | [number, number, number, number]` | - | Fill color |
 | `audioBufferSize` | `number` | `1024` | Audio buffer size |
 | `audioSampleRate` | `number` | `44100` | Audio sample rate |
-| `autoSaveInterval` | `number` | - | Auto save interval in frames |
+| `autoSaveInterval` | `number` | - | Auto save (SRAM) interval in frames |
 | `enableCheat` | `boolean` | - | Enable cheat codes |
 | `player1KeyMap` | `Record<string, string>` | - | Player 1 key mapping |
 | `player2KeyMap` | `Record<string, string>` | - | Player 2 key mapping |
+
+#### Important Note: autoStart & Audio Playback
+
+If you enable `autoStart` in your configuration, please note:
+
+**Audio will not play until the user interacts with the page (such as clicking, pressing a key, or touching). Before any user gesture, browsers will block audio playback, so there will be no sound output.**
+
+This is a browser security policy to prevent auto-playing audio. The emulator graphics and game logic will run normally, but sound will only be activated after the user's first interaction.
+
+It is recommended to show a prompt in your UI to let users know they need to interact with the page to enable sound.
 
 ### Methods (Via ref)
 

@@ -24,7 +24,7 @@ npm install @nesjs/vue3
 
 ## 快速开始
 
-### 基础使用
+### 基础使用示例
 
 ```vue
 <script setup lang="ts">
@@ -151,7 +151,7 @@ app.mount('#app')
 | `mashingSpeed` | `number` | `16` | 连发速度 |
 | `emulatorConfig` | `EmulatorConfigOptions` | 见下方 | 模拟器配置对象 |
 
-#### 模拟器配置选项 (EmulatorConfig)
+### 模拟器配置选项 (EmulatorConfig)
 
 `emulatorConfig` 属性接受一个包含以下属性的对象：
 
@@ -160,13 +160,23 @@ app.mount('#app')
 | `scale` | `number` | `2` | 画面缩放倍数 |
 | `smoothing` | `boolean` | `false` | 是否启用图像平滑 |
 | `clip8px` | `boolean` | `true` | 是否裁剪边框8像素 |
-| `fillColor` | `string | [number, number, number, number]` | - | 填充颜色 |
+| `fillColor` | `string | [number, number, number, number]` | - | 裁剪区域的填充颜色 |
 | `audioBufferSize` | `number` | `1024` | 音频缓冲区大小 |
 | `audioSampleRate` | `number` | `44100` | 音频采样率 |
-| `autoSaveInterval` | `number` | - | 自动保存间隔（帧数） |
+| `autoSaveInterval` | `number` | - | SRAM存档自动保存间隔（帧数） |
 | `enableCheat` | `boolean` | - | 是否启用金手指 |
 | `player1KeyMap` | `Record<string, string>` | - | 玩家1键位映射 |
 | `player2KeyMap` | `Record<string, string>` | - | 玩家2键位映射 |
+
+#### 注意事项：autoStart 与音频播放
+
+如果你在配置中启用了 `autoStart`，请注意：
+
+**在用户与页面进行交互（如点击、按键、触摸）之前，浏览器不会允许音频播放，因此在此之前不会有声音输出。**
+
+这是浏览器的安全策略，旨在防止自动播放音频。模拟器画面和游戏逻辑会正常运行，但声音会在用户首次交互后才激活。
+
+建议在界面上适当提示用户需要操作页面以启用声音。
 
 ### 方法 (通过 ref 调用)
 
@@ -307,7 +317,7 @@ const romUrl = '/games/your-rom.nes'
 </template>
 ```
 
-### 多种 ROM 源支持
+### 多种 ROM 数据源支持
 
 ```vue
 <template>
@@ -347,7 +357,7 @@ const loadFromUrl = () => {
 </script>
 ```
 
-### 游戏状态管理
+### 游戏状态管理示例
 
 ```vue
 <template>
@@ -386,7 +396,7 @@ const debugInfo = computed(() => nesRef.value?.getDebugInfo())
 </script>
 ```
 
-### 移动端适配
+### 移动端适配示例
 
 ```vue
 <script setup>

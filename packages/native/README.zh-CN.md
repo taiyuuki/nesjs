@@ -8,12 +8,12 @@
 ## 特性
 
 - 🎮 基于 `@nesjs/core` 的完整 NES 模拟
-- 🖼️ Canvas 2D 渲染器，支持缩放和图像平滑
+- 🖼️ Canvas 2D 渲染器，支持缩放和图像抗锯齿
 - 🎵 Web Audio API 音频输出，低延迟播放
 - ⌨️ 可自定义的键盘控制映射
 - 🎯 手柄 (Gamepad API) 支持，包括连发功能
 - 🔧 金手指功能支持
-- 🎨 可配置的视觉效果（缩放、平滑、边框裁剪等）
+- 🎨 可配置的视觉效果（缩放、抗锯齿、边框裁剪等）
 - 📱 响应式设计，适配不同屏幕尺寸
 
 ## 安装
@@ -35,7 +35,7 @@ const canvas = document.getElementById('nes-canvas') as HTMLCanvasElement
 // 创建模拟器实例
 const emulator = new NESEmulator(canvas, {
     scale: 2,                    // 2x 缩放
-    smoothing: false,            // 像素艺术不平滑
+    smoothing: false,            // 关闭抗锯齿
     audioSampleRate: 44100,      // 音频采样率
     enableCheat: true            // 启用金手指
 })
@@ -171,7 +171,7 @@ interface NESEmulatorOptions {
 设置画面缩放倍数。
 
 ##### setSmoothing(smoothing: boolean): void
-设置图像平滑开关。
+设置图像抗锯齿开关。
 
 #### 金手指功能
 
@@ -261,7 +261,7 @@ emulator.setupKeyboadController(1, {
 // 创建像素完美的显示
 const emulator = new NESEmulator(canvas, {
     scale: 3,              // 3倍缩放
-    smoothing: false,      // 关闭平滑
+    smoothing: false,      // 关闭抗锯齿
     clip8px: true,         // 裁剪边缘
     fillColor: '#000000'   // 黑色填充
 })
@@ -288,7 +288,7 @@ emulator.disableAudio()       // 静音
 ### 金手指使用
 
 ```typescript
-// 添加常见金手指代码
+// 添加金手指代码
 emulator.addCheat('079F-01-01')
 
 // 管理金手指
@@ -337,35 +337,17 @@ console.log(`帧数: ${debug.frameCount}, CPU: ${debug.cpuCycles}`)
 // 性能优先
 const emulator = new NESEmulator(canvas, {
     scale: 2,
-    smoothing: false,        // 关闭平滑减少 GPU 负载
+    smoothing: false,        // 关闭抗锯齿减少 GPU 负载
     audioBufferSize: 2048,   // 增大缓冲区减少音频卡顿
 })
 
 // 质量优先  
 const emulator = new NESEmulator(canvas, {
     scale: 4,
-    smoothing: true,         // 平滑缩放
+    smoothing: true,         // 抗锯齿
     audioSampleRate: 48000,  // 高音质
     audioBufferSize: 512,    // 低延迟
 })
-```
-
-### 移动设备优化
-
-```typescript
-// 检测移动设备
-const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-
-const emulator = new NESEmulator(canvas, {
-    scale: isMobile ? 2 : 3,
-    audioBufferSize: isMobile ? 2048 : 1024,
-})
-
-// 移动设备触摸控制
-if (isMobile) {
-    // 实现虚拟按键或触摸手势
-    setupTouchControls(emulator)
-}
 ```
 
 ## 故障排除
@@ -373,17 +355,26 @@ if (isMobile) {
 ### 常见问题
 
 **音频无法播放:**
+
 ```typescript
 // 确保在用户交互后启用音频
-button.addEventListener('click', async () => {
+const enableAudioOnInteraction = async() => {
     await emulator.enableAudio()
-    await emulator.start()
-})
+
+    // Remove event listeners
+    document.removeEventListener('click', enableAudioOnInteraction)
+    document.removeEventListener('keydown', enableAudioOnInteraction)
+    document.removeEventListener('touchstart', enableAudioOnInteraction)
+}
+
+document.addEventListener('click', enableAudioOnInteraction)
+document.addEventListener('keydown', enableAudioOnInteraction)
+document.addEventListener('touchstart', enableAudioOnInteraction)
 ```
 
 **画面模糊:**
 ```typescript
-// 确保关闭平滑并设置 CSS
+// 关闭抗锯齿并设置 CSS
 emulator.setSmoothing(false)
 canvas.style.imageRendering = 'pixelated'
 ```

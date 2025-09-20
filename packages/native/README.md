@@ -350,24 +350,6 @@ const emulator = new NESEmulator(canvas, {
 })
 ```
 
-### Mobile Device Optimization
-
-```typescript
-// Detect mobile device
-const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-
-const emulator = new NESEmulator(canvas, {
-    scale: isMobile ? 2 : 3,
-    audioBufferSize: isMobile ? 2048 : 1024,
-})
-
-// Mobile touch controls
-if (isMobile) {
-    // Implement virtual buttons or touch gestures
-    setupTouchControls(emulator)
-}
-```
-
 ## Troubleshooting
 
 ### Common Issues
@@ -375,10 +357,18 @@ if (isMobile) {
 **Audio not playing:**
 ```typescript
 // Make sure to enable audio after user interaction
-button.addEventListener('click', async () => {
+const enableAudioOnInteraction = async() => {
     await emulator.enableAudio()
-    await emulator.start()
-})
+
+    // Remove event listeners
+    document.removeEventListener('click', enableAudioOnInteraction)
+    document.removeEventListener('keydown', enableAudioOnInteraction)
+    document.removeEventListener('touchstart', enableAudioOnInteraction)
+}
+
+document.addEventListener('click', enableAudioOnInteraction)
+document.addEventListener('keydown', enableAudioOnInteraction)
+document.addEventListener('touchstart', enableAudioOnInteraction)
 ```
 
 **Blurry display:**
