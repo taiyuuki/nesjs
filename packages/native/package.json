@@ -19,8 +19,7 @@
     "clean": "rimraf dist",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "publish": "pnpm publish --registry=https://registry.npmjs.org --access=public"
+    "test:watch": "vitest"
   },
   "keywords": [],
   "sideEffects": false,

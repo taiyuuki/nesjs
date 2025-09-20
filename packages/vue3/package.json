@@ -1,6 +1,5 @@
 {
   "name": "@nesjs/vue3",
-  "private": true,
   "version": "2.0.0",
   "module": "./dist/index.es.js",
   "main": "./dist/index.umd.js",
