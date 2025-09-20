@@ -31,6 +31,7 @@ class CanvasRenderer {
 
         this.updateClipBounds()
         this.updateCanvasSize()
+        this.setSmoothing(this.smoothing)
     }
 
     parseFillColor(color?: string | [number, number, number, number]): Uint8ClampedArray {
@@ -106,7 +107,6 @@ class CanvasRenderer {
         this.canvas.height = this.NEX_Height
         this.canvas.style.width = `${this.NES_Width * this.scale}px`
         this.canvas.style.height = `${this.NEX_Height * this.scale}px`
-        this.ctx.imageSmoothingEnabled = false
     }
 
     renderFrame(imageData: Uint8Array) {

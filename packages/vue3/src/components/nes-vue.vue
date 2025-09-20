@@ -18,115 +18,18 @@ const props = withDefaults(defineProps<NESOptions>(), {
     }),
 })
 
-// Canvas 引用
 const cvs = ref() as Ref<HTMLCanvasElement>
 
-// 状态管理
+// Status
 const isPlaying = ref(false)
 const isLoading = ref(false)
 const isReady = ref(false)
 const errorMessage = ref<string | null>(null)
 
-// 模拟器实例
+// Emulator instance
 let emulator: NESEmulator | null = null
 
-// 监听音量变化
-watch(() => props.volume, newVolume => {
-    if (emulator && typeof newVolume === 'number') {
-        emulator.setVolume(Math.max(0, Math.min(100, newVolume)) / 100)
-    }
-})
-
-// 监听缩放变化
-watch(() => props.emulatorConfig?.scale, newScale => {
-    if (emulator && typeof newScale === 'number') {
-        emulator.setScale(Math.max(1, newScale))
-    }
-})
-
-// 监听平滑设置变化
-watch(() => props.emulatorConfig?.smoothing, newVal => {
-    if (emulator && typeof newVal === 'boolean') {
-        emulator.setSmoothing(newVal)
-    }
-})
-
-// 用户交互检测
-const enableAudioOnInteraction = async() => {
-    if (emulator) {
-        try {
-            await emulator.enableAudio()
-        }
-        catch (error) {
-            if (props.debugMode) {
-                console.error('Audio context activation failed:', error)
-            }
-        }
-    }
-
-    // 移除事件监听器
-    document.removeEventListener('click', enableAudioOnInteraction)
-    document.removeEventListener('keydown', enableAudioOnInteraction)
-    document.removeEventListener('touchstart', enableAudioOnInteraction)
-}
-
-// 初始化模拟器
-onMounted(async() => {
-    isLoading.value = true
-    errorMessage.value = null
-
-    try {
-
-        await nextTick() // 确保DOM已渲染
-
-        emulator = new NESEmulator(cvs.value, props.emulatorConfig)
-
-        // 加载 ROM
-        await loadROMData()
-
-        // 设置初始配置
-        emulator.setVolume(Math.max(0, Math.min(100, props.volume)) / 100)
-        emulator.setScale(Math.max(1, props.emulatorConfig?.scale || 2))
-        emulator.setSmoothing(props.emulatorConfig?.smoothing || false)
-
-        isReady.value = true
-
-        // 自动开始
-        if (props.autoStart) {
-            await start()
-            
-            // 添加用户交互监听器用于激活音频
-            document.addEventListener('click', enableAudioOnInteraction)
-            document.addEventListener('keydown', enableAudioOnInteraction)
-            document.addEventListener('touchstart', enableAudioOnInteraction)
-        }
-    }
-    catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error))
-        errorMessage.value = err.message
-        if (props.debugMode) {
-            console.error('Failed to initialize emulator:', err)
-        }
-    }
-    finally {
-        isLoading.value = false
-    }
-})
-
-// 组件销毁时清理
-onBeforeUnmount(() => {
-    if (emulator) {
-        emulator.stop()
-        emulator = null
-    }
-
-    // 清理事件监听器
-    document.removeEventListener('click', enableAudioOnInteraction)
-    document.removeEventListener('keydown', enableAudioOnInteraction)
-    document.removeEventListener('touchstart', enableAudioOnInteraction)
-})
-
-// 加载 ROM 数据
+// Load ROM data
 async function loadROMData(): Promise<void> {
     if (!emulator) {
         throw new Error('Emulator not initialized')
@@ -155,7 +58,129 @@ async function loadROMData(): Promise<void> {
     }
 }
 
-// 控制函数
+watch(() => props.rom, async() => {
+    if (emulator) {
+        isLoading.value = true
+        errorMessage.value = null
+        isReady.value = false
+        isPlaying.value = false
+
+        try {
+            await loadROMData()
+            isReady.value = true
+
+            if (props.autoStart) {
+                await start()
+            }
+        }
+        catch (error) {
+            if (props.debugMode) {
+                const err = error instanceof Error ? error : new Error(String(error))
+                errorMessage.value = err.message
+                console.error('Failed to load ROM:', err)
+            }
+        }
+        finally {
+            isLoading.value = false
+        }
+    }
+}, { immediate: true })
+
+// Listen for volume changes
+watch(() => props.volume, newVolume => {
+    if (emulator && typeof newVolume === 'number') {
+        emulator.setVolume(Math.max(0, Math.min(100, newVolume)) / 100)
+    }
+})
+
+// Listen for scale changes
+watch(() => props.emulatorConfig?.scale, newScale => {
+    if (emulator && typeof newScale === 'number') {
+        emulator.setScale(Math.max(1, newScale))
+    }
+})
+
+// Listen for smoothing setting changes
+watch(() => props.emulatorConfig?.smoothing, newVal => {
+    if (emulator && typeof newVal === 'boolean') {
+        emulator.setSmoothing(newVal)
+    }
+})
+
+// Enable audio on user interaction
+const enableAudioOnInteraction = async() => {
+    if (emulator) {
+        try {
+            await emulator.enableAudio()
+
+            // Remove event listeners
+            document.removeEventListener('click', enableAudioOnInteraction)
+            document.removeEventListener('keydown', enableAudioOnInteraction)
+            document.removeEventListener('touchstart', enableAudioOnInteraction)
+        }
+        catch (error) {
+            if (props.debugMode) {
+                console.error('Audio context activation failed:', error)
+            }
+        }
+    }
+}
+
+// 初始化模拟器
+onMounted(async() => {
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+
+        await nextTick() // Ensure DOM is rendered
+
+        emulator = new NESEmulator(cvs.value, props.emulatorConfig)
+
+        // Load ROM
+        await loadROMData()
+
+        // Set initial configuration
+        emulator.setVolume(Math.max(0, Math.min(100, props.volume)) / 100)
+        emulator.setScale(Math.max(1, props.emulatorConfig?.scale || 2))
+        emulator.setSmoothing(props.emulatorConfig?.smoothing || false)
+
+        isReady.value = true
+
+        // Auto start
+        if (props.autoStart) {
+
+            // Add user interaction listeners to enable audio
+            document.addEventListener('click', enableAudioOnInteraction)
+            document.addEventListener('keydown', enableAudioOnInteraction)
+            document.addEventListener('touchstart', enableAudioOnInteraction)
+            await start()
+        }
+    }
+    catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error))
+        errorMessage.value = err.message
+        if (props.debugMode) {
+            console.error('Failed to initialize emulator:', err)
+        }
+    }
+    finally {
+        isLoading.value = false
+    }
+})
+
+onBeforeUnmount(() => {
+    if (emulator) {
+        emulator.stop()
+        emulator = null
+    }
+
+    document.removeEventListener('click', enableAudioOnInteraction)
+    document.removeEventListener('keydown', enableAudioOnInteraction)
+    document.removeEventListener('touchstart', enableAudioOnInteraction)
+})
+
+// Control functions
 async function start(): Promise<void> {
     if (!emulator) {
         throw new Error('Emulator not initialized')
@@ -239,7 +264,7 @@ function screenshot(download = false): string {
     return src
 }
 
-// 存档管理
+// Save state management
 function downloadSaveState(): void {
     try {
         const saveData = save()
@@ -260,7 +285,6 @@ function downloadSaveState(): void {
     }
 }
 
-// 上传存档文件
 async function uploadSaveState(): Promise<void> {
     return new Promise((resolve, reject) => {
         const input = document.createElement('input')
@@ -301,17 +325,14 @@ async function uploadSaveState(): Promise<void> {
     })
 }
 
-// 获取游戏信息
 function getROMInfo() {
     return emulator?.nes.getROMInfo() || null
 }
 
-// 获取调试信息
 function getDebugInfo() {
     return emulator?.nes.getDebugInfo()
 }
 
-// 暴露组件方法
 defineExpose<NESComponentExpose>({
     start,
     reset,

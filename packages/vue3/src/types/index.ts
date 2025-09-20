@@ -2,91 +2,91 @@ import type { EmulatorEvents, ROMInfo } from '@nesjs/core'
 import type { NESEmulatorOptions } from '@nesjs/native'
 
 /**
- * NES Vue 组件配置选项
+ * NES Vue options
  */
 export interface NESOptions {
 
-    /** ROM 数据源，支持多种格式 */
+    /** ROM data */
     rom: ArrayBuffer | Blob | Uint8Array | string
 
-    /** 是否自动开始游戏 */
+    /** Whether to auto start the game */
     autoStart?: boolean
 
-    /** 音量大小 (0-100) */
+    /** Volume level (0-100) */
     volume?: number
 
-    /** 是否开启调试模式 */
+    /** Whether to enable debug mode */
     debugMode?: boolean
 
-    /** 连发速度 */
+    /** Mashing speed */
     mashingSpeed?: number
 
-    /** 模拟器配置参数 */
+    /** Emulator configuration options */
     emulatorConfig?: NESEmulatorOptions
 }
 
 /**
- * NES Vue 组件事件
+ * NES Vue events
  */
 export interface NESEvents extends EmulatorEvents {
 
-    /** 游戏状态变化事件 */
+    /** Game status change event */
     onStatusChange?: (status: 'paused' | 'running' | 'stopped')=> void
 
-    /** 加载状态变化事件 */
+    /** Loading status change event */
     onLoadingChange?: (loading: boolean)=> void
 
-    /** 组件初始化完成事件 */
+    /** Component ready event */
     onReady?: ()=> void
 }
 
 /**
- * 组件暴露的方法接口
+ * Component expose methods interface
  */
 export interface NESComponentExpose {
 
-    /** 开始游戏 */
+    /** Start the game */
     start(): Promise<void>
 
-    /** 重置游戏 */
+    /** Reset the game */
     reset(): void
 
-    /** 停止游戏 */
+    /** Stop the game */
     stop(): void
 
-    /** 暂停游戏 */
+    /** Pause the game */
     pause(): void
 
-    /** 继续游戏 */
+    /** Continue the game */
     play(): void
 
-    /** 切换播放状态 */
+    /** Toggle play state */
     togglePlay(): Promise<void>
 
-    /** 创建存档 */
+    /** Create save state */
     save(): Uint8Array
 
-    /** 加载存档 */
+    /** Load save state */
     load(data: Uint8Array): boolean
 
-    /** 截图 */
+    /** Take a screenshot */
     screenshot(download?: boolean): string
 
-    /** 下载存档文件 */
+    /** Download save state */
     downloadSaveState(): void
 
-    /** 上传存档文件 */
+    /** Upload save state */
     uploadSaveState(): Promise<void>
 
-    /** 获取游戏信息 */
+    /** Get ROM information */
     getROMInfo(): ROMInfo | null
 
-    /** 获取调试信息 */
+    /** Get debug information */
     getDebugInfo(): any
 
-    /** 是否正在游戏 */
+    /** Whether the game is playing */
     readonly isPlaying: boolean
 
-    /** 是否正在加载 */
+    /** Whether the game is loading */
     readonly isLoading: boolean
 } 
