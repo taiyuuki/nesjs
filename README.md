@@ -2,6 +2,8 @@
 
 English | [中文](./README.zh-CN.md)
 
+[documentation](https://nesjs.netlify.app/)
+
 Monorepo for a modern NES (Nintendo Entertainment System) emulator written in TypeScript. It contains:
 
 - @nesjs/core — framework-agnostic emulator core (CPU/PPU/APU, mappers, save states, cheats)

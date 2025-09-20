@@ -2,6 +2,8 @@
 
 [English](./README.md) | 中文
 
+[文档](https://nesjs.netlify.app/zh/)
+
 TypeScript 实现的现代 NES（红白机）模拟器 Monorepo，包含：
 
 - @nesjs/core — 与 UI 框架无关的模拟器核心（CPU/PPU/APU、各类 Mapper、存档、金手指）
