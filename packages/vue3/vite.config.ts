@@ -32,7 +32,9 @@ export default defineConfig({
         lib: {
             entry: resolve('src/index.ts'),
             name: 'NesVue',
-            fileName: format => `nes-vue.${format}.js`,
+            
+            // 与 package.json 的 exports/main/module 对齐
+            fileName: format => `index.${format}.js`,
         },
         rollupOptions: {
             external: ['vue', '@nesjs/core'],

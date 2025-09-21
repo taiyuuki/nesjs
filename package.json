@@ -23,7 +23,7 @@
     "minor": "esno scripts/bump.ts minor",
     "major": "esno scripts/bump.ts major",
     "health": "esno scripts/health-check.ts",
-    "publish:all": "pnpm --filter=\"@nesjs/core\" publish && pnpm --filter=\"@nesjs/native\" publish",
+    "publish:all": "pnpm --filter=\"@nesjs/core\" publish && pnpm --filter=\"@nesjs/native\" publish && pnpm --filter=\"@nesjs/vue3\" publish",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
