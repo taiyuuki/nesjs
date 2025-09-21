@@ -1,57 +1,85 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Build All",
-            "type": "shell",
-            "command": "pnpm",
-            "args": [
-                "build"
-            ],
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": [
-                "$tsc"
-            ]
-        },
-        {
-            "label": "Dev Mode",
-            "type": "shell",
-            "command": "pnpm",
-            "args": [
-                "dev"
-            ],
-            "group": "build",
-            "isBackground": true,
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-            "problemMatcher": [
-                "$tsc-watch"
-            ]
-        },
-        {
-            "label": "Test All",
-            "type": "shell",
-            "command": "pnpm",
-            "args": [
-                "test"
-            ],
-            "group": "test",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            }
-        }
-    ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build All",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "Dev Mode",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"dev"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": [
+				"$tsc-watch"
+			]
+		},
+		{
+			"label": "Test All",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"test"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Build All",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"build"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Dev Mode",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"dev"
+			],
+			"isBackground": true,
+			"group": "build"
+		},
+		{
+			"label": "Test All",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"test"
+			],
+			"group": "test"
+		}
+	]
 }

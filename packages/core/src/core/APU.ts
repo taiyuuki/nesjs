@@ -97,6 +97,8 @@ export class APU {
     private cyclesperframe: number = 0
     private ai: AudioOutputInterface = new DefaultAudioOutput()
 
+    // 调试：关键寄存器写入与音频输出监控
+    
     // Duty cycle 查找表
     private static readonly DUTYLOOKUP: number[][] = [
         [0, 1, 0, 0, 0, 0, 0, 0],
@@ -177,6 +179,8 @@ export class APU {
 
     public setAudioInterface(ai: AudioOutputInterface): void {
         this.ai = ai
+        
+    // 音频接口设置
     }
 
     public read(addr: number): number {
@@ -220,6 +224,8 @@ export class APU {
 
     public write(reg: number, data: number): void {
         this.updateto(Math.floor(this.cpu.clocks - 1))
+
+        // 写寄存器统计日志已移除
 
         switch (reg) {
             case 0x0:
@@ -377,6 +383,7 @@ export class APU {
             case 0x15:
 
                 // 状态寄存器
+                
                 for (let i = 0; i < 4; ++i) {
                     this.lenCtrEnable[i] = data & 1 << i ? 1 : 0
                     if (!this.lenCtrEnable[i]) {
@@ -409,6 +416,7 @@ export class APU {
                 this.apuintflag = (data & Utils.BIT6) !== 0
                 this.framectr = 0
                 this.framectrdiv = this.framectrreload + 8
+                
                 if (this.apuintflag && this.statusframeint) {
                     this.statusframeint = false
                     --this.cpu.interrupt

@@ -23,6 +23,7 @@ import { NESControllerButton } from './interfaces'
 import { ControllerAdapter } from './ControllerAdapter'
 import { BinarySaveState } from './BinarySaveState'
 import type { Cheater } from './Cheater'
+import type { TVType } from './types'
 
 /**
  * 游戏手柄实现
@@ -136,6 +137,8 @@ export class NES {
         if (this.apu) {
             this.apu.setAudioInterface(audioInterface)
         }
+
+    // 注入音频接口
     }
 
     /**
@@ -166,6 +169,14 @@ export class NES {
 
     public getController2(): ControllerAdapter {
         return this.controller2
+    }
+
+    public getTVType(): TVType | undefined {
+        if (this.ppu) {
+            return this.mapper?.getTVType()
+        }
+
+        return void 0
     }
 
     /**
@@ -213,7 +224,7 @@ export class NES {
             //     this.loadSRAM()
             // }
 
-            this.cpu?.init()
+            this.cpu.init()
             this.mapper.init()
 
             const romInfo: ROMInfo = {
@@ -334,6 +345,8 @@ export class NES {
         this.renderFrame()
 
         this.frameCount++
+
+        // 帧节奏统计日志已移除
 
         // 自动保存
         if ((this.frameCount & this.config.autoSaveInterval! - 1) === 0) {

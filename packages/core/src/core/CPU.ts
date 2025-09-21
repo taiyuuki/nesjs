@@ -12,7 +12,6 @@ enum DummyType {
 
 /**
  * NES 6502 CPU 实现
- * 移植自 HalfNES Java 版本
  */
 export class CPU {
     private readonly ram: CPURAM
@@ -1576,7 +1575,7 @@ export class CPU {
         this.interruptsDisabled = true
     }
 
-    private push(value: number): void {
+    public push(value: number): void {
         this.ram.write(0x100 + this.S, value)
         this.S = this.S - 1 & 0xff
     }

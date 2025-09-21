@@ -47,6 +47,18 @@ class NESEmulator {
     async loadROM(romData: Uint8Array) {
         this.romData = romData
         await this.nes.loadROM(romData)
+        switch (this.nes.getTVType()) {
+            case 'NTSC':
+                this.targetFPS = 60
+                break
+            case 'PAL':
+            case 'DENDY':
+                this.targetFPS = 50
+                break
+            default:
+                this.targetFPS = 60
+        }
+        this.frameDuration = 1000 / this.targetFPS
     }
 
     private mainLoop() {
