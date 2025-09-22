@@ -261,6 +261,9 @@ export class NES {
         if (this.cpu) {
             this.mapper?.reset()
             this.cpu.reset()
+            this.cheater?.clearCheats()
+            this.gamepad1.reset()
+            this.gamepad2.reset()
             this.frameCount = 1
         }
     }
