@@ -1,6 +1,6 @@
 {
   "name": "nesjs",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A NES emulator library for JavaScript",
   "private": true,
   "type": "module",
