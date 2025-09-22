@@ -929,27 +929,11 @@ export default class NSFMapper extends Mapper {
 
         // 清屏
         this.clearScreen()
-
-        // 读取 NSF 头中的 Title/Artist/Copyright（各 32 字节，起始于 0x0E）
-        const title = this.getHeaderString(0x0E, 32) || 'Untitled'
-        const artist = this.getHeaderString(0x2E, 32) || 'Unknown Artist'
-        const copyright = this.getHeaderString(0x4E, 32) || 'Unknown Copyright'
-
-        // 标题与信息（尽量居中）
-        this.centerText(4, 'NES Music (NSF)')
-        this.drawSeparator(5)
-        this.centerText(7, `${title}`)
-        this.centerText(9, `${artist}`)
-        this.centerText(11, `${copyright}`)
-        this.drawSeparator(13)
-
-        // 轨道与操作提示
-        this.centerText(26, ' B: Previous        A: Next ')
-        this.writeTracks()
+        
+        this.drawEnhancedInterface()
 
         // 播放计时：初始化为 00:00:00
         this.playFrames = 0
-        this.updateTimeDisplay()
 
         // 切歌/重置时，等待 init 返回：清零等待计数，避免本帧继续调用上一曲目的 play
         this.unfinishedcounter = 0
@@ -964,10 +948,16 @@ export default class NSFMapper extends Mapper {
 
     public override reset(): void {
 
-        // 复位为默认曲目
+        // 复位为默认曲目 - 模拟切歌行为
         this.song = this.loader.header[7] - 1
+        
+        // 重置音频初始化状态，确保音频芯片被重新初始化
+        this.hasInitSound = false
+        
+        // 只调用init()，不额外设置PC，完全模拟切歌时的行为
         this.init()
-        if (this.cpu) this.cpu.setPC(this.initAddr)
+        
+        // 注意：APU重置现在由NES.reset()统一处理
     }
 
     public override cartWrite(addr: number, data: number): void {
@@ -1121,7 +1111,6 @@ export default class NSFMapper extends Mapper {
 
             if (this.cpu) {
                 if (this.cpu.getPC() === 0xFFFB) {
-                    
                     this.unfinishedcounter = this.time
                 }
                 else if (this.unfinishedcounter < this.time) {
@@ -1133,7 +1122,7 @@ export default class NSFMapper extends Mapper {
                 }
             }
 
-            // 启用渲染（写入一些 PPU 寄存器，简化为清零）
+            // 启用渲染
             if (this.ppu) {
                 this.ppu.write(6, 0)
                 this.ppu.write(6, 0)
@@ -1141,10 +1130,6 @@ export default class NSFMapper extends Mapper {
                 this.ppu.write(0, 0)
                 this.ppu.write(1, Utils.BIT1 | Utils.BIT3 | Utils.BIT4)
             }
-            this.writeTracks()
-
-            // 帧计数 + 刷新时间显示（基于制式 50/60fps）
-            this.playFrames++
             this.updateTimeDisplay()
 
             // 读取控制器
@@ -1211,6 +1196,23 @@ export default class NSFMapper extends Mapper {
         return chips.length > 0 ? chips.join(' ') : 'None'
     }
 
+    private getDetailedChipInfo(): { primary: string; secondary?: string } {
+        const expansionChips: string[] = []
+
+        if (this.vrc6) expansionChips.push('VRC6')
+        if (this.vrc7) expansionChips.push('VRC7')
+        if (this.n163) expansionChips.push('Namco163')
+        if (this.mmc5) expansionChips.push('MMC5')
+        if (this.s5b) expansionChips.push('Sunsoft5B')
+        if (this.fds) expansionChips.push('FDS')
+
+        const primary = expansionChips.length > 0 
+            ? `APU + ${expansionChips.join(', ')}` 
+            : 'Standard APU Only'
+
+        return { primary }
+    }
+
     private setBanks(): void {
         for (let i = 0; i < this.prg_map.length; ++i) {
             const bank4k = this.nsfBanks[Math.floor(i / 4)] | 0
@@ -1258,8 +1260,188 @@ export default class NSFMapper extends Mapper {
     }
 
     private writeTracks() {
-        const cur = `<Track ${`${this.song + 1}`.padStart(3, '0')} / ${`${this.numSongs + 1}`.padStart(3, '0')}>`
-        this.centerText(22, cur)
+        const cur = `Track ${`${this.song + 1}`.padStart(2, '0')} / ${`${this.numSongs + 1}`.padStart(2, '0')}`
+        this.centerText(17, cur)
+    }
+
+    private drawEnhancedInterface(): void {
+
+        // 读取 NSF 头中的 Title/Artist/Copyright（各 32 字节，起始于 0x0E）
+        const title = this.getHeaderString(0x0E, 32) || 'Untitled'
+        const artist = this.getHeaderString(0x2E, 32) || 'Unknown Artist'
+        const copyright = this.getHeaderString(0x4E, 32) || 'Unknown Copyright'
+
+        // 绘制外边框，避开边界8像素区域
+        this.drawBorder()
+        
+        // 头部标题区域
+        this.drawBox(2, 3, 28, 4)
+        this.centerText(4, 'NES SOUND FORMAT PLAYER')
+        this.centerText(5, '=======================')
+        
+        // 歌曲信息区域
+        this.drawBox(2, 8, 28, 5)
+        this.centerText(9, title.length > 23 ? `${title.substring(0, 23)}...` : title)
+        this.centerText(10, artist.length > 23 ? `${artist.substring(0, 23)}...` : artist)
+        this.centerText(11, copyright.length > 23 ? `${copyright.substring(0, 23)}...` : copyright)
+        
+        // 播放状态区域
+        this.drawBox(2, 14, 28, 6)
+        this.centerText(15, 'PLAYBACK STATUS')
+        
+        // 音频芯片信息区域  
+        this.drawBox(2, 21, 28, 4)
+        this.centerText(22, 'SOUND CHIPS')
+        const chipInfo = this.getDetailedChipInfo()
+        this.centerText(23, chipInfo.primary)
+        
+        // 控制提示区域
+        this.centerText(26, 'B: Previous      A: Next')
+    }
+
+    private drawBorder(): void {
+
+        // 绘制边框，下边框上移一行到第28行
+        for (let col = 1; col < 31; col++) {
+            this.writeText(1, col, '=')
+            this.writeText(28, col, '=')
+        }
+        for (let row = 2; row < 28; row++) {
+            this.writeText(row, 1, '|')
+            this.writeText(row, 30, '|')
+        }
+
+        // 四个角
+        this.writeText(1, 1, '+')
+        this.writeText(1, 30, '+')
+        this.writeText(28, 1, '+')
+        this.writeText(28, 30, '+')
+    }
+
+    private drawBox(x: number, y: number, width: number, height: number): void {
+
+        // 绘制矩形框，使用简单ASCII字符
+        for (let col = x; col < x + width; col++) {
+            this.writeText(y, col, '-')
+            this.writeText(y + height - 1, col, '-')
+        }
+        for (let row = y + 1; row < y + height - 1; row++) {
+            this.writeText(row, x, '|')
+            this.writeText(row, x + width - 1, '|')
+        }
+
+        // 四个角
+        this.writeText(y, x, '+')
+        this.writeText(y, x + width - 1, '+')
+        this.writeText(y + height - 1, x, '+')
+        this.writeText(y + height - 1, x + width - 1, '+')
+    }
+
+    private drawProgressBar(row: number, progress: number): void {
+        const barWidth = 20
+        const filledWidth = Math.floor(progress * barWidth)
+        
+        this.writeText(row, 6, '[')
+        for (let i = 0; i < barWidth; i++) {
+            this.writeText(row, 7 + i, i < filledWidth ? '#' : '-')
+        }
+        this.writeText(row, 7 + barWidth, ']')
+    }
+
+    private animatedChars = ['*', 'o', '.', 'o']
+    private animFrame = 0
+
+    private getAnimatedMusicNote(): string {
+        return this.animatedChars[Math.floor(this.animFrame / 15) % this.animatedChars.length]
+    }
+
+    private getPlayingStatusText(): string {
+        const statusTexts = [' Music Playing   ', ' Music Playing.  ', ' Music Playing.. ', ' Music Playing...']
+        
+        return statusTexts[Math.floor(this.animFrame / 30) % statusTexts.length]
+    }
+
+    private drawVolumeIndicators(): void {
+
+        // 在播放状态区域显示音量指示器
+        const channels = this.getChannelLevels()
+        const channelNames = ['P1', 'P2', 'TR', 'NO']
+        
+        for (let i = 0; i < Math.min(channels.length, channelNames.length); i++) {
+            const level = channels[i]
+            const col = 4 + i * 6
+            
+            // 显示通道名称
+            this.writeText(16, col, channelNames[i])
+            
+            // 显示音量条，使用简单ASCII字符
+            const barChars = level > 0.7 ? '###' : level > 0.4 ? '##-' : level > 0.1 ? '#--' : '---'
+            this.writeText(16, col, barChars)
+        }
+    }
+
+    private drawAudioSpectrum(): void {
+
+        // 简单的频谱可视化，基于 APU 寄存器状态
+        if (!this.cpuram) return
+
+        const spectrumRow = 20
+        const spectrumStart = 6
+        const spectrumWidth = 20
+
+        // 清除之前的频谱显示
+        for (let i = 0; i < spectrumWidth; i++) {
+            this.writeText(spectrumRow, spectrumStart + i, ' ')
+        }
+
+        // 基于当前 APU 通道状态绘制简单频谱
+        const channels = this.getChannelLevels()
+        
+        for (let i = 0; i < Math.min(channels.length, spectrumWidth / 4); i++) {
+            const level = channels[i]
+            const barHeight = Math.min(3, Math.floor(level * 4))
+            const startPos = spectrumStart + i * 5
+
+            // 绘制每个通道的音量条，使用简单字符
+            for (let h = 0; h < barHeight; h++) {
+                const char = h === 0 ? '_' : h === 1 ? '=' : '#'
+                this.writeText(spectrumRow, startPos + h, char)
+            }
+            
+            if (level > 0) {
+                this.writeText(spectrumRow, startPos + 3, '*')
+            }
+        }
+    }
+
+    private getChannelLevels(): number[] {
+
+        // 读取 APU 寄存器获取各通道状态
+        if (!this.cpuram) return [0, 0, 0, 0]
+
+        const levels: number[] = []
+        
+        // Pulse 1 (0x4000-0x4003)
+        const pulse1Vol = this.cpuram.read(0x4000) & 0x0F
+        const pulse1Enable = (this.cpuram.read(0x4015) & 0x01) !== 0
+        levels.push(pulse1Enable ? pulse1Vol / 15 : 0)
+
+        // Pulse 2 (0x4004-0x4007)
+        const pulse2Vol = this.cpuram.read(0x4004) & 0x0F
+        const pulse2Enable = (this.cpuram.read(0x4015) & 0x02) !== 0
+        levels.push(pulse2Enable ? pulse2Vol / 15 : 0)
+
+        // Triangle (0x4008-0x400B)
+        const triangleEnable = (this.cpuram.read(0x4015) & 0x04) !== 0
+        const triangleLinear = this.cpuram.read(0x4008) & 0x7F
+        levels.push(triangleEnable && triangleLinear > 0 ? 0.8 : 0)
+
+        // Noise (0x400C-0x400F)
+        const noiseVol = this.cpuram.read(0x400C) & 0x0F
+        const noiseEnable = (this.cpuram.read(0x4015) & 0x08) !== 0
+        levels.push(noiseEnable ? noiseVol / 15 : 0)
+
+        return levels
     }
 
     private getFps(): number {
@@ -1280,9 +1462,30 @@ export default class NSFMapper extends Mapper {
 
     private updateTimeDisplay(): void {
 
-        // 将时间置于第 24 行居中显示，如 00:00:00
-        const t = this.formatTime(this.playFrames)
-        this.centerText(24, t)
+        // 帧计数增加
+        this.playFrames++
+        
+        // 更新动画帧计数
+        this.animFrame++
+
+        // 将时间置于播放状态区域内
+        const timeStr = this.formatTime(this.playFrames)
+        this.centerText(16, `Time: ${timeStr}`)
+        
+        // 显示当前曲目信息
+        this.writeTracks()
+        
+        // 显示播放状态动画（避免重叠）
+        const musicNote = this.getAnimatedMusicNote()
+        const playingText = this.getPlayingStatusText()
+        this.writeText(18, 4, `${musicNote} ${playingText}`)
+        this.writeText(18, 26, `${musicNote}`)
+        
+        // 绘制简单的进度条效果（基于播放时间的秒数）
+        const fps = this.getFps()
+        const cycleFrames = fps * 10
+        const progress = this.playFrames % cycleFrames / cycleFrames
+        this.drawProgressBar(19, progress)
     }
 
     private clearScreen(): void {
