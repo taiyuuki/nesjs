@@ -9,6 +9,7 @@ Monorepo for a modern NES (Nintendo Entertainment System) emulator written in Ty
 - @nesjs/core — framework-agnostic emulator core (CPU/PPU/APU, mappers, save states, cheats)
 - @nesjs/native — browser-native runtime with Canvas/WebAudio/Keyboard/Gamepad
 - @nesjs/vue3 — Vue 3 component wrapper powered by the native runtime
+- @nesjs/react — React component wrapper powered by the native runtime
 
 > Looking for package-level API docs and usage? Jump to: [core](./packages/core/README.md) · [native](./packages/native/README.md) · [vue3](./packages/vue3/README.md), [documentation](https://nesjs.netlify.app/)
 
