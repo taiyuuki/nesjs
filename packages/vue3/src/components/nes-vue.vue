@@ -76,7 +76,7 @@ watch(() => props.rom, async() => {
                 await start()
             }
         }
-        catch (error) {
+        catch(error) {
             if (props.debugMode) {
                 const err = error instanceof Error ? error : new Error(String(error))
                 errorMessage.value = err.message
@@ -110,6 +110,34 @@ watch(() => props.emulatorConfig?.smoothing, newVal => {
     }
 })
 
+// Listen for fill color changes
+watch(() => props.emulatorConfig?.fillColor, newVal => {
+    if (emulator && newVal !== undefined) {
+        emulator.setFillColor(newVal)
+    }
+})
+
+// Listen for player 1 key map changes
+watch(() => props.emulatorConfig.player1KeyMap, newVal => {
+    if (emulator && newVal !== undefined) {
+        emulator.setupKeyboadController(1, newVal)
+    }
+})
+
+// Listen for player 2 key map changes
+watch(() => props.emulatorConfig.player2KeyMap, newVal => {
+    if (emulator && newVal !== undefined) {
+        emulator.setupKeyboadController(2, newVal)
+    }
+})
+
+// Listen for clip 8px changes
+watch(() => props.emulatorConfig.clip8px, newVal => {
+    if (emulator && typeof newVal === 'boolean') {
+        emulator.setClip8px(newVal)
+    }
+})
+
 // Enable audio on user interaction
 const enableAudioOnInteraction = async() => {
     if (emulator) {
@@ -121,7 +149,7 @@ const enableAudioOnInteraction = async() => {
             document.removeEventListener('keydown', enableAudioOnInteraction)
             document.removeEventListener('touchstart', enableAudioOnInteraction)
         }
-        catch (error) {
+        catch(error) {
             if (props.debugMode) {
                 console.error('Audio context activation failed:', error)
             }
@@ -159,7 +187,7 @@ onMounted(async() => {
             await start()
         }
     }
-    catch (error) {
+    catch(error) {
         const err = error instanceof Error ? error : new Error(String(error))
         errorMessage.value = err.message
         if (props.debugMode) {
@@ -280,7 +308,7 @@ function downloadSaveState(): void {
         document.body.removeChild(link)
         URL.revokeObjectURL(url)
     }
-    catch (error) {
+    catch(error) {
         if (props.debugMode) {
             console.error('Failed to save state:', error)
         }
@@ -312,7 +340,7 @@ async function uploadSaveState(): Promise<void> {
                     reject(new Error('Failed to load save state'))
                 }
             }
-            catch (error) {
+            catch(error) {
                 reject(error)
             }
         }

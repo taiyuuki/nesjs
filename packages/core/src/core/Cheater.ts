@@ -86,7 +86,7 @@ export class Cheater {
                 cheat,
             )
         }
-        catch (_error) {
+        catch(_error) {
             throw new Error(`Invalid cheat code format: ${code}`)
         }
     }
@@ -349,7 +349,7 @@ export class Cheater {
                 const code = parts[0]
                 this.addCheat(code)
             }
-            catch (error) {
+            catch(error) {
                 console.warn(`Failed to parse cheat line: "${trimmedLine}"`, error)
             }
         }

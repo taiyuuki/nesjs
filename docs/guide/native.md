@@ -19,9 +19,19 @@ A browser-native implementation built on `@nesjs/core`, providing ready-to-use C
 
 ## Installation
 
-```bash
+::: code-group
+```bash [npm]
 npm install @nesjs/native
 ```
+
+```bash [yarn]
+yarn add @nesjs/native
+```
+
+```bash [pnpm]
+pnpm add @nesjs/native
+```
+:::
 
 ## Quick Start
 

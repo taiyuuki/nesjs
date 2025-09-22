@@ -83,7 +83,7 @@ export class VideoPlayer {
         try {
             this.videoData = parser.parseMovie(content)
         }
-        catch (error) {
+        catch(error) {
             console.error(`Failed to parse movie file ${type}:`, error)
 
             return null
@@ -106,7 +106,7 @@ export class VideoPlayer {
         try {
             return parser.serializeMovie(movieData)
         }
-        catch (error) {
+        catch(error) {
             console.error('Failed to serialize movie data:', error)
 
             return null

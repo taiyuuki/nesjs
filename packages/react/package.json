@@ -1,8 +1,8 @@
 {
-  "name": "@nesjs/vue3",
+  "name": "@nesjs/react",
   "version": "2.1.1",
-  "module": "./dist/nesjs-vue.es.js",
-  "main": "./dist/nesjs-vue.umd.js",
+  "module": "./dist/nesjs-react.es.js",
+  "main": "./dist/nesjs-react.umd.js",
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
@@ -18,27 +18,24 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/nesjs-vue.es.js",
-      "require": "./dist/nesjs-vue.umd.js"
+      "import": "./dist/nesjs-react.es.js",
+      "require": "./dist/nesjs-react.umd.js"
     }
   },
   "scripts": {
-    "lint": "eslint --fix",
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "clean": "rimraf dist",
-    "typecheck": "vue-tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "preview": "vite preview"
+    "build": "vite build && tsc --emitDeclarationOnly --outDir dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@nesjs/native": "workspace:*"
   },
   "devDependencies": {
     "@taiyuuki/eslint-config": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@types/node": "catalog:",
-    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "rollup-plugin-delete": "catalog:",
@@ -46,10 +43,11 @@
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:",
-    "vue": "catalog:",
-    "vue-tsc": "catalog:"
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "peerDependencies": {
-    "vue": ">=3.2.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   }
 }

@@ -726,7 +726,7 @@ export class PPU {
                     
                     index = y
                     sprpxl 
-                    = ((this.spriteshiftregH[y] & 1) << 1) + (this.spriteshiftregL[y] & 1)
+                        = ((this.spriteshiftregH[y] & 1) << 1) + (this.spriteshiftregL[y] & 1)
                 }
                 this.spriteshiftregH[y] >>= 1
                 this.spriteshiftregL[y] >>= 1

@@ -51,7 +51,7 @@ export class MapperRegistry {
         
                     return MapperClass
                 }
-                catch (error) {
+                catch(error) {
                     console.error(`Failed to load mapper ${mapperNumber}:${submapper}:`, error)
         
                     return null
@@ -78,7 +78,7 @@ export class MapperRegistry {
     
                 return MapperClass
             }
-            catch (error) {
+            catch(error) {
                 console.error(`Failed to load mapper ${mapperNumber}:`, error)
     
                 return null
@@ -121,7 +121,7 @@ export async function getMapper(loader: ROMLoader): Promise<Mapper> {
 
         return mapper
     }
-    catch (_) {
+    catch(_) {
         throw new Error(`Unsupport Mapper Type: ${loader.mappertype}`)  
     }
 }

@@ -1,9 +1,0 @@
-{
-    "recommendations": [
-        "ms-vscode.vscode-typescript-next",
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        "Vue.volar",
-        "ms-vscode.vscode-json"
-    ]
-}

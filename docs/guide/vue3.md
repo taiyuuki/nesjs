@@ -19,9 +19,19 @@ A Vue 3 component wrapper for [@nesjs/native](./native), providing a ready-to-us
 
 ## Installation
 
-```bash
+::: code-group
+```bash [npm]
 npm install @nesjs/vue3
 ```
+
+```bash [yarn]
+yarn add @nesjs/vue3
+```
+
+```bash [pnpm]
+pnpm add @nesjs/vue3
+```
+:::
 
 ## Quick Start
 
@@ -145,7 +155,7 @@ app.mount('#app')
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `rom` | `string | Uint8Array | ArrayBuffer | Blob` | - | ROM data source (required) |
+| `rom` | `string` \| `Uint8Array` \| `ArrayBuffer` \| `Blob` | - | ROM data source (required) |
 | `autoStart` | `boolean` | `false` | Auto start the game |
 | `volume` | `number` | `50` | Volume level (0-100) |
 | `debugMode` | `boolean` | `false` | Enable debug mode |
@@ -402,14 +412,23 @@ const loadFromUrl = () => {
 ```vue
 <script setup>
 import { ref, computed } from 'vue'
+import { NESControllerButton } from '@nesjs/core'
 
 const nesRef = ref()
-const debugMode = ref(false)
 
-const isLoading = computed(() => nesRef.value?.isLoading)
-const isPlaying = computed(() => nesRef.value?.isPlaying) 
-const romInfo = computed(() => nesRef.value?.getROMInfo())
-const debugInfo = computed(() => nesRef.value?.getDebugInfo())
+const isMobile = computed(() => {
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+})
+
+const pressButton = (button) => {
+  const gamepad = nesRef.value?.emulator?.getGamepad(1)
+  gamepad?.setButton(NESControllerButton[button], 1)
+}
+
+const releaseButton = (button) => {
+  const gamepad = nesRef.value?.emulator?.getGamepad(1)  
+  gamepad?.setButton(NESControllerButton[button], 0)
+}
 </script>
 
 <template>
@@ -439,27 +458,6 @@ const debugInfo = computed(() => nesRef.value?.getDebugInfo())
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from 'vue'
-import { NESControllerButton } from '@nesjs/core'
-
-const nesRef = ref()
-
-const isMobile = computed(() => {
-  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-})
-
-const pressButton = (button) => {
-  const gamepad = nesRef.value?.emulator?.getGamepad(1)
-  gamepad?.setButton(NESControllerButton[button], 1)
-}
-
-const releaseButton = (button) => {
-  const gamepad = nesRef.value?.emulator?.getGamepad(1)  
-  gamepad?.setButton(NESControllerButton[button], 0)
-}
-</script>
 
 <style scoped>
 .mobile-container {

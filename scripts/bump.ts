@@ -8,7 +8,7 @@ async function bump() {
     const bumpType = process.argv[2]
 
     const packageFiles = fg.sync(['**/package.json'], {
-        ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
+        ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/cache/**'],
         absolute: true,
     })
 

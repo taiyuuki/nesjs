@@ -5,7 +5,7 @@ function runCommand(command: string) {
     try {
         return execSync(command, { encoding: 'utf8', stdio: 'pipe' })
     }
-    catch (error: any) {
+    catch(error: any) {
         return error.stdout || error.message
     }
 }
@@ -20,7 +20,7 @@ function checkProjectHealth() {
         runCommand('pnpm list')
         console.log(green('✅ 依赖安装正常'))
     }
-    catch (_error) {
+    catch(_error) {
         console.log(red('❌ 依赖安装有问题'))
     }
 
@@ -30,7 +30,7 @@ function checkProjectHealth() {
         runCommand('pnpm lint')
         console.log(green('✅ 代码风格正常'))
     }
-    catch (_error) {
+    catch(_error) {
         console.log(red('❌ 代码风格有问题'))
     }
 
@@ -40,7 +40,7 @@ function checkProjectHealth() {
         runCommand('pnpm typecheck')
         console.log(green('✅ 类型检查通过'))
     }
-    catch (_error) {
+    catch(_error) {
         console.log(red('❌ 类型检查有问题'))
     }
 
@@ -50,7 +50,7 @@ function checkProjectHealth() {
         runCommand('pnpm build')
         console.log(green('✅ 构建成功'))
     }
-    catch (_error) {
+    catch(_error) {
         console.log(red('❌ 构建失败'))
     }
 
@@ -60,7 +60,7 @@ function checkProjectHealth() {
         runCommand('pnpm test')
         console.log(green('✅ 测试通过'))
     }
-    catch (_error) {
+    catch(_error) {
         console.log(red('❌ 测试失败'))
     }
 

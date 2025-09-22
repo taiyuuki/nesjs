@@ -41,7 +41,7 @@ class WebNESAudioOutput implements AudioOutputInterface {
 
             this.isInitialized = true
         }
-        catch (error) {
+        catch(error) {
             console.error('Failed to initialize WebAudio:', error)
             throw error
         }

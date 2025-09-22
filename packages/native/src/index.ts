@@ -125,7 +125,7 @@ class NESEmulator {
 
             return true
         }
-        catch (error) {
+        catch(error) {
             console.error(`Failed to enable audio: ${error}`)
 
             return false
@@ -148,6 +148,14 @@ class NESEmulator {
         this.renderer.setSmoothing(smoothing)
     }
 
+    public setClip8px(clip: boolean) {
+        this.renderer.setClip8px(clip)
+    }
+
+    public setFillColor(color: string | [number, number, number, number]) {
+        this.renderer.setFillColor(color)
+    }
+
     public addCheat(code: string) {
         const cheater = this.nes.getCheater()
         if (!cheater) return
@@ -157,7 +165,7 @@ class NESEmulator {
 
             return true
         }
-        catch (error) {
+        catch(error) {
             console.error(error)
 
             return false

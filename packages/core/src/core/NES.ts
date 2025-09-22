@@ -247,7 +247,7 @@ export class NES {
             //     this.videoPlayer = new VideoPlayer(this)
             // }
         }
-        catch (error) {
+        catch(error) {
             const err = error instanceof Error ? error : new Error(String(error))
             this.events.onError?.(err)
             throw err
@@ -472,7 +472,7 @@ export class NES {
 
             return this.loadSaveState(saveData)
         }
-        catch (error) {
+        catch(error) {
             console.error('Failed to load binary save state:', error)
 
             return false
@@ -555,7 +555,7 @@ export class NES {
 
             return true
         } 
-        catch (error) {
+        catch(error) {
             console.error('Failed to load save state:', error)
 
             return false

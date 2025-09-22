@@ -64,7 +64,7 @@ export class FM2Parser implements VideoParserInterface {
                 }
                 frameNumber++
             }
-            catch (error) {
+            catch(error) {
                 console.warn(`Failed to parse frame line ${i + 1}: ${line}`, error)
             }
         }

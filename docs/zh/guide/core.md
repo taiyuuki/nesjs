@@ -23,9 +23,19 @@ NES (Nintendo Entertainment System) 模拟器核心库，提供完整的 NES 硬
 
 ## 安装
 
-```bash
+::: code-group
+```bash [npm]
 npm install @nesjs/core
 ```
+
+```bash [yarn]
+yarn add @nesjs/core
+```
+
+```bash [pnpm]
+pnpm add @nesjs/core
+```
+:::
 
 ## 快速开始
 

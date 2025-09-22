@@ -19,9 +19,19 @@
 
 ## 安装
 
-```bash
+::: code-group
+```bash [npm]
 npm install @nesjs/native
 ```
+
+```bash [yarn]
+yarn add @nesjs/native
+```
+
+```bash [pnpm]
+pnpm add @nesjs/native
+```
+:::
 
 ## 快速开始
 

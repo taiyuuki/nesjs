@@ -19,9 +19,19 @@
 
 ## 安装
 
-```bash
+::: code-group
+```bash [npm]
 npm install @nesjs/vue3
 ```
+
+```bash [yarn]
+yarn add @nesjs/vue3
+```
+
+```bash [pnpm]
+pnpm add @nesjs/vue3
+```
+:::
 
 ## 快速开始
 
@@ -145,7 +155,7 @@ app.mount('#app')
 
 | 属性 | 类型 | 默认值 | 描述 |
 |------|------|--------|------|
-| `rom` | `string | Uint8Array | ArrayBuffer | Blob` | - | ROM 数据源（必需）|
+| `rom` | `string` \| `Uint8Array` \| `ArrayBuffer` \| `Blob` | - | ROM 数据源（必需）|
 | `autoStart` | `boolean` | `false` | 是否自动开始游戏 |
 | `volume` | `number` | `50` | 音量大小 (0-100) |
 | `debugMode` | `boolean` | `false` | 是否开启调试模式 |
@@ -337,20 +347,6 @@ const romUrl = '/games/your-rom.nes'
 ### 多种 ROM 数据源支持
 
 ```vue
-<template>
-  <div>
-    <!-- 文件上传 -->
-    <input type="file" @change="handleFileUpload" accept=".nes">
-    
-    <!-- 从URL加载 -->
-    <input v-model="romUrl" placeholder="输入ROM URL">
-    <button @click="loadFromUrl">从URL加载</button>
-    
-    <!-- 模拟器 -->
-    <NesVue v-if="romData" :rom="romData" />
-  </div>
-</template>
-
 <script setup>
 import { ref } from 'vue'
 
@@ -372,11 +368,37 @@ const loadFromUrl = () => {
   }
 }
 </script>
+
+<template>
+  <div>
+    <!-- 文件上传 -->
+    <input type="file" @change="handleFileUpload" accept=".nes">
+    
+    <!-- 从URL加载 -->
+    <input v-model="romUrl" placeholder="输入ROM URL">
+    <button @click="loadFromUrl">从URL加载</button>
+    
+    <!-- 模拟器 -->
+    <NesVue v-if="romData" :rom="romData" />
+  </div>
+</template>
 ```
 
 ### 游戏状态管理示例
 
 ```vue
+<script setup>
+import { ref, computed } from 'vue'
+
+const nesRef = ref()
+const debugMode = ref(false)
+
+const isLoading = computed(() => nesRef.value?.isLoading)
+const isPlaying = computed(() => nesRef.value?.isPlaying) 
+const romInfo = computed(() => nesRef.value?.getROMInfo())
+const debugInfo = computed(() => nesRef.value?.getDebugInfo())
+</script>
+
 <template>
   <div>
     <div class="status-bar">
@@ -399,18 +421,6 @@ const loadFromUrl = () => {
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from 'vue'
-
-const nesRef = ref()
-const debugMode = ref(false)
-
-const isLoading = computed(() => nesRef.value?.isLoading)
-const isPlaying = computed(() => nesRef.value?.isPlaying) 
-const romInfo = computed(() => nesRef.value?.getROMInfo())
-const debugInfo = computed(() => nesRef.value?.getDebugInfo())
-</script>
 ```
 
 ### 移动端适配示例
@@ -518,13 +528,6 @@ const releaseButton = (button) => {
 由于浏览器安全策略，音频需要用户交互后才能激活。组件已自动处理这个问题，但如果仍有问题，可以手动处理：
 
 ```vue
-<template>
-  <div>
-    <button v-if="!audioEnabled" @click="enableAudio">启用音频</button>
-    <NesVue ref="nesRef" :rom="romUrl" />
-  </div>
-</template>
-
 <script setup>
 const audioEnabled = ref(false)
 
@@ -533,6 +536,14 @@ const enableAudio = async () => {
   audioEnabled.value = true
 }
 </script>
+
+<template>
+  <div>
+    <button v-if="!audioEnabled" @click="enableAudio">启用音频</button>
+    <NesVue ref="nesRef" :rom="romUrl" />
+  </div>
+</template>
+
 ```
 
 ### ROM 文件加载失败
