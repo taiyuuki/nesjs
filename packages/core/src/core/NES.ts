@@ -259,11 +259,21 @@ export class NES {
      */
     public reset(): void {
         if (this.cpu) {
-            this.mapper?.reset()
-            this.cpu.reset()
-            this.cheater?.clearCheats()
-            this.gamepad1.reset()
-            this.gamepad2.reset()
+            this.cpu.reset() // 先重置CPU（这会禁用APU）
+            this.mapper?.reset() // 然后重置mapper（NSF会重新配置音频）
+            
+            // 最后确保APU状态正确，特别是对NSF重要
+            if (this.apu && this.cpuram) {
+
+                // 彻底清理APU寄存器，避免长鸣声
+                for (let i = 0x4000; i <= 0x4013; ++i) {
+                    this.cpuram.write(i, 0)
+                }
+                this.cpuram.write(0x4015, 0x00) // 先彻底禁用所有通道
+                this.cpuram.write(0x4017, 0x40) // 重置帧计数器
+                this.cpuram.write(0x4015, 0x0f) // 重新启用基础通道
+            }
+            
             this.frameCount = 1
         }
     }

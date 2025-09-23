@@ -10,7 +10,7 @@ const romUrl = ref<string | Blob>('Super Mario Bros (JU).nes')
 const emulatorConfig = reactive({
     scale: 3,
     smoothing: false,
-    clip8px: false,
+    clip8px: true,
     audioBufferSize: 1024,
     audioSampleRate: 44100,
 })
