@@ -1,6 +1,6 @@
 {
   "name": "@nesjs/vue3",
-  "version": "2.1.3",
+  "version": "2.1.5",
   "module": "./dist/nesjs-vue.es.js",
   "main": "./dist/nesjs-vue.umd.js",
   "types": "./dist/index.d.ts",
