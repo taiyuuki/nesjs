@@ -47,7 +47,6 @@
     "rollup-plugin-delete": "catalog:",
     "rollup-plugin-dts": "catalog:",
     "rollup-plugin-glob-import": "catalog:",
-    "rollup-plugin-node-builtins": "catalog:",
     "rollup-plugin-node-globals": "catalog:",
     "rollup-plugin-typescript2": "catalog:",
     "typescript": "catalog:",

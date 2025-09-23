@@ -59,7 +59,7 @@
     "prompts": "catalog:",
     "rollup": "catalog:",
     "typescript": "catalog:",
-    "vitepress": "1.6.4",
+    "vitepress": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:"
   },
