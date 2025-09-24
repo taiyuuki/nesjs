@@ -89,6 +89,7 @@ export class NES {
     private controller1: ControllerAdapter
     private controller2: ControllerAdapter
     private audioInterface?: AudioOutputInterface
+    private fdsBIOS?: Uint8Array
 
     // 性能统计
     public frameCount: number = 1
@@ -139,6 +140,13 @@ export class NES {
         }
 
     // 注入音频接口
+    }
+
+    /**
+     * 注入 FDS BIOS（8KB）
+     */
+    public setFDSBIOS(bios: Uint8Array): void {
+        this.fdsBIOS = bios
     }
 
     /**
@@ -219,6 +227,26 @@ export class NES {
             this.mapper.cpuram = this.cpuram  
             this.mapper.ppu = this.ppu
             this.frameCount = 1
+
+            // 如为 FDS，要求已注入 BIOS，并传递给 FDSMapper
+            // FDS 在 ROMLoader 中 mappertype 特殊标记为 -2
+            if ((loader as any).isFDS) {
+                if (!this.fdsBIOS) {
+                    throw new Error('FDS BIOS not set. Call setFDSBIOS(Uint8Array) before loading .fds')
+                }
+                
+                // 延迟导入类型，避免编译依赖
+                try {
+                    const fdsMapper = this.mapper as any
+                    if (typeof fdsMapper.setBIOS === 'function') {
+                        fdsMapper.setBIOS(this.fdsBIOS)
+                    }
+                }
+                catch(_err) {
+
+                    // ignore
+                }
+            }
 
             // if (this.mapper.supportsSaves()) {
             //     this.loadSRAM()

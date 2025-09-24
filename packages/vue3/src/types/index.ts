@@ -45,6 +45,12 @@ export interface NESEvents extends EmulatorEvents {
  */
 export interface NESComponentExpose {
 
+    /** Inject FDS BIOS (8KB) */
+    setFDSBIOS(bios: Uint8Array): void
+
+    /** Get NES core instance for debugging */
+    getNES(): any
+
     /** Start the game */
     start(): Promise<void>
 

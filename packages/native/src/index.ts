@@ -119,6 +119,10 @@ class NESEmulator {
         this.nes.reset()
     }
 
+    public setFDSBIOS(bios: Uint8Array) {
+        this.nes.setFDSBIOS(bios)
+    }
+
     public async enableAudio() {
         try {
             await this.audioOutput.start()

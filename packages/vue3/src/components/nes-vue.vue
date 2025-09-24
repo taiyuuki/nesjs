@@ -210,6 +210,13 @@ onBeforeUnmount(() => {
     document.removeEventListener('touchstart', enableAudioOnInteraction)
 })
 
+function setFDSBIOS(bios: Uint8Array) {
+    if (!emulator) {
+        throw new Error('Emulator not initialized')
+    }
+    emulator.setFDSBIOS(bios)
+}
+
 // Control functions
 async function start(): Promise<void> {
     if (!emulator) {
@@ -379,7 +386,13 @@ function getDebugInfo() {
     return emulator?.nes.getDebugInfo()
 }
 
+function getNES() {
+    return emulator?.nes || null
+}
+
 defineExpose<NESComponentExpose>({
+    setFDSBIOS,
+    getNES,
     start,
     reset,
     stop,

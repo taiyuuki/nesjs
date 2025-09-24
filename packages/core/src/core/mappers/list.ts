@@ -24,6 +24,7 @@
 
 export const MAPPER_LIST: Record<number, string | undefined> = {
     '-1': 'NSFMapper',
+    '-2': 'FDSMapper',
     '0': 'NromMapper',
     '1': 'MMC1Mapper',
     '2': 'UnromMapper',
