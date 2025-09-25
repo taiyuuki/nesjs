@@ -155,43 +155,6 @@ export default class FDSMapper extends Mapper {
 
         // 预加载游戏代码到内存
         this.preloadGameCode()
-        
-        // 记录初始化时间，用于CHR保护策略
-        this.initTime = Date.now()
-        
-        // 设置定时器，在游戏运行一段时间后输出内存状态用于对比
-        setTimeout(() => {
-            this.dumpMemoryForComparison()
-        }, 3000)
-        
-        // 5秒后关闭CHR保护，允许正常的图形数据写入
-        setTimeout(() => {
-            this.chrProtectionEnabled = false
-            
-            // 重置CHR为干净状态，让游戏能正常更新图形数据
-            console.log('[FDSDBG] chrReset Resetting CHR to clean state before disabling protection')
-            
-            // 清空CHR RAM，让游戏从头开始绘制图形
-            this.chr.fill(0)
-            
-            // 只保留VirtuaNES期望的前16字节初始数据
-            const expectedInitData = [
-                0x00, 0x4f, 0xd0, 0x01, 0x00, 0x28, 0x20, 0x00, 
-                0x05, 0x43, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00,
-            ]
-            
-            for (let i = 0; i < expectedInitData.length; i++) {
-                this.chr[i] = expectedInitData[i]
-            }
-            
-            console.log('[FDSDBG] chrProtectionDisabled CHR protection disabled, CHR reset to clean state')
-            this.dumpCHRData('after_protection_disabled_and_reset')
-        }, 5000)
-        
-        // 10秒后再次导出CHR数据（此时应该进入游戏了）
-        setTimeout(() => {
-            this.dumpCHRData('game_running')
-        }, 10000)
     
     }
 
@@ -300,55 +263,16 @@ export default class FDSMapper extends Mapper {
         // 预加载机制已经在初始化时正确处理了游戏代码
         // 不再需要实时自动写入逻辑，避免覆盖预加载的正确内容
     }
-    
-    private isValidGameCode(byte: number): boolean {
 
-        // 常见的6502指令开头
-        const validOpcodes = [
-            0xD8, 0xA9, 0x8D, 0xA2, 0x9A, 0xAD, 0x10, 0x20, 0x58, 0x4C,
-            0xEE, 0x09, 0x60, 0x18, 0x78, 0xEA, 0xC9, 0xB0, 0xCA, 0xF0,
-            0xD0, 0x30, 0x90, 0x70, 0x50, 0xE6, 0xC6, 0xE8, 0x88, 0xC8,
-        ]
-
-        return validOpcodes.includes(byte)
-    }
 
     // 预加载游戏代码到内存，根据 VirtuaNES 的预期内容
     private preloadGameCode(): void {
         if (!this.fdsData || this.fdsData.length === 0) return
 
-        // 根据 VirtuaNES 反汇编，我们知道 $6000 处应该是这些字节
-        const expectedGameCode = [
-            0xD8, // CLD
-            0xA9, 0x10, // LDA #$10
-            0x8D, 0x00, 0x20, // STA PPU_CTRL
-            0xA2, 0xFF, // LDX #$FF
-            0x9A, // TXS
-            0xAD, 0x02, 0x20, // LDA PPU_STATUS
-            0x10, 0xFB, // BPL $600E
-            0xAD, 0x02, 0x20, // LDA PPU_STATUS
-            0x10, 0xFB, // BPL $600E
-            0xA0, 0xFE, // LDY #$FE
-            0xA2, 0x05, // LDX #$05
-        ]
 
         // 在 FDS 数据中寻找这个游戏代码序列
         let gameCodeStart = -1
-        for (let i = 0; i < this.fdsData.length - expectedGameCode.length; i++) {
-            let matches = 0
-            for (let j = 0; j < Math.min(8, expectedGameCode.length); j++) {
-                if (this.fdsData[i + j] === expectedGameCode[j]) {
-                    matches++
-                }
-            }
-            
-            // 如果匹配了前8个字节中的至少6个，认为找到了游戏代码
-            if (matches >= 6) {
-                gameCodeStart = i
-                console.log(`🎯 FOUND GAME CODE PATTERN at FDS offset: ${i}, matches: ${matches}/8`)
-                break
-            }
-        }
+
 
         if (gameCodeStart >= 0) {
 
