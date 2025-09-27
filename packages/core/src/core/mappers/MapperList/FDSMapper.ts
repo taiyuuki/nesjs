@@ -264,15 +264,12 @@ export default class FDSMapper extends Mapper {
         // 不再需要实时自动写入逻辑，避免覆盖预加载的正确内容
     }
 
-
     // 预加载游戏代码到内存，根据 VirtuaNES 的预期内容
     private preloadGameCode(): void {
         if (!this.fdsData || this.fdsData.length === 0) return
 
-
         // 在 FDS 数据中寻找这个游戏代码序列
-        let gameCodeStart = -1
-
+        const gameCodeStart = -1
 
         if (gameCodeStart >= 0) {
 

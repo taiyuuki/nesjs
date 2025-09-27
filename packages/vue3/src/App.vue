@@ -104,6 +104,7 @@ const checkGameCodeArea = () => {
       :volume="100"
       :auto-start="true"
       :emulator-config="emulatorConfig"
+      debug-mode
       class="nes-emulator"
       @loaded="getROMInfo"
     />

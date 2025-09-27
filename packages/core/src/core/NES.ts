@@ -230,7 +230,7 @@ export class NES {
 
             // 如为 FDS，要求已注入 BIOS，并传递给 FDSMapper
             // FDS 在 ROMLoader 中 mappertype 特殊标记为 -2
-            if ((loader as any).isFDS) {
+            if (loader.isFDS) {
                 if (!this.fdsBIOS) {
                     throw new Error('FDS BIOS not set. Call setFDSBIOS(Uint8Array) before loading .fds')
                 }

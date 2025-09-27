@@ -34,7 +34,6 @@ export class MapperRegistry {
         // 特殊处理：Mapper 4根据submapper区分MMC3和MMC6
         if (mapperNumber === 4) {
             const mapperTypeString = submapper === 1 ? 'MMC6Mapper' : 'MMC3Mapper'
-            
             if (dynamicMappers[mapperTypeString]) {
 
                 // 检查是否已经加载
@@ -114,14 +113,14 @@ export async function getMapper(loader: ROMLoader): Promise<Mapper> {
     try {
 
         const mapper = await mapperRegistry.createMapper(loader)
-
         if (!mapper) {
             throw new Error(`Unsupport Mapper Type: ${loader.mappertype}`)  
         }
 
         return mapper
     }
-    catch(_) {
+    catch(err) {
+        console.error(err)
         throw new Error(`Unsupport Mapper Type: ${loader.mappertype}`)  
     }
 }
