@@ -55,6 +55,7 @@ const getROMInfo = async() => {
       :volume="100"
       :auto-start="true"
       :emulator-config="emulatorConfig"
+      :debug-mode="true"
       class="nes-emulator"
       @loaded="getROMInfo"
     />

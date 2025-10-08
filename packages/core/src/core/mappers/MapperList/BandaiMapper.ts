@@ -1,6 +1,5 @@
-// FIXME: Mapper16的另一个版本，能运行但花屏
-import { MirrorType } from '../../types'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 export default class BandaiMapper extends Mapper {
 
@@ -10,18 +9,15 @@ export default class BandaiMapper extends Mapper {
     private interrupted = false
     
     // EEPROM simulation (for submapper 5)
-    private eepromData = new Uint8Array(256) // 24C02 EEPROM (256 bytes)
+    private eepromData = new Uint8Array(256)
     private eepromSDA = false
-    private eepromSCL = false
+    private eepromSCL = false  
     private eepromRead = false
-
-    private patch = 0
 
     override loadROM(): void {
         super.loadROM()
         
-        // PRG bank映射初始化
-        // $8000-$BFFF: 默认bank 0 (16KB)
+        // PRG bank映射初始化 - $8000-$BFFF: 默认bank 0 (16KB)
         for (let i = 0; i < 16; ++i) {
             this.prg_map[i] = i * 1024
         }
@@ -31,17 +27,13 @@ export default class BandaiMapper extends Mapper {
             this.prg_map[i] = this.prgsize - 1024 * (32 - i)
         }
         
-        // CHR bank映射初始化 - 8个1KB bank
+        // CHR bank初始化
         if (this.chrsize > 0) {
-
-            // CHR-ROM: 正常映射
             for (let i = 0; i < 8; ++i) {
                 this.chr_map[i] = i * 1024 % this.chrsize
             }
         }
         else {
-
-            // CHR-RAM: 设置为8KB CHR-RAM
             this.haschrram = true
             this.chrsize = 8192
             this.chr = new Array(8192).fill(0)
@@ -50,16 +42,12 @@ export default class BandaiMapper extends Mapper {
             }
         }
         
-        // PPU nametable指针初始化
         this.nt0 = this.pput0
         this.nt1 = this.pput1
         this.nt2 = this.pput2
         this.nt3 = this.pput3
         
-        // 设置初始镜像模式（从ROM头部读取）
         this.setmirroring(this.scrolltype)
-        
-        // 初始化EEPROM数据为0xFF
         this.eepromData.fill(0xFF)
     }
 
@@ -70,12 +58,12 @@ export default class BandaiMapper extends Mapper {
             if (this.submapper === 5 && this.eepromRead) {
                 const data = this.readEEPROM()
 
-                return (data ? 0x10 : 0x00) | addr >> 8 // 其他位为open bus
+                return (data ? 0x10 : 0x00) | addr >> 8
             }
             
-            // Submapper 4: 这个范围用于寄存器写入，读取返回open bus
+            // Submapper 4: return open bus
             if (this.submapper === 4) {
-                return addr >> 8 // open bus
+                return addr >> 8
             }
         }
         
@@ -133,11 +121,11 @@ export default class BandaiMapper extends Mapper {
             case 0x0A:
 
                 // IRQ Control
-                this.acknowledgeIRQ() // 先确认IRQ
+                this.acknowledgeIRQ()
                 this.irqEnabled = (data & 0x01) !== 0
                 
-                // Submapper 5: 复制latch到counter
-                if (this.submapper === 5) {
+                // Submapper 5/LZ93D50 或 Submapper 0 在$8000+范围：复制latch到counter
+                if (this.submapper === 5 || this.submapper === 0 && addr >= 0x8000) {
                     this.irqCounter = this.irqLatch
                 }
                 
@@ -150,7 +138,7 @@ export default class BandaiMapper extends Mapper {
             case 0x0B:
 
                 // IRQ Counter Low Byte
-                if (this.submapper === 4) {
+                if (this.submapper === 4 || this.submapper === 0 && addr < 0x8000) {
 
                     // FCG-1/2: 直接写入counter
                     this.irqCounter = this.irqCounter & 0xFF00 | data
@@ -165,7 +153,7 @@ export default class BandaiMapper extends Mapper {
             case 0x0C:
 
                 // IRQ Counter High Byte
-                if (this.submapper === 4) {
+                if (this.submapper === 4 || this.submapper === 0 && addr < 0x8000) {
 
                     // FCG-1/2: 直接写入counter
                     this.irqCounter = this.irqCounter & 0x00FF | data << 8
@@ -256,9 +244,9 @@ export default class BandaiMapper extends Mapper {
         }
     }
 
-    override cpucycle(cycles: number): void {
+    override cpucycle(_cycles: number): void {
         if (this.irqEnabled && this.irqCounter > 0) {
-            this.irqCounter -= cycles
+            this.irqCounter -= 1
             
             if (this.irqCounter <= 0) {
                 this.irqCounter = 0
@@ -267,19 +255,18 @@ export default class BandaiMapper extends Mapper {
         }
     }
 
-    // 简化的EEPROM模拟
     private readEEPROM(): boolean {
 
-        // 这是一个简化的实现，实际的I2C协议更复杂
-        // 对于大多数游戏来说，简单返回false就足够了
+        // 简化实现：总是返回false
+        // 真正的实现需要完整的I2C协议状态机
+        // EEPROM的实现需要大量代码，但它只与游戏内存档相关，不影响游戏核心运行功能，因此这里省略实现。
         return false
     }
 
     private handleEEPROM(): void {
 
-        // 简化的EEPROM处理
-        // 实际实现需要完整的I2C协议状态机
-        // 对于大多数游戏来说，空实现就足够了
+        // 简化实现：空操作
+        // 真正的实现需要处理I2C的SCL/SDA信号
     }
 
     override ppuRead(addr: number): number {

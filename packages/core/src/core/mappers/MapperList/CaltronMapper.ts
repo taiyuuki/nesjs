@@ -1,5 +1,5 @@
-import { MirrorType } from 'src/core/types'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 export default class CaltronMapper extends Mapper {
     private reg = 0

@@ -1,5 +1,5 @@
 import { Mapper } from '../Mapper'
-import { MirrorType } from '../../types'
+import { MirrorType } from '@/types'
 
 export default class Mapper212 extends Mapper {
     loadROM(): void {

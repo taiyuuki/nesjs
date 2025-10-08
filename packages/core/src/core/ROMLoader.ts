@@ -15,6 +15,11 @@ export class ROMLoader {
     public header: Uint8Array = new Uint8Array()
     private readonly romData: Uint8Array
 
+    // FDS 专用字段
+    public isFDS: boolean = false
+    public fdsSides: number = 0
+    public fdsData: Uint8Array = new Uint8Array()
+
     constructor(romData: Uint8Array) {
         this.romData = romData
     }
@@ -127,6 +132,32 @@ export class ROMLoader {
             this.chroff = 0 + this.prgsize
             
         } 
+        else if (this.header[0] === 0x46 && this.header[1] === 0x44
+            && this.header[2] === 0x53 && this.header[3] === 0x1A) {
+
+            // FDS 镜像（原生 .fds）
+            // 典型 16 字节头："FDS\x1A"，byte4 通常为盘面数
+            this.isFDS = true
+            this.mappertype = -2 // 特别标记为 FDSMapper
+            this.submapper = 0
+            this.scrolltype = MirrorType.H_MIRROR // FDS 使用 CHR-RAM，VRAM 镜像由 PPU 管理
+            this.tvtype = TVType.NTSC
+
+            // 重新读取 16 字节 header（已读），解析盘面数（如存在）
+            this.fdsSides = this.header[4] || 1
+
+            // FDS 数据紧随其后
+            const totalLen = this.romData.length
+            const dataStart = 16
+            this.fdsData = this.romData.slice(dataStart, totalLen)
+
+            // 对于 FDS，不使用 iNES 的 PRG/CHR 概念
+            this.prgsize = 0
+            this.chrsize = 0
+            this.prgoff = 0
+            this.chroff = 0
+            this.savesram = true // FDS 具有可写 RAM
+        }
         else if (this.header[0] === 0x4E && this.header[1] === 0x45
             && this.header[2] === 0x53 && this.header[3] === 0x4D
             && this.header[4] === 0x1a) {

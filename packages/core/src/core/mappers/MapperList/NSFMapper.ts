@@ -1,4 +1,4 @@
-import { decompressArray } from 'src/core/utils'
+import { decompressArray } from '../../utils'
 import { Mapper } from '../Mapper'
 import { BadMapperException, MirrorType, TVType, Utils } from '../../types'
 import { Namco163SoundChip } from '../../audio/Namco163SoundChip'

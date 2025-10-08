@@ -1,6 +1,6 @@
-import { IRQMETHOD } from 'src/core/interfaces'
-import { MirrorType } from 'src/core/types'
 import { Mapper } from '../Mapper'
+import { IRQMETHOD } from '@/interfaces'
+import { MirrorType } from '@/types'
 
 export default class Mapper245 extends Mapper {
     reg = new Uint8Array(8)

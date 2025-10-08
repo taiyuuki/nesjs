@@ -16,6 +16,7 @@ export const dynamicMappers: Record<string, DynamicImport<typeof Mapper>> = {
     ColorDreamsMapper: () => import('./MapperList/ColorDreamsMapper'),
     CrazyClimberMapper: () => import('./MapperList/CrazyClimberMapper'),
     CrimeBustersMapper: () => import('./MapperList/CrimeBustersMapper'),
+    FDSMapper: () => import('./MapperList/FDSMapper'),
     FME7Mapper: () => import('./MapperList/FME7Mapper'),
     GnromMapper: () => import('./MapperList/GnromMapper'),
     IremH3001Mapper: () => import('./MapperList/IremH3001Mapper'),

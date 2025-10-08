@@ -1,5 +1,5 @@
-import { MirrorType } from 'src/core/types'
 import MMC3Mapper from './MMC3Mapper'
+import { MirrorType } from '@/types'
 
 export default class Mapper74 extends MMC3Mapper {
     private reg = new Uint8Array(8)

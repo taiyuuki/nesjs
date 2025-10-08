@@ -1,4 +1,4 @@
-import type { ROMLoader } from 'src/core/ROMLoader'
+import type { ROMLoader } from '../../ROMLoader'
 import { Mapper } from '../Mapper'
 
 export default class Mapper34 extends Mapper {

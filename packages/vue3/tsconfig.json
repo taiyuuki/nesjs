@@ -15,13 +15,7 @@
       "esnext",
       "dom"
     ],
-    "types": [],
-    "baseUrl": "./",
-    "paths": {
-      "src/*": [
-        "src/*"
-      ],
-    }
+    "types": []
   },
   "include": [
     "src/**/*.ts",

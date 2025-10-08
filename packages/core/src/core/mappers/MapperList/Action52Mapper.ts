@@ -1,5 +1,5 @@
 import { Mapper } from '../Mapper'
-import { MirrorType } from '../../types'
+import { MirrorType } from '@/types'
 
 export default class Action52Mapper extends Mapper {
     private ram: number[] = [0, 0, 0, 0]

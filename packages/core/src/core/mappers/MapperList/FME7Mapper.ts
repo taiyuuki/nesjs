@@ -1,4 +1,4 @@
-import { Sunsoft5BSoundChip } from 'src/core/audio/Sunsoft5BSoundChip'
+import { Sunsoft5BSoundChip } from '../../audio/Sunsoft5BSoundChip'
 import { MirrorType, Utils } from '../../types'
 import { Mapper } from '../Mapper'
 
