@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "useDefineForClassFields": true,
     "jsx": "preserve",
+    "types": [],
     "lib": [
       "esnext",
       "dom"

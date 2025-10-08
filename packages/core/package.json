@@ -1,6 +1,6 @@
 {
   "name": "@nesjs/core",
-  "version": "2.1.4",
+  "version": "2.1.6",
   "description": "",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -47,7 +47,6 @@
     "rollup-plugin-delete": "catalog:",
     "rollup-plugin-dts": "catalog:",
     "rollup-plugin-glob-import": "catalog:",
-    "rollup-plugin-node-builtins": "catalog:",
     "rollup-plugin-node-globals": "catalog:",
     "rollup-plugin-typescript2": "catalog:",
     "typescript": "catalog:",

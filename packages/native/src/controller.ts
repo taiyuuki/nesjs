@@ -179,7 +179,7 @@ class ControllerAdapter {
 
     trigger(keyboadCode: string, state: 0 | 1, interval: number) {
         const eventList = this._events[keyboadCode]
-        if (!eventList) return false
+        if (!eventList) return
         eventList.forEach(event => {
             const player = event.player as Player
             const controller = this.controller[player]
@@ -191,8 +191,6 @@ class ControllerAdapter {
                 this.autoFireManager.setAutoFire(player, nesButton, state === 1, interval)
             }
         })
-
-        return true
     }
 
     setAutoFire(player: Player, button: NESControllerButton, pressed: boolean, interval: number) {
@@ -369,17 +367,11 @@ export class NESController {
 
     private setupKeyboadEvents() {
         document.addEventListener('keydown', e => {
-            const callPreventDefault = this.adapter.trigger(e.code, 1, this.mashingSpeed)
-            if (callPreventDefault) {
-                e.preventDefault()
-            }
+            this.adapter.trigger(e.code, 1, this.mashingSpeed)
         })
 
         document.addEventListener('keyup', e => {
-            const callPreventDefault = this.adapter.trigger(e.code, 0, this.mashingSpeed)
-            if (callPreventDefault) {
-                e.preventDefault()
-            }
+            this.adapter.trigger(e.code, 0, this.mashingSpeed)
         })
     }
 

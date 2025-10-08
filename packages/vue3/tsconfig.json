@@ -15,7 +15,7 @@
       "esnext",
       "dom"
     ],
-    "skipLibCheck": true,
+    "types": [],
     "baseUrl": "./",
     "paths": {
       "src/*": [

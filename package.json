@@ -1,6 +1,6 @@
 {
   "name": "nesjs",
-  "version": "2.1.4",
+  "version": "2.1.6",
   "description": "A NES emulator library for JavaScript",
   "private": true,
   "type": "module",
@@ -59,7 +59,7 @@
     "prompts": "catalog:",
     "rollup": "catalog:",
     "typescript": "catalog:",
-    "vitepress": "1.6.4",
+    "vitepress": "catalog:",
     "vitest": "catalog:",
     "vue": "catalog:"
   },
