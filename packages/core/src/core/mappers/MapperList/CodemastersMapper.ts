@@ -47,20 +47,4 @@ export default class CodemastersMapper extends Mapper {
             }
         }
     }
-
-    public override getMapperState(): any {
-        const state = super.getMapperState()
-
-        return {
-            ...state,
-            bank: this.bank,
-        }
-    }
-
-    public override setMapperState(state: any): void {
-        super.setMapperState(state)
-        if (state.bank !== undefined) {
-            this.bank = state.bank
-        }
-    }
 }
