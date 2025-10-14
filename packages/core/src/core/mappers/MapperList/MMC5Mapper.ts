@@ -116,9 +116,11 @@ export default class MMC5Mapper extends Mapper {
         this.prgregs[0] = this.prgsize / 8192 - 1
         this.prgMode = 3
         this.setupPRG()
-        for (let i = 0; i < 8; ++i) {
-            this.chr_map[i] = 1024 * i
+        
+        for (let i = 0; i < 4; ++i) {
+            this.chrmapB[i] = 1024 * i % this.chrsize
         }
+        this.setupCHR()
         this.prgram = new Uint8Array(65536)
     }
 
@@ -361,6 +363,17 @@ export default class MMC5Mapper extends Mapper {
         }
     }
 
+    override ppuWrite(addr: number, data: number): void {
+        addr &= 0x3fff
+        if (addr < 0x2000 && this.haschrram) {
+            const chrIndex = this.chr_map[addr >> 10] + (addr & 1023)
+            this.chr[chrIndex] = data
+        }
+        else {
+            super.ppuWrite(addr, data)
+        }
+    }
+
     override ppuRead(addr: number): number {
         if (addr < 0x2000) {
             if (++this.fetchcount === 3) {
@@ -383,7 +396,12 @@ export default class MMC5Mapper extends Mapper {
                     }
                 }
 
-                return this.chr[this.chrmapB[addr >> 10 & 3] + (addr & 1023)]
+                if (this.haschrram) {
+                    return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
+                }
+                else {
+                    return this.chr[this.chrmapB[addr >> 10 & 3] + (addr & 1023)]
+                }
             }
         }
         else {
@@ -432,12 +450,6 @@ export default class MMC5Mapper extends Mapper {
     }
 
     setMirroring(ntsetup: number, exram: Uint8Array) {
-
-        // MMC5 的镜像模式：
-        // 0 = 内部 VRAM 的低 1KB (pput0)
-        // 1 = 内部 VRAM 的高 1KB (pput1)  
-        // 2 = 扩展 RAM (exram)
-        // 3 = 填充模式 (fillnt)
         
         // 设置 nametable 0
         switch (ntsetup & 3) {
@@ -448,7 +460,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt0 = this.pput1
                 break
             case 2:
-                this.nt0 = Array.from(exram)
+                this.nt0 = exram as any
                 break
             case 3:
                 this.nt0 = this.fillnt
@@ -469,7 +481,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt1 = this.pput1
                 break
             case 2:
-                this.nt1 = Array.from(exram)
+                this.nt1 = exram as any
                 break
             case 3:
                 this.nt1 = this.fillnt
@@ -490,7 +502,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt2 = this.pput1
                 break
             case 2:
-                this.nt2 = Array.from(exram)
+                this.nt2 = exram as any
                 break
             case 3:
                 this.nt2 = this.fillnt
@@ -511,7 +523,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt3 = this.pput1
                 break
             case 2:
-                this.nt3 = Array.from(exram)
+                this.nt3 = exram as any
                 break
             case 3:
                 this.nt3 = this.fillnt
