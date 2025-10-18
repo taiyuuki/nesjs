@@ -37,6 +37,7 @@ export const dynamicMappers: Record<string, DynamicImport<typeof Mapper>> = {
     Mapper152: () => import('./MapperList/Mapper152'),
     Mapper18: () => import('./MapperList/Mapper18'),
     Mapper182: () => import('./MapperList/Mapper182'),
+    Mapper18_old: () => import('./MapperList/Mapper18_old'),
     Mapper195: () => import('./MapperList/Mapper195'),
     Mapper200: () => import('./MapperList/Mapper200'),
     Mapper201: () => import('./MapperList/Mapper201'),

@@ -110,7 +110,7 @@ export class Mapper {
     
     protected prg: number[] = []
     protected chr: number[] = []
-    protected chr_map: number[] = []
+    public chr_map: number[] = []
     protected prg_map: number[] = []
     protected prgram: Uint8Array = new Uint8Array(8192)
     protected scrolltype: MirrorType = MirrorType.H_MIRROR

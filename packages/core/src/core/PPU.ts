@@ -576,8 +576,8 @@ export class PPU {
      * 获取名称表字�?
      */
     private fetchNTByte(): void {
-        
-        this.tileAddr = this.mapper.ppuRead((this.loopyV & 0xc00 | 0x2000) + (this.loopyV & 0x3ff)) * 16 + (this.bgpattern ? 0x1000 : 0)
+        const tileID = this.mapper.ppuRead((this.loopyV & 0xc00 | 0x2000) + (this.loopyV & 0x3ff)) & 0xFF
+        this.tileAddr = tileID * 16 + (this.bgpattern ? 0x1000 : 0)
     }
 
     /**
