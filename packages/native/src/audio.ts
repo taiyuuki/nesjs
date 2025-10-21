@@ -20,7 +20,6 @@ class WebNESAudioOutput implements AudioOutputInterface {
         this.isInitialized = false
         this.isPlaying = false
         this.volume = 0.5 
-
         const AudioContext = window.AudioContext
         this.audioContext = new AudioContext({
             sampleRate: this.sampleRate,
@@ -37,6 +36,17 @@ class WebNESAudioOutput implements AudioOutputInterface {
 
         try {
 
+            if (!this.audioContext) {
+                const AudioContext = window.AudioContext
+                this.audioContext = new AudioContext({
+                    sampleRate: this.sampleRate,
+                    latencyHint: 'interactive',
+                })
+
+                this.gainNode = this.audioContext.createGain()
+                this.gainNode.gain.value = this.volume
+                this.gainNode.connect(this.audioContext.destination)
+            }
             await this.setupAudioWorklet()
 
             this.isInitialized = true
@@ -98,7 +108,7 @@ class WebNESAudioOutput implements AudioOutputInterface {
         const blob = new Blob([workletCode], { type: 'application/javascript' })
         const workletUrl = URL.createObjectURL(blob)
         
-        await this.audioContext!.audioWorklet.addModule(workletUrl)
+        await this.audioContext?.audioWorklet.addModule(workletUrl)
         URL.revokeObjectURL(workletUrl)
         
         this.audioWorkletNode = new AudioWorkletNode(
