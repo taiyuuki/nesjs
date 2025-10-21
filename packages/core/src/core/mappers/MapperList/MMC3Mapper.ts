@@ -76,13 +76,13 @@ export default class MMC3Mapper extends Mapper {
             case 0xC000:
                 if (isEven) {
 
-                    // IRQ Counter register
-                    this.irqctr = data
+                    // IRQ Latch register ($C000)
+                    this.irqctrreload = data
                 }
                 else {
 
-                    // IRQ Latch register
-                    this.irqctrreload = data
+                    // IRQ Reload ($C001) - sets reload flag
+                    this.irqreload = true
                 }
                 break
 
@@ -250,16 +250,17 @@ export default class MMC3Mapper extends Mapper {
     }
 
     private clockScanCounter(): void {
-        if (this.irqreload || this.irqctr === 0) {
+        if (this.irqctr === 0 || this.irqreload) {
             this.irqctr = this.irqctrreload
             this.irqreload = false
         }
         else {
             --this.irqctr
-        }
-        if (this.irqctr === 0 && this.irqenable && !this.interrupted) {
-            ++this.cpu!.interrupt
-            this.interrupted = true
+            
+            if (this.irqctr === 0 && this.irqenable && !this.interrupted) {
+                ++this.cpu!.interrupt
+                this.interrupted = true
+            }
         }
     }
 
