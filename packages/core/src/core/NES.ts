@@ -226,6 +226,7 @@ export class NES {
 
             this.cpu.init()
             this.mapper.init()
+            this.mapper.reset()
 
             const romInfo: ROMInfo = {
                 mapperNumber: loader.mappertype,

@@ -18,10 +18,35 @@ export default class MMC3Mapper extends Mapper {
 
     override loadROM(): void {
         super.loadROM()
+        
         for (let i = 1; i <= 32; ++i) {
             this.prg_map[32 - i] = this.prgsize - 1024 * i
         }
         this.setbank6()
+        
+        if (this.chrsize > 0) {
+            this.chrreg[0] = 0
+            this.chrreg[1] = 2
+            this.chrreg[2] = 4
+            this.chrreg[3] = 5
+            this.chrreg[4] = 6
+            this.chrreg[5] = 7
+        }
+        
+        this.setupchr()
+    }
+
+    override reset(): void {
+        this.whichbank = 0
+        this.prgconfig = false
+        this.chrconfig = false
+        this.irqctr = 0
+        this.irqctrreload = 0
+        this.irqenable = false
+        this.irqreload = false
+        this.interrupted = false
+        this.lastA12 = false
+        this.a12timer = 0
         
         if (this.chrsize > 0) {
             this.chrreg[0] = 0
@@ -281,9 +306,7 @@ export default class MMC3Mapper extends Mapper {
 
     protected remapChrBanks(): void {
         for (let i = 0; i < 6; i++) {
-            if (this.chrreg[i] !== 0) {
-                this.executeCommand(i, this.chrreg[i])
-            }
+            this.executeCommand(i, this.chrreg[i])
         }
     }
 
