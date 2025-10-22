@@ -1,6 +1,6 @@
 {
   "name": "@nesjs/vue3",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "module": "./dist/nesjs-vue.es.js",
   "main": "./dist/nesjs-vue.umd.js",
   "types": "./dist/index.d.ts",
@@ -39,6 +39,7 @@
     "@taiyuuki/eslint-config": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-basic-ssl": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "rollup-plugin-delete": "catalog:",

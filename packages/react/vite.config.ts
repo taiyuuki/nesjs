@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import rollupDelete from 'rollup-plugin-delete'
 import dts from 'vite-plugin-dts'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 function resolve(dir: string) {
     return path.join(__dirname, dir)
@@ -11,6 +12,7 @@ function resolve(dir: string) {
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
+        basicSsl(),
         react(),
         dts({
             insertTypesEntry: true,
@@ -41,6 +43,13 @@ export default defineConfig({
                     hook: 'generateBundle',
                 }),
             ],
+        },
+    },
+    server: {
+        port: 10002,
+        headers: {
+            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Cross-Origin-Embedder-Policy': 'require-corp',
         },
     },
 })

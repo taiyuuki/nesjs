@@ -13,6 +13,7 @@ const emulatorConfig = reactive({
     clip8px: true,
     audioBufferSize: 1024,
     audioSampleRate: 44100,
+    enableSAB: true,
 })
 
 const isPlaying = computed(() => nesRef.value?.isPlaying || false)

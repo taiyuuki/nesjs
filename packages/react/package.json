@@ -1,6 +1,6 @@
 {
   "name": "@nesjs/react",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "module": "./dist/nesjs-react.es.js",
   "main": "./dist/nesjs-react.umd.js",
   "types": "./dist/index.d.ts",
@@ -36,6 +36,7 @@
     "@types/react-dom": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "@vitejs/plugin-basic-ssl": "catalog:",
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "rollup-plugin-delete": "catalog:",

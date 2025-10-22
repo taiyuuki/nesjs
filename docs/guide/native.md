@@ -47,7 +47,7 @@ const canvas = document.getElementById('nes-canvas') as HTMLCanvasElement
 const emulator = new NESEmulator(canvas, {
     scale: 2,                    // 2x scaling
     smoothing: false,            // No smoothing for pixel art
-    audioSampleRate: 44100,      // Audio sample rate
+    audioSampleRate: 44100,           // Audio sample rate
     enableCheat: true            // Enable cheat codes
 })
 
@@ -132,11 +132,17 @@ interface NESEmulatorOptions {
     clip8px?: boolean                        // Clip 8px border, default false
     fillColor?: string | [number, number, number, number]  // Fill color
     smoothing?: boolean                      // Image smoothing, default false
-    
-    // Core emulator options
+
+    // Audio options
     audioBufferSize?: number                 // Audio buffer size, default 1024
     audioSampleRate?: number                 // Audio sample rate, default 44100
-    autoSaveInterval?: number                // Auto save interval, default 3600
+    ringCapacity?: number                   // Ring buffer capacity, default 8192
+    enableSAB?: boolean                     // Enable SharedArrayBuffer, default false, needed for cross-origin, otherwise fallback to normal buffer.
+    sabCapacity?: number                    // SAB capacity, default 65536
+    
+    
+    // Core emulator options
+    autoSaveInterval?: number                // SRAM Auto save interval, default: 3600 frames.
     enableCheat?: boolean                    // Enable cheats, default true
     
     // Controller key mapping

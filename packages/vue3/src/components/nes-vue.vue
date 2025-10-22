@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<NESOptions>(), {
         smoothing: false,
         audioBufferSize: 1024,
         audioSampleRate: 44100,
+        enableSAB: true,
     }),
 })
 
