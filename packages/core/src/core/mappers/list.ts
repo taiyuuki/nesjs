@@ -73,7 +73,7 @@ export const MAPPER_LIST: Record<number, string | undefined> = {
     '180': 'CrazyClimberMapper',
     '182': 'Mapper182',
     '184': 'Sunsoft01Mapper',
-    '185': 'CnromMapper',
+    '185': 'Mapper185',
     '195': 'Mapper195',
     '200': 'Mapper200',
     '201': 'Mapper201',
