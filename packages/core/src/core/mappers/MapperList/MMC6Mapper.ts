@@ -164,15 +164,4 @@ export default class MMC6Mapper extends MMC3Mapper {
             this.internalRam.set(state.internalRam)
         }
     }
-
-    override getMapperState(): any {
-        const state = super.getMapperState()
-        
-        // 保存MMC6特有状态
-        state.prgRamEnable = this.prgRamEnable
-        state.ramProtect = this.ramProtect
-        state.internalRam = Array.from(this.internalRam)
-        
-        return state
-    }
 }

@@ -33,6 +33,7 @@ export default class MMC5Mapper extends Mapper {
     prevfetch = 0
     prevprevfetch = 0
     spritemode = false
+    cachedChrBank = 0
 
     /**
      * MMC5 存档恢复后的特殊处理
@@ -110,6 +111,22 @@ export default class MMC5Mapper extends Mapper {
 
     override loadROM(): void {
         super.loadROM()
+
+        // MMC5 支持最多 256KB CHR (64个4KB banks)
+        // 如果CHR ROM很小,扩展为CHR RAM
+        if (this.chrsize < 262144) {
+            this.haschrram = true
+            const newChrSize = 262144 // 256KB
+            const newChr = new Array(newChrSize).fill(0)
+
+            for (let i = 0; i < this.chr.length; i++) {
+                newChr[i] = this.chr[i]
+            }
+
+            this.chr = newChr
+            this.chrsize = newChrSize
+        }
+        
         this.prgregs[3] = this.prgsize / 8192 - 1
         this.prgregs[2] = this.prgsize / 8192 - 1
         this.prgregs[1] = this.prgsize / 8192 - 1
@@ -384,15 +401,25 @@ export default class MMC5Mapper extends Mapper {
             }
             else {
                 if (this.exramMode === 1) {
-                    if (this.exlatch === 2) {
-                        ++this.exlatch
+                    if (this.exlatch === 2 || this.exlatch === 3) {
+                        let chrBank: number
 
-                        return this.chr[(this.chrOr * 1024 | (this.exram[this.lastfetch] & 0x3f) * 4096 | addr & 4095) % this.chr.length]
-                    }
-                    else if (this.exlatch === 3) {
-                        this.exlatch = 0
+                        if (this.exlatch === 2) {
+                            const exAttr = this.exram[this.lastfetch]
+                            const chrBankLow = exAttr & 0x3f
+                            const chrBankHigh = (this.chrOr & 0x300) >> 2
+                            chrBank = chrBankLow | chrBankHigh
+                            this.cachedChrBank = chrBank
+                        }
+                        else {
+                            chrBank = this.cachedChrBank
+                        }
 
-                        return this.chr[(this.chrOr * 1024 | (this.exram[this.lastfetch] & 0x3f) * 4096 | addr & 4095) % this.chr.length]
+                        const chrAddr = chrBank * 4096 + (addr & 0xfff)
+                        const result = this.chr[chrAddr % this.chr.length]
+                        this.exlatch = this.exlatch === 2 ? 3 : 0
+
+                        return result
                     }
                 }
 
@@ -422,7 +449,9 @@ export default class MMC5Mapper extends Mapper {
                     ++this.exlatch
                     const theone = this.exram[this.lastfetch]
 
-                    return (theone & 0xc0) >> 6 | (theone & 0xc0) >> 4 | (theone & 0xc0) >> 2 | theone & 0xc0
+                    const attrBits = (theone & 0xc0) >> 6
+
+                    return attrBits | attrBits << 2 | attrBits << 4 | attrBits << 6
                 }
             }
 
