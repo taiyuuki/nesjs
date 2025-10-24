@@ -66,11 +66,7 @@ const loadFDSBIOS = async(event: Event) => {
       :volume="100"
       :auto-start="true"
       :emulator-config="emulatorConfig"
-<<<<<<< HEAD
       debug-mode
-=======
-      :debug-mode="true"
->>>>>>> main
       class="nes-emulator"
       @loaded="getROMInfo"
     />
@@ -96,9 +92,6 @@ const loadFDSBIOS = async(event: Event) => {
       </button>
       <button @click="downloadSave">
         下载存档
-      </button>
-      <button @click="checkGameCodeArea">
-        调试内存
       </button>
     </div>
     <div
