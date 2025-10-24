@@ -1,6 +1,6 @@
 import type { ROMLoader } from '../../ROMLoader'
-import { MirrorType } from '../../types'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 export default class Mapper115 extends Mapper {
 

@@ -1,6 +1,6 @@
-import type { ROMLoader } from 'src/core/ROMLoader'
-import { MirrorType } from 'src/core/types'
+import type { ROMLoader } from '../../ROMLoader'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 export default class Namcot34x3Mapper extends Mapper {
     private mirroring = false

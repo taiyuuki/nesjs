@@ -133,10 +133,15 @@ interface NESEmulatorOptions {
     fillColor?: string | [number, number, number, number]  // 裁剪区域的填充颜色
     smoothing?: boolean                      // 图像抗锯齿，默认 false
     
-    // 核心模拟器选项
+    // 音频选项
     audioBufferSize?: number                 // 音频缓冲区大小，默认 1024
     audioSampleRate?: number                 // 音频采样率，默认 44100
-    autoSaveInterval?: number                // 自动保存间隔，默认 3600
+    ringCapacity?: number                   // 环形缓冲区容量，默认 8192
+    enableSAB?: boolean                     // 启用 SharedArrayBuffer，默认 false，开始需跨域时配置，否则回退使用普通缓冲区。
+    sabCapacity?: number                    // SharedArrayBuffer 容量，默认 65536
+
+    // 核心模拟器选项
+    autoSaveInterval?: number                // SRAM存档自动保存间隔，默认 3600
     enableCheat?: boolean                    // 启用金手指，默认 true
     
     // 控制器键位映射

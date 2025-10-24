@@ -13,6 +13,7 @@ const emulatorConfig = reactive({
     clip8px: true,
     audioBufferSize: 1024,
     audioSampleRate: 44100,
+    enableSAB: true,
 })
 
 const isPlaying = computed(() => nesRef.value?.isPlaying || false)
@@ -65,7 +66,11 @@ const loadFDSBIOS = async(event: Event) => {
       :volume="100"
       :auto-start="true"
       :emulator-config="emulatorConfig"
+<<<<<<< HEAD
       debug-mode
+=======
+      :debug-mode="true"
+>>>>>>> main
       class="nes-emulator"
       @loaded="getROMInfo"
     />

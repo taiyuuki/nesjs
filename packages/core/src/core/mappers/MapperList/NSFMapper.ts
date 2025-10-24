@@ -1,4 +1,4 @@
-import { decompressArray } from 'src/core/utils'
+import { decompressArray } from '../../utils'
 import { Mapper } from '../Mapper'
 import { BadMapperException, MirrorType, TVType, Utils } from '../../types'
 import { Namco163SoundChip } from '../../audio/Namco163SoundChip'
@@ -587,9 +587,9 @@ export default class NSFMapper extends Mapper {
         this.drawBorder()
         
         // 头部标题区域
-        this.drawBox(2, 3, 28, 4)
+        // this.drawBox(2, 3, 28, 4)
         this.centerText(4, 'NES SOUND FORMAT PLAYER')
-        this.centerText(5, '=======================')
+        this.centerText(5, '==========================')
         
         // 歌曲信息区域
         this.drawBox(2, 8, 28, 5)
@@ -608,26 +608,26 @@ export default class NSFMapper extends Mapper {
         this.centerText(23, chipInfo.primary)
         
         // 控制提示区域
-        this.centerText(26, 'B: Previous      A: Next')
+        this.centerText(26, 'B: Prev          A: Next')
     }
 
     private drawBorder(): void {
 
         // 绘制边框，下边框上移一行到第28行
         for (let col = 1; col < 31; col++) {
-            this.writeText(1, col, '=')
-            this.writeText(28, col, '=')
+            this.writeText(1, col, '#')
+            this.writeText(28, col, '#')
         }
         for (let row = 2; row < 28; row++) {
-            this.writeText(row, 1, '|')
-            this.writeText(row, 30, '|')
+            this.writeText(row, 1, '#')
+            this.writeText(row, 30, '#')
         }
 
         // 四个角
-        this.writeText(1, 1, '+')
-        this.writeText(1, 30, '+')
-        this.writeText(28, 1, '+')
-        this.writeText(28, 30, '+')
+        // this.writeText(1, 1, '#')
+        // this.writeText(1, 30, '#')
+        // this.writeText(28, 1, '#')
+        // this.writeText(28, 30, '#')
     }
 
     private drawBox(x: number, y: number, width: number, height: number): void {
@@ -637,27 +637,28 @@ export default class NSFMapper extends Mapper {
             this.writeText(y, col, '-')
             this.writeText(y + height - 1, col, '-')
         }
-        for (let row = y + 1; row < y + height - 1; row++) {
-            this.writeText(row, x, '|')
-            this.writeText(row, x + width - 1, '|')
-        }
+
+        // for (let row = y + 1; row < y + height - 1; row++) {
+        //     this.writeText(row, x, '|')
+        //     this.writeText(row, x + width - 1, '|')
+        // }
 
         // 四个角
-        this.writeText(y, x, '+')
-        this.writeText(y, x + width - 1, '+')
-        this.writeText(y + height - 1, x, '+')
-        this.writeText(y + height - 1, x + width - 1, '+')
+        // this.writeText(y, x, '+')
+        // this.writeText(y, x + width - 1, '+')
+        // this.writeText(y + height - 1, x, '+')
+        // this.writeText(y + height - 1, x + width - 1, '+')
     }
 
     private drawProgressBar(row: number, progress: number): void {
-        const barWidth = 20
+        const barWidth = 22
         const filledWidth = Math.floor(progress * barWidth)
         
-        this.writeText(row, 6, '[')
+        this.writeText(row, 4, '[')
         for (let i = 0; i < barWidth; i++) {
-            this.writeText(row, 7 + i, i < filledWidth ? '#' : '-')
+            this.writeText(row, 5 + i, i < filledWidth ? '#' : '-')
         }
-        this.writeText(row, 7 + barWidth, ']')
+        this.writeText(row, 5 + barWidth, ']')
     }
 
     private animatedChars = ['*', 'o', '.', 'o']
@@ -673,88 +674,88 @@ export default class NSFMapper extends Mapper {
         return statusTexts[Math.floor(this.animFrame / 30) % statusTexts.length]
     }
 
-    private drawVolumeIndicators(): void {
+    // private drawVolumeIndicators(): void {
 
-        // 在播放状态区域显示音量指示器
-        const channels = this.getChannelLevels()
-        const channelNames = ['P1', 'P2', 'TR', 'NO']
+    //     // 在播放状态区域显示音量指示器
+    //     const channels = this.getChannelLevels()
+    //     const channelNames = ['P1', 'P2', 'TR', 'NO']
         
-        for (let i = 0; i < Math.min(channels.length, channelNames.length); i++) {
-            const level = channels[i]
-            const col = 4 + i * 6
+    //     for (let i = 0; i < Math.min(channels.length, channelNames.length); i++) {
+    //         const level = channels[i]
+    //         const col = 4 + i * 6
             
-            // 显示通道名称
-            this.writeText(16, col, channelNames[i])
+    //         // 显示通道名称
+    //         this.writeText(16, col, channelNames[i])
             
-            // 显示音量条，使用简单ASCII字符
-            const barChars = level > 0.7 ? '###' : level > 0.4 ? '##-' : level > 0.1 ? '#--' : '---'
-            this.writeText(16, col, barChars)
-        }
-    }
+    //         // 显示音量条，使用简单ASCII字符
+    //         const barChars = level > 0.7 ? '###' : level > 0.4 ? '##-' : level > 0.1 ? '#--' : '---'
+    //         this.writeText(16, col, barChars)
+    //     }
+    // }
 
-    private drawAudioSpectrum(): void {
+    // private drawAudioSpectrum(): void {
 
-        // 简单的频谱可视化，基于 APU 寄存器状态
-        if (!this.cpuram) return
+    //     // 简单的频谱可视化，基于 APU 寄存器状态
+    //     if (!this.cpuram) return
 
-        const spectrumRow = 20
-        const spectrumStart = 6
-        const spectrumWidth = 20
+    //     const spectrumRow = 20
+    //     const spectrumStart = 6
+    //     const spectrumWidth = 20
 
-        // 清除之前的频谱显示
-        for (let i = 0; i < spectrumWidth; i++) {
-            this.writeText(spectrumRow, spectrumStart + i, ' ')
-        }
+    //     // 清除之前的频谱显示
+    //     for (let i = 0; i < spectrumWidth; i++) {
+    //         this.writeText(spectrumRow, spectrumStart + i, ' ')
+    //     }
 
-        // 基于当前 APU 通道状态绘制简单频谱
-        const channels = this.getChannelLevels()
+    //     // 基于当前 APU 通道状态绘制简单频谱
+    //     const channels = this.getChannelLevels()
         
-        for (let i = 0; i < Math.min(channels.length, spectrumWidth / 4); i++) {
-            const level = channels[i]
-            const barHeight = Math.min(3, Math.floor(level * 4))
-            const startPos = spectrumStart + i * 5
+    //     for (let i = 0; i < Math.min(channels.length, spectrumWidth / 4); i++) {
+    //         const level = channels[i]
+    //         const barHeight = Math.min(3, Math.floor(level * 4))
+    //         const startPos = spectrumStart + i * 5
 
-            // 绘制每个通道的音量条，使用简单字符
-            for (let h = 0; h < barHeight; h++) {
-                const char = h === 0 ? '_' : h === 1 ? '=' : '#'
-                this.writeText(spectrumRow, startPos + h, char)
-            }
+    //         // 绘制每个通道的音量条，使用简单字符
+    //         for (let h = 0; h < barHeight; h++) {
+    //             const char = h === 0 ? '_' : h === 1 ? '=' : '#'
+    //             this.writeText(spectrumRow, startPos + h, char)
+    //         }
             
-            if (level > 0) {
-                this.writeText(spectrumRow, startPos + 3, '*')
-            }
-        }
-    }
+    //         if (level > 0) {
+    //             this.writeText(spectrumRow, startPos + 3, '*')
+    //         }
+    //     }
+    // }
 
-    private getChannelLevels(): number[] {
+    // private getChannelLevels(): number[] {
 
-        // 读取 APU 寄存器获取各通道状态
-        if (!this.cpuram) return [0, 0, 0, 0]
+    //     // 读取 APU 寄存器获取各通道状态
+    //     if (!this.cpuram) return [0, 0, 0, 0]
 
-        const levels: number[] = []
+    //     const levels: number[] = []
         
-        // Pulse 1 (0x4000-0x4003)
-        const pulse1Vol = this.cpuram.read(0x4000) & 0x0F
-        const pulse1Enable = (this.cpuram.read(0x4015) & 0x01) !== 0
-        levels.push(pulse1Enable ? pulse1Vol / 15 : 0)
+    //     // Pulse 1 (0x4000-0x4003)
+    //     const pulse1Vol = this.cpuram.read(0x4000) & 0x0F
+    //     const pulse1Enable = (this.cpuram.read(0x4015) & 0x01) !== 0
+    //     levels.push(pulse1Enable ? pulse1Vol / 15 : 0)
 
-        // Pulse 2 (0x4004-0x4007)
-        const pulse2Vol = this.cpuram.read(0x4004) & 0x0F
-        const pulse2Enable = (this.cpuram.read(0x4015) & 0x02) !== 0
-        levels.push(pulse2Enable ? pulse2Vol / 15 : 0)
+    //     // Pulse 2 (0x4004-0x4007)
+    //     const pulse2Vol = this.cpuram.read(0x4004) & 0x0F
+    //     const pulse2Enable = (this.cpuram.read(0x4015) & 0x02) !== 0
+    //     levels.push(pulse2Enable ? pulse2Vol / 15 : 0)
 
-        // Triangle (0x4008-0x400B)
-        const triangleEnable = (this.cpuram.read(0x4015) & 0x04) !== 0
-        const triangleLinear = this.cpuram.read(0x4008) & 0x7F
-        levels.push(triangleEnable && triangleLinear > 0 ? 0.8 : 0)
+    //     // Triangle (0x4008-0x400B)
+    //     const triangleEnable = (this.cpuram.read(0x4015) & 0x04) !== 0
+    //     const triangleLinear = this.cpuram.read(0x4008) & 0x7F
+    //     levels.push(triangleEnable && triangleLinear > 0 ? 0.8 : 0)
 
-        // Noise (0x400C-0x400F)
-        const noiseVol = this.cpuram.read(0x400C) & 0x0F
-        const noiseEnable = (this.cpuram.read(0x4015) & 0x08) !== 0
-        levels.push(noiseEnable ? noiseVol / 15 : 0)
+    //     // Noise (0x400C-0x400F)
+    //     const noiseVol = this.cpuram.read(0x400C) & 0x0F
+    //     const noiseEnable = (this.cpuram.read(0x4015) & 0x08) !== 0
+    //     levels.push(noiseEnable ? noiseVol / 15 : 0)
 
-        return levels
-    }
+    //     return levels
+    // }
 
     private getFps(): number {
         return this.region === TVType.PAL ? 50 : 60
@@ -791,7 +792,7 @@ export default class NSFMapper extends Mapper {
         const musicNote = this.getAnimatedMusicNote()
         const playingText = this.getPlayingStatusText()
         this.writeText(18, 4, `${musicNote} ${playingText}`)
-        this.writeText(18, 26, `${musicNote}`)
+        this.writeText(18, 27, `${musicNote}`)
         
         // 绘制简单的进度条效果（基于播放时间的秒数）
         const fps = this.getFps()

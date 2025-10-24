@@ -18,11 +18,12 @@
       "esnext",
       "dom"
     ],
-    "baseUrl": ".",
     "paths": {
-      "src/*": [
-        "src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@/core/*": ["./src/core/*"],
+      "@/types": ["./src/core/types"],
+      "@/utils": ["./src/core/utils"],
+      "@/interfaces": ["./src/core/interfaces"]
     }
   },
   "exclude": [

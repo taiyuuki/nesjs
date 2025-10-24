@@ -33,6 +33,7 @@ export default class MMC5Mapper extends Mapper {
     prevfetch = 0
     prevprevfetch = 0
     spritemode = false
+    cachedChrBank = 0
 
     /**
      * MMC5 存档恢复后的特殊处理
@@ -110,15 +111,33 @@ export default class MMC5Mapper extends Mapper {
 
     override loadROM(): void {
         super.loadROM()
+
+        // MMC5 支持最多 256KB CHR (64个4KB banks)
+        // 如果CHR ROM很小,扩展为CHR RAM
+        if (this.chrsize < 262144) {
+            this.haschrram = true
+            const newChrSize = 262144 // 256KB
+            const newChr = new Array(newChrSize).fill(0)
+
+            for (let i = 0; i < this.chr.length; i++) {
+                newChr[i] = this.chr[i]
+            }
+
+            this.chr = newChr
+            this.chrsize = newChrSize
+        }
+        
         this.prgregs[3] = this.prgsize / 8192 - 1
         this.prgregs[2] = this.prgsize / 8192 - 1
         this.prgregs[1] = this.prgsize / 8192 - 1
         this.prgregs[0] = this.prgsize / 8192 - 1
         this.prgMode = 3
         this.setupPRG()
-        for (let i = 0; i < 8; ++i) {
-            this.chr_map[i] = 1024 * i
+        
+        for (let i = 0; i < 4; ++i) {
+            this.chrmapB[i] = 1024 * i % this.chrsize
         }
+        this.setupCHR()
         this.prgram = new Uint8Array(65536)
     }
 
@@ -361,6 +380,17 @@ export default class MMC5Mapper extends Mapper {
         }
     }
 
+    override ppuWrite(addr: number, data: number): void {
+        addr &= 0x3fff
+        if (addr < 0x2000 && this.haschrram) {
+            const chrIndex = this.chr_map[addr >> 10] + (addr & 1023)
+            this.chr[chrIndex] = data
+        }
+        else {
+            super.ppuWrite(addr, data)
+        }
+    }
+
     override ppuRead(addr: number): number {
         if (addr < 0x2000) {
             if (++this.fetchcount === 3) {
@@ -371,19 +401,34 @@ export default class MMC5Mapper extends Mapper {
             }
             else {
                 if (this.exramMode === 1) {
-                    if (this.exlatch === 2) {
-                        ++this.exlatch
+                    if (this.exlatch === 2 || this.exlatch === 3) {
+                        let chrBank: number
 
-                        return this.chr[(this.chrOr * 1024 | (this.exram[this.lastfetch] & 0x3f) * 4096 | addr & 4095) % this.chr.length]
-                    }
-                    else if (this.exlatch === 3) {
-                        this.exlatch = 0
+                        if (this.exlatch === 2) {
+                            const exAttr = this.exram[this.lastfetch]
+                            const chrBankLow = exAttr & 0x3f
+                            const chrBankHigh = (this.chrOr & 0x300) >> 2
+                            chrBank = chrBankLow | chrBankHigh
+                            this.cachedChrBank = chrBank
+                        }
+                        else {
+                            chrBank = this.cachedChrBank
+                        }
 
-                        return this.chr[(this.chrOr * 1024 | (this.exram[this.lastfetch] & 0x3f) * 4096 | addr & 4095) % this.chr.length]
+                        const chrAddr = chrBank * 4096 + (addr & 0xfff)
+                        const result = this.chr[chrAddr % this.chr.length]
+                        this.exlatch = this.exlatch === 2 ? 3 : 0
+
+                        return result
                     }
                 }
 
-                return this.chr[this.chrmapB[addr >> 10 & 3] + (addr & 1023)]
+                if (this.haschrram) {
+                    return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
+                }
+                else {
+                    return this.chr[this.chrmapB[addr >> 10 & 3] + (addr & 1023)]
+                }
             }
         }
         else {
@@ -404,7 +449,9 @@ export default class MMC5Mapper extends Mapper {
                     ++this.exlatch
                     const theone = this.exram[this.lastfetch]
 
-                    return (theone & 0xc0) >> 6 | (theone & 0xc0) >> 4 | (theone & 0xc0) >> 2 | theone & 0xc0
+                    const attrBits = (theone & 0xc0) >> 6
+
+                    return attrBits | attrBits << 2 | attrBits << 4 | attrBits << 6
                 }
             }
 
@@ -432,12 +479,6 @@ export default class MMC5Mapper extends Mapper {
     }
 
     setMirroring(ntsetup: number, exram: Uint8Array) {
-
-        // MMC5 的镜像模式：
-        // 0 = 内部 VRAM 的低 1KB (pput0)
-        // 1 = 内部 VRAM 的高 1KB (pput1)  
-        // 2 = 扩展 RAM (exram)
-        // 3 = 填充模式 (fillnt)
         
         // 设置 nametable 0
         switch (ntsetup & 3) {
@@ -448,7 +489,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt0 = this.pput1
                 break
             case 2:
-                this.nt0 = Array.from(exram)
+                this.nt0 = exram as any
                 break
             case 3:
                 this.nt0 = this.fillnt
@@ -469,7 +510,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt1 = this.pput1
                 break
             case 2:
-                this.nt1 = Array.from(exram)
+                this.nt1 = exram as any
                 break
             case 3:
                 this.nt1 = this.fillnt
@@ -490,7 +531,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt2 = this.pput1
                 break
             case 2:
-                this.nt2 = Array.from(exram)
+                this.nt2 = exram as any
                 break
             case 3:
                 this.nt2 = this.fillnt
@@ -511,7 +552,7 @@ export default class MMC5Mapper extends Mapper {
                 this.nt3 = this.pput1
                 break
             case 2:
-                this.nt3 = Array.from(exram)
+                this.nt3 = exram as any
                 break
             case 3:
                 this.nt3 = this.fillnt

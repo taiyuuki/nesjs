@@ -1,5 +1,5 @@
-import { MirrorType, Utils } from 'src/core/types'
 import { Mapper } from '../Mapper'
+import { MirrorType, Utils } from '@/types'
 
 export default class Mapper112 extends Mapper {
     private whichbank = 0

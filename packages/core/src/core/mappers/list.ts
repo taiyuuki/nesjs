@@ -1,26 +1,3 @@
-/* Estimated number of games with mapper (other mappers had <10 games)
-    Mapper 004: 569
-    Mapper 001: 481
-    Mapper 000: 260
-    Mapper 002: 200
-    Mapper 003: 145
-    Mapper 007: 56
-    Mapper 011: 35
-    Mapper 019: 32
-    Mapper 016: 26
-    Mapper 099: 25
-    Mapper 005: 24
-    Mapper 018: 16
-    Mapper 066: 16
-    Mapper 033: 15
-    Mapper 079: 15
-    Mapper 045: 14
-    Mapper 071: 14
-    Mapper 113: 12
-    Mapper 245: 11
-    Mapper 023: 11
-    Mapper 069: 11 
-*/
 
 export const MAPPER_LIST: Record<number, string | undefined> = {
     '-1': 'NSFMapper',
@@ -31,9 +8,7 @@ export const MAPPER_LIST: Record<number, string | undefined> = {
     '3': 'CnromMapper',
     '4': 'MMC3Mapper',
     '5': 'MMC5Mapper',
-    '6': 'Mapper6',
     '7': 'AnromMapper',
-    '8': 'Mapper6',
     '9': 'MMC2Mapper',
     '10': 'MMC4Mapper',
     '11': 'ColorDreamsMapper',
@@ -48,6 +23,7 @@ export const MAPPER_LIST: Record<number, string | undefined> = {
     '24': 'VRC6Mapper',
     '25': 'VRC4Mapper',
     '26': 'VRC6Mapper',
+    '30': 'Mapper30',
     '31': 'Mapper31',
     '33': 'Mapper33',
     '34': 'Mapper34',
@@ -107,6 +83,7 @@ export const MAPPER_LIST: Record<number, string | undefined> = {
     '206': 'MIMICMapper',
     '212': 'Mapper212',
     '213': 'Mapper213',
+    '214': 'Mapper214',
     '225': 'Mapper225',
     '226': 'Mapper226',
     '228': 'Action52Mapper',

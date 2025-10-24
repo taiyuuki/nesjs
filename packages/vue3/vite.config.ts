@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import rollupDelete from 'rollup-plugin-delete'
 import dts from 'vite-plugin-dts'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 function resolve(dir: string) {
     return path.join(__dirname, dir)
@@ -11,6 +12,7 @@ function resolve(dir: string) {
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
+        basicSsl(),
         dts({
             outDir: 'dist',
             staticImport: true,
@@ -47,6 +49,13 @@ export default defineConfig({
                     hook: 'generateBundle',
                 }),
             ],
+        },
+    },
+    server: { 
+        port: 10001,
+        headers: {
+            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Cross-Origin-Embedder-Policy': 'require-corp',
         },
     },
 })

@@ -1,5 +1,5 @@
 import { Mapper } from '../Mapper'
-import { MirrorType } from '../../types'
+import { MirrorType } from '@/types'
 
 // Pirate MMC3 clone with scrambled registers
 export default class Mapper182 extends Mapper {

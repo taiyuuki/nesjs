@@ -1,5 +1,5 @@
-import { MirrorType } from '../../types'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 /**
  * Mapper71 (Codemasters Mapper)
@@ -45,22 +45,6 @@ export default class CodemastersMapper extends Mapper {
             for (let i = 0; i < 16; ++i) {
                 this.prg_map[i] = 1024 * (i + 16 * this.bank) & this.prgsize - 1
             }
-        }
-    }
-
-    public override getMapperState(): any {
-        const state = super.getMapperState()
-
-        return {
-            ...state,
-            bank: this.bank,
-        }
-    }
-
-    public override setMapperState(state: any): void {
-        super.setMapperState(state)
-        if (state.bank !== undefined) {
-            this.bank = state.bank
         }
     }
 }

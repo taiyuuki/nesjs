@@ -1,5 +1,5 @@
-import { MirrorType } from '../../types'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 export default class Mapper33 extends Mapper {
     private prgbank0 = 0

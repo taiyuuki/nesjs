@@ -1,6 +1,6 @@
 {
   "name": "@nesjs/core",
-  "version": "2.1.6",
+  "version": "2.2.7",
   "description": "",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -43,11 +43,8 @@
     "eslint": "catalog:",
     "fast-glob": "catalog:",
     "rollup": "catalog:",
-    "rollup-plugin-copy": "catalog:",
     "rollup-plugin-delete": "catalog:",
     "rollup-plugin-dts": "catalog:",
-    "rollup-plugin-glob-import": "catalog:",
-    "rollup-plugin-node-globals": "catalog:",
     "rollup-plugin-typescript2": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

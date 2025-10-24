@@ -1,5 +1,5 @@
-import { MirrorType } from '../../types'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 /**
  * VRC2 Mapper (INES #22) 

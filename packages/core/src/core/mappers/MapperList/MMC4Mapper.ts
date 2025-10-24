@@ -1,5 +1,5 @@
-import { MirrorType } from '../../types'
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/types'
 
 export default class MMC4Mapper extends Mapper {
     private chrlatchL = true

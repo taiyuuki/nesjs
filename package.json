@@ -1,6 +1,6 @@
 {
   "name": "nesjs",
-  "version": "2.1.6",
+  "version": "2.2.7",
   "description": "A NES emulator library for JavaScript",
   "private": true,
   "type": "module",
@@ -58,6 +58,7 @@
     "kolorist": "catalog:",
     "prompts": "catalog:",
     "rollup": "catalog:",
+    "rollup-plugin-copy": "^3.5.0",
     "typescript": "catalog:",
     "vitepress": "catalog:",
     "vitest": "catalog:",
