@@ -75,6 +75,9 @@ export interface NESComponentExpose {
     /** Load save state */
     load(data: Uint8Array): boolean
 
+    /** Load FDS BIOS */
+    loadFDSBIOS(biosData: Uint8Array): void
+
     /** Take a screenshot */
     screenshot(download?: boolean): string
 

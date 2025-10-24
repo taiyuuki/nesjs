@@ -61,6 +61,10 @@ class NESEmulator {
         this.frameDuration = 1000 / this.targetFPS
     }
 
+    public loadFDSBIOS(biosData: Uint8Array) {
+        this.nes.loadFDSBIOS(biosData)
+    }
+
     private mainLoop() {
         const now = performance.now()
         const deltaTime = now - this.lastFrameTime

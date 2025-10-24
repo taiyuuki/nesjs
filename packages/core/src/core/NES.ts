@@ -105,6 +105,9 @@ export class NES {
     // 录像播放器
     // private videoPlayer: VideoPlayer | null
 
+    // FDS BIOS数据
+    private fdsBiosData: Uint8Array | null = null
+
     constructor(config: EmulatorConfig = {}, events: EmulatorEvents = {}) {
         this.config = Object.assign({
             audioBufferSize: 1024,
@@ -143,10 +146,22 @@ export class NES {
     }
 
     /**
-     * 注入 FDS BIOS（8KB）
+     * 加载FDS BIOS文件
+     * @param biosData FDS BIOS数据 (必须是8KB)
      */
-    public setFDSBIOS(bios: Uint8Array): void {
-        this.fdsBIOS = bios
+    public loadFDSBIOS(biosData: Uint8Array): void {
+        if (biosData.length !== 8192) {
+            throw new Error(`Invalid FDS BIOS size: ${biosData.length} bytes, expected 8192 bytes`)
+        }
+        
+        this.fdsBiosData = new Uint8Array(biosData)
+        console.log('FDS BIOS loaded successfully (8KB)')
+        
+        // 如果已经加载了FDS ROM，立即设置BIOS
+        if (this.mapper && 'setBIOS' in this.mapper && typeof this.mapper.setBIOS === 'function') {
+            (this.mapper as any).setBIOS(this.fdsBiosData)
+            console.log('FDS BIOS set to active mapper')
+        }
     }
 
     /**
@@ -228,24 +243,15 @@ export class NES {
             this.mapper.ppu = this.ppu
             this.frameCount = 1
 
-            // 如为 FDS，要求已注入 BIOS，并传递给 FDSMapper
-            // FDS 在 ROMLoader 中 mappertype 特殊标记为 -2
-            if (loader.isFDS) {
-                if (!this.fdsBIOS) {
-                    throw new Error('FDS BIOS not set. Call setFDSBIOS(Uint8Array) before loading .fds')
+            // 如果是FDS ROM且已加载BIOS，设置BIOS
+            if (loader.isFDS && this.fdsBiosData) {
+                if ('setBIOS' in this.mapper && typeof this.mapper.setBIOS === 'function') {
+                    (this.mapper as any).setBIOS(this.fdsBiosData)
+                    console.log('FDS BIOS applied to mapper')
                 }
-                
-                // 延迟导入类型，避免编译依赖
-                try {
-                    const fdsMapper = this.mapper as any
-                    if (typeof fdsMapper.setBIOS === 'function') {
-                        fdsMapper.setBIOS(this.fdsBIOS)
-                    }
-                }
-                catch(_err) {
-
-                    // ignore
-                }
+            }
+            else if (loader.isFDS && !this.fdsBiosData) {
+                console.warn('FDS ROM detected but no BIOS loaded. Please call loadFDSBIOS() before loading FDS ROMs.')
             }
 
             // if (this.mapper.supportsSaves()) {

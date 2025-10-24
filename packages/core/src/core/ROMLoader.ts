@@ -138,7 +138,7 @@ export class ROMLoader {
             // FDS 镜像（原生 .fds）
             // 典型 16 字节头："FDS\x1A"，byte4 通常为盘面数
             this.isFDS = true
-            this.mappertype = -2 // 特别标记为 FDSMapper
+            this.mappertype = 20 // Mapper 20被保留为FDS导出, 但并没有被广泛使用。
             this.submapper = 0
             this.scrolltype = MirrorType.H_MIRROR // FDS 使用 CHR-RAM，VRAM 镜像由 PPU 管理
             this.tvtype = TVType.NTSC

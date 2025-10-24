@@ -465,6 +465,12 @@ export class PPU {
         if (this.div === 0) {
             this.mapper.cpu?.runcycle()
             this.mapper.cpucycle(1)
+            
+            // FDS Mapper IRQ时钟更新
+            if ('clockIRQ' in this.mapper && typeof this.mapper.clockIRQ === 'function') {
+                (this.mapper as any).clockIRQ(1)
+            }
+            
             this.cpudividerctr = (this.cpudividerctr + 1) % this.cpudivider.length
         }
         

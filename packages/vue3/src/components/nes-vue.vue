@@ -226,6 +226,13 @@ async function start(): Promise<void> {
     isPlaying.value = true
 }
 
+function loadFDSBIOS(biosData: Uint8Array): void {
+    if (!emulator) {
+        throw new Error('Emulator not initialized')
+    }
+    emulator.loadFDSBIOS(biosData)
+}
+
 function reset(): void {
     if (!emulator) return
     emulator.reset()
@@ -401,6 +408,7 @@ defineExpose<NESComponentExpose>({
     togglePlay,
     save,
     load,
+    loadFDSBIOS,
     screenshot,
     downloadSaveState,
     uploadSaveState,
