@@ -1113,7 +1113,8 @@ export class CPU {
                 this.cycles += 4 + this.pb
                 break
             case 0xeb:
-                this.sbc(this.imm()) 
+                this.sbc(this.imm())
+                this.cycles += 2
                 break
             case 0xED:
                 this.sbc(this.abs())
@@ -1425,7 +1426,6 @@ export class CPU {
 
     private lsr_mem(addr: number): void {
         const tmp = this.ram.read(addr)
-        this.ram.write(addr, tmp) // 虚拟写入
         this.carryFlag = (tmp & 0x01) !== 0
         const result = tmp >> 1
         this.ram.write(addr, result) // 真实写入
@@ -1443,7 +1443,6 @@ export class CPU {
 
     private rol_mem(addr: number): void {
         const tmp = this.ram.read(addr)
-        this.ram.write(addr, tmp) // 虚拟写入
         const oldCarry = this.carryFlag ? 1 : 0
         this.carryFlag = (tmp & 0x80) !== 0
         const result = (tmp << 1 | oldCarry) & 0xff
