@@ -17,7 +17,6 @@ export class PPU {
     private loopyX: number = 0 
     private framecount: number = 0
     private div: number = 2
-    private debugLogCount: number = 0 
     
     private readonly OAM: Uint8Array = new Uint8Array(256).fill(0xff)
     private readonly secOAM: Uint8Array = new Uint8Array(32).fill(0)
@@ -64,24 +63,8 @@ export class PPU {
     private found: number = 0
     private bgShiftRegH: number = 0
     private bgShiftRegL: number = 0
-    private _bgAttrShiftRegH: number = 0
-    private _bgAttrShiftRegL: number = 0
-    
-    get bgAttrShiftRegH(): number {
-        return this._bgAttrShiftRegH
-    }
-    
-    set bgAttrShiftRegH(value: number) {
-        this._bgAttrShiftRegH = value >>> 0 & 0xFFFF
-    }
-    
-    get bgAttrShiftRegL(): number {
-        return this._bgAttrShiftRegL
-    }
-    
-    set bgAttrShiftRegL(value: number) {
-        this._bgAttrShiftRegL = value >>> 0 & 0xFFFF
-    }
+    private bgAttrShiftRegH: number = 0
+    private bgAttrShiftRegL: number = 0
 
     constructor(mapper: Mapper) {
         
@@ -290,7 +273,7 @@ export class PPU {
                     this.even = false
                 }
                 else {
-                    this.loopyT &= 0xfff00
+                    this.loopyT &= 0xff00
                     this.loopyT |= data
                     this.loopyV = this.loopyT
                     this.even = true
@@ -482,14 +465,8 @@ export class PPU {
      */
     private bgFetch(): void {
         
-        const attrBitH = this.nextattr >> 1 & 1
-        const attrBitL = this.nextattr & 1
-        
-        const tempH = this.bgAttrShiftRegH | attrBitH
-        const tempL = this.bgAttrShiftRegL | attrBitL
-        
-        this.bgAttrShiftRegH = tempH >>> 0 & 0xFFFF
-        this.bgAttrShiftRegL = tempL >>> 0 & 0xFFFF
+        this.bgAttrShiftRegH |= this.nextattr >> 1 & 1
+        this.bgAttrShiftRegL |= this.nextattr & 1
         
         switch (this.cycles - 1 & 7) {
             case 1:
@@ -614,13 +591,6 @@ export class PPU {
         
         this.bgShiftRegH <<= 1
         this.bgShiftRegL <<= 1
-        
-        const tempH = this.bgAttrShiftRegH << 1
-        const tempL = this.bgAttrShiftRegL << 1
-        
-        this.bgAttrShiftRegH = tempH >>> 0 & 0xFFFF
-        this.bgAttrShiftRegL = tempL >>> 0 & 0xFFFF
-
     }
 
     /**
@@ -954,89 +924,5 @@ export class PPU {
             
             this.div = state.div ?? 0
         }
-    }
-
-    /**
-     * 清除渲染缓存
-     */
-    private clearRenderCache(): void {
-        
-        this.bgShiftRegH = 0
-        this.bgShiftRegL = 0
-        this.bgAttrShiftRegH = 0
-        this.bgAttrShiftRegL = 0
-        
-        this.spriteshiftregH.fill(0)
-        this.spriteshiftregL.fill(0)
-        this.spriteXlatch.fill(0)
-        this.spritepals.fill(0)
-        this.spritebgflags.fill(0) // 0 = 前景优先级
-        
-        this.sprite0here = false
-        this.found = 0
-        
-        this.nextattr = 0
-        this.linelowbits = 0
-        this.linehighbits = 0
-        this.penultimateattr = 0
-        this.tileAddr = 0
-        
-        this.secOAM.fill(0)
-        
-        this.readbuffer = 0
-        
-        this.bitmap.fill(0)
-        this.bgcolors.fill(0)
-    }
-
-    /**
-     * 重新同步移位寄存�?- 修复扫描线中间恢复状态的问题
-     */
-    private resyncShiftRegisters(): void {
-        
-        if (this.scanline === 0 && this.cycles >= 280) {
-
-            return
-        }
-        
-        if (this.scanline >= 240) {
-
-            return
-        }
-        
-        if (this.cycles < 1 || this.cycles > 256) {
-
-            return
-        }
-        
-        const cycleInTile = this.cycles - 1 & 7
-        
-        if (cycleInTile > 0 && cycleInTile < 8) {
-            
-            if ((this.bgShiftRegH & 0xff00) === 0 && (this.bgShiftRegL & 0xff00) === 0) {
-                
-                if (this.renderingOn()) {
-                    
-                    this.fetchNTByte()
-                    this.penultimateattr = this.getAttribute(
-                        (this.loopyV & 0xc00) + 0x23c0,
-                        this.loopyV & 0x1f,
-                        (this.loopyV & 0x3e0) >> 5,
-                    )
-                    this.linelowbits = this.mapper.ppuRead(this.tileAddr + ((this.loopyV & 0x7000) >> 12))
-                    this.linehighbits = this.mapper.ppuRead(this.tileAddr + 8 + ((this.loopyV & 0x7000) >> 12))
-                    
-                    this.bgShiftRegL = this.bgShiftRegL & 0x00ff | this.linelowbits << 8
-                    this.bgShiftRegH = this.bgShiftRegH & 0x00ff | this.linehighbits << 8
-                    
-                    const attr = this.penultimateattr
-                    
-                    this.bgAttrShiftRegL = (this.bgAttrShiftRegL & 0x00ff | (attr & 1 ? 0xff00 : 0x0000)) & 0xFFFF
-                    this.bgAttrShiftRegH = (this.bgAttrShiftRegH & 0x00ff | (attr & 2 ? 0xff00 : 0x0000)) & 0xFFFF
-                    
-                }
-            }
-        }
-        
     }
 }
