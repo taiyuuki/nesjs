@@ -114,11 +114,6 @@ export class PPU {
         
     }
 
-    /**
-     * �?PPU 寄存器读取数据，完全按照Java版本实现
-     * @param regnum 寄存器号�?-7�?
-     * @returns 读取的�?
-     */
     public read(regnum: number): number {
         switch (regnum) {
             case 2: 
@@ -185,11 +180,6 @@ export class PPU {
         return this.openbus
     }
 
-    /**
-     * �?PPU 寄存器写入数据，完全按照Java版本实现
-     * @param regnum 寄存器号�?-7�?
-     * @param data 要写入寄存器的值（0x00 �?0xff 有效�?
-     */
     public write(regnum: number, data: number): void {
         
         this.openbus = data
@@ -465,8 +455,14 @@ export class PPU {
      */
     private bgFetch(): void {
         
-        this.bgAttrShiftRegH |= this.nextattr >> 1 & 1
-        this.bgAttrShiftRegL |= this.nextattr & 1
+        const attrBitH = this.nextattr >> 1 & 1
+        const attrBitL = this.nextattr & 1
+        
+        const tempH = this.bgAttrShiftRegH | attrBitH
+        const tempL = this.bgAttrShiftRegL | attrBitL
+        
+        this.bgAttrShiftRegH = tempH >>> 0 & 0xFFFF
+        this.bgAttrShiftRegL = tempL >>> 0 & 0xFFFF
         
         switch (this.cycles - 1 & 7) {
             case 1:
@@ -591,6 +587,12 @@ export class PPU {
         
         this.bgShiftRegH <<= 1
         this.bgShiftRegL <<= 1
+
+        const tempH = this.bgAttrShiftRegH << 1
+        const tempL = this.bgAttrShiftRegL << 1
+        
+        this.bgAttrShiftRegH = tempH >>> 0 & 0xFFFF
+        this.bgAttrShiftRegL = tempL >>> 0 & 0xFFFF
     }
 
     /**

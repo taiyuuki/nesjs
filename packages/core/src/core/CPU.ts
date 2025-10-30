@@ -1568,7 +1568,7 @@ export class CPU {
         this.idle = false
         this.push(this.PC >> 8)
         this.push(this.PC & 0xff)
-        this.push(this.flagstobyte() & ~Utils.BIT4) // Java版本清除BIT4
+        this.push(this.flagstobyte() & ~Utils.BIT4)
 
         this.PC = this.ram.read(0xFFFE) + (this.ram.read(0xFFFF) << 8)
         this.interruptsDisabled = true

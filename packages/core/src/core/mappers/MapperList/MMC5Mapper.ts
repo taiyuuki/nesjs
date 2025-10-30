@@ -563,4 +563,73 @@ export default class MMC5Mapper extends Mapper {
         }
     }
     
+    /**
+     * 重置MMC5映射器状态，用于游戏重启
+     */
+    override reset(): void {
+
+        // 调用父类重置方法
+        super.reset()
+        
+        // 重置MMC5特定的状态变量
+        this.exram.fill(0)
+        this.exramMode = 0
+        this.chrMode = 0
+        this.prgMode = 3 // 默认模式
+        this.wramWrite1 = 0
+        this.wramWrite2 = 0
+        this.multiplier1 = 0
+        this.multiplier2 = 0
+        this.prgpage = 0
+        this.chrOr = 0
+        this.wrambank = 0
+        this.scanctrEnable = false
+        this.irqPend = false
+        this.chrregsA.fill(0)
+        this.chrregsB.fill(0)
+        this.prgregs.fill(0)
+        this.romHere.fill(false)
+        this.scanctrLine = 0
+        this.irqCounter = 20
+        this.fillnt.fill(0)
+        
+        // 重新初始化音频芯片
+        if (this.soundchip) {
+
+            // 从APU中移除旧的音频芯片
+            if (this.cpuram?.apu) {
+
+                // 注意：这里假设APU有removeExpnSound方法，如果没有，可能需要调整
+                // this.cpuram.apu.removeExpnSound(this.soundchip);
+            }
+            this.soundchip = undefined
+        }
+        
+        // 重置其他状态变量
+        this.inFrame = false
+        this.prgram = new Uint8Array(65536)
+        this.fetchcount = 0
+        this.exlatch = 0
+        this.lastfetch = 0
+        this.prevfetch = 0
+        this.prevprevfetch = 0
+        this.spritemode = false
+        this.cachedChrBank = 0
+        
+        // 重新设置PRG和CHR映射
+        this.prgregs[3] = this.prgsize / 8192 - 1
+        this.prgregs[2] = this.prgsize / 8192 - 1
+        this.prgregs[1] = this.prgsize / 8192 - 1
+        this.prgregs[0] = this.prgsize / 8192 - 1
+        this.setupPRG()
+        
+        // 重置CHR映射
+        for (let i = 0; i < 4; ++i) {
+            this.chrmapB[i] = 1024 * i % this.chrsize
+        }
+        this.setupCHR()
+        
+        // 重置镜像设置为默认值
+        this.setMirroring(0, this.exram)
+    }
 }
