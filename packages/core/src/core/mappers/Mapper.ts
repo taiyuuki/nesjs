@@ -815,4 +815,23 @@ export class Mapper {
     protected getVROM8KSize(): number {
         return this.chrsize >> 13 // chrsize / 8192
     }
+
+    /**
+     * 设置自定义VRAM镜像
+     * @param bank0-bank3 各个银行映射
+     */
+    protected setVRAMMirrorCustom(bank0: number, bank1: number, bank2: number, bank3: number): void {
+
+        // 确保银行号在有效范围内
+        const validBank0 = bank0 & 3
+        const validBank1 = bank1 & 3
+        const validBank2 = bank2 & 3
+        const validBank3 = bank3 & 3
+
+        // 根据银行号设置nametable指针
+        this.nt0 = this.getPputByIndex(validBank0)
+        this.nt1 = this.getPputByIndex(validBank1)
+        this.nt2 = this.getPputByIndex(validBank2)
+        this.nt3 = this.getPputByIndex(validBank3)
+    }
 }

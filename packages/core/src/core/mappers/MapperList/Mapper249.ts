@@ -1,4 +1,5 @@
 import { Mapper } from '../Mapper'
+import { MirrorType } from '@/core/types'
 
 export default class Mapper249 extends Mapper {
     private reg: number[] = new Array(8).fill(0)
@@ -186,10 +187,10 @@ export default class Mapper249 extends Mapper {
 
                 // 镜像控制
                 if ((data & 0x01) === 0) {
-                    this.setVRAMMirror(1) // VRAM_VMIRROR
+                    this.setmirroring(MirrorType.V_MIRROR) // VRAM_VMIRROR
                 }
                 else {
-                    this.setVRAMMirror(0) // VRAM_HMIRROR
+                    this.setmirroring(MirrorType.H_MIRROR) // VRAM_HMIRROR
                 }
                 break
 
