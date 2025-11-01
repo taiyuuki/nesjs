@@ -11,8 +11,6 @@ export class CPURAM {
     public mapper!: Mapper
     public apu?: APU // 真正的 APU 引用
     public ppu?: PPU // 真正的 PPU 引用
-    private _lastControllerRead?: number
-    private _lastControllerWrite?: number
 
     constructor(mapper: Mapper) {
         this.mapper = mapper
