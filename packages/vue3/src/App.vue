@@ -47,13 +47,13 @@ const getROMInfo = async() => {
     console.log('ROM Info:', info)
 }
 
-const loadFDSBIOS = async(event: Event) => {
+const setFDSBIOS = async(event: Event) => {
     const input = event.target as HTMLInputElement
     if (input.files && input.files.length > 0) {
         const file = input.files[0]
         const arrayBuffer = await file.arrayBuffer()
         const biosData = new Uint8Array(arrayBuffer)
-        nesRef.value?.loadFDSBIOS(biosData)
+        nesRef.value?.setFDSBIOS(biosData)
     }
 }
 </script>
@@ -74,7 +74,7 @@ const loadFDSBIOS = async(event: Event) => {
       <input
         type="file"
         accept="*.fds"
-        @change="loadFDSBIOS"
+        @change="setFDSBIOS"
       >
       <input
         type="file"

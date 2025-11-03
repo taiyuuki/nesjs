@@ -61,8 +61,8 @@ class NESEmulator {
         this.frameDuration = 1000 / this.targetFPS
     }
 
-    public loadFDSBIOS(biosData: Uint8Array) {
-        this.nes.loadFDSBIOS(biosData)
+    public setFDSBIOS(biosData: Uint8Array) {
+        this.nes.setFDSBIOS(biosData)
     }
 
     private mainLoop() {
@@ -121,10 +121,6 @@ class NESEmulator {
 
     public reset() {
         this.nes.reset()
-    }
-
-    public setFDSBIOS(bios: Uint8Array) {
-        this.nes.setFDSBIOS(bios)
     }
 
     public async enableAudio() {

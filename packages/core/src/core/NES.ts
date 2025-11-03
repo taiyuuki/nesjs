@@ -89,7 +89,6 @@ export class NES {
     private controller1: ControllerAdapter
     private controller2: ControllerAdapter
     private audioInterface?: AudioOutputInterface
-    private fdsBIOS?: Uint8Array
 
     // 性能统计
     public frameCount: number = 1
@@ -149,7 +148,7 @@ export class NES {
      * 加载FDS BIOS文件
      * @param biosData FDS BIOS数据 (必须是8KB)
      */
-    public loadFDSBIOS(biosData: Uint8Array): void {
+    public setFDSBIOS(biosData: Uint8Array): void {
         if (biosData.length !== 8192) {
             throw new Error(`Invalid FDS BIOS size: ${biosData.length} bytes, expected 8192 bytes`)
         }
