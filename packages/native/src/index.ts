@@ -190,6 +190,10 @@ class NESEmulator {
         this.renderer.setFillColor(color)
     }
 
+    public setFDSBIOS(bios: Uint8Array) {
+        this.nes.setFDSBIOS(bios)
+    }
+
     public addCheat(code: string) {
         const cheater = this.nes.getCheater()
         if (!cheater) return

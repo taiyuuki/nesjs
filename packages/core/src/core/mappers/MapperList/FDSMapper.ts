@@ -26,27 +26,19 @@ export default class FDSMapper extends Mapper {
     
     // FDS磁盘数据
     private diskData: Uint8Array
-    private diskSides: number
     
     // 磁盘系统控制
     private diskIoEnable: boolean = false
     private diskReadMode: boolean = true
     private diskMotorOn: boolean = false
     private controlRegister: number = 0 // $4025 控制寄存器值
-    private diskReady: boolean = true
-    private endOfTrack: boolean = false
-    private diskPosition: number = 0
     private lastResetBit: boolean = false // 上次bit1的状态，用于边沿检测
     
     // 磁盘状态管理（根据VirtuaNES）
     private diskEject: number = 0 // 磁盘弹出状态 (0=已插入, 1=未插入)
     
     // 数据传输状态
-    private diskTransferInProgress: boolean = false
-    private diskTransferComplete: boolean = false
     private diskDataBuffer: Uint8Array = new Uint8Array(65500) // FDS磁盘数据缓冲
-    private diskDataPointer: number = 0
-    private transferDirection: number = 0 // 0=read, 1=write
     private lastDriveStatus: number = 0 // 用于减少日志输出
     
     // FDS磁盘块状态机（根据VirtuaNES实现）
@@ -54,13 +46,9 @@ export default class FDSMapper extends Mapper {
     private blockPoint: number = 0 // 块内偏移
     private point: number = 0 // 磁盘数据全局偏移
     private currentFileSize: number = 0 // 当前文件大小
-    private firstAccess: boolean = false // 第一次访问标志
     private rwStart: boolean = false // 读写开始标志
     private driveReset: boolean = false // 驱动器重置标志（VirtuaNES兼容）
-    private diskMountCount: number = 119 // 磁盘安装计数
     
-    // VirtuaNES块大小定义
-    // **关键修复** - BIOS只读取VOLUME_LABEL的前16字节，剩余40字节会被跳过
     private static readonly SIZE_VOLUME_LABEL = 16
     private static readonly SIZE_FILE_AMOUNT = 2
     private static readonly SIZE_FILE_HEADER = 16
@@ -71,10 +59,6 @@ export default class FDSMapper extends Mapper {
     private irqEnabled: boolean = false
     private irqRepeat: boolean = false
     private diskTimerIrq: boolean = false
-
-    // 磁盘读取模拟
-    private diskReadPosition: number = 0 // 当前读取位置
-    private diskReadCycleCounter: number = 0 // 读取周期计数器
     
     // 磁盘IRQ机制（新增）
     private diskIrqPending: boolean = false // 磁盘IRQ待处理标志
@@ -85,9 +69,6 @@ export default class FDSMapper extends Mapper {
     
     // BIOS控制向量设置标志
     private biosVectorsSet: boolean = false
-    private biosLicenseVerified: boolean = false
-    private biosDataReadComplete: boolean = false
-    private fileDataBytesRead: number = 0
     
     // 游戏状态跟踪
     private gameStarted: boolean = false
@@ -98,11 +79,8 @@ export default class FDSMapper extends Mapper {
     private zeroPagePointer: number = 0x0000 // ($02/$03)组成的间接地址
     private fileDataBuffer: Uint8Array = new Uint8Array(256) // $0200区域文件缓冲
     
-    // **简化方案** - 直接在BIOS ROM数据中预设验证缓冲区
-    // 不使用overlay,而是修改BIOS ROM的对应位置
-    
     // CHR保护机制（防止花屏）
-    private chrProtectionEnabled: boolean = false // **关键修复** - 默认禁用CHR保护
+    private chrProtectionEnabled: boolean = false
     private initTime: number = 0
     private lastChrWriteTime?: number
     private lastChrWriteData?: number
@@ -117,10 +95,8 @@ export default class FDSMapper extends Mapper {
         
         // 保存磁盘数据
         this.diskData = loader.fdsData
-        this.diskSides = loader.fdsSides || 1
         
-        // **关键修复** - 禁用基类的prgram，强制CPU使用我们的cartRead
-        this.hasprgram = false // 强制CPU调用cartRead而不是直接访问prgram
+        this.hasprgram = false
         
         // 初始化CHR保护
         this.initTime = Date.now()
@@ -128,57 +104,10 @@ export default class FDSMapper extends Mapper {
         // 初始化音频芯片
         this.soundChip = new FDSSoundChip()
         
-        // 注意：BIOS需要通过setBIOS()方法设置
-        
         // 解析和加载磁盘文件
         this.loadBootFiles()
         
-        // 初始化磁盘数据缓冲区（模拟FDS磁盘内容）
-        this.initializeDiskBuffer()
-        
         console.log('FDS: Mapper initialized')
-    }
-
-    /**
-     * 初始化磁盘数据缓冲区 - 使用真实磁盘数据
-     */
-    private initializeDiskBuffer(): void {
-        
-        // 如果有真实磁盘数据，直接使用
-        if (this.diskData && this.diskData.length > 0) {
-            console.log('FDS: Using real disk data for buffer')
-            
-            return
-        }
-
-        // 创建基本的FDS磁盘结构作为后备
-        let offset = 0
-
-        // 块1: 磁盘信息块
-        this.diskDataBuffer[offset++] = 0x01 // 块代码
-        
-        // '*NINTENDO-HVC*' 字符串
-        const nintendoString = '*NINTENDO-HVC*'
-        for (let i = 0; i < nintendoString.length; i++) {
-            this.diskDataBuffer[offset++] = nintendoString.charCodeAt(i)
-        }
-        
-        // 基本磁盘信息
-        this.diskDataBuffer[offset++] = 0x00 // 授权代码
-        this.diskDataBuffer[offset++] = 0x48 // "H"
-        this.diskDataBuffer[offset++] = 0x56 // "V"
-        this.diskDataBuffer[offset++] = 0x43 // "C"
-        this.diskDataBuffer[offset++] = 0x20 // " "
-        this.diskDataBuffer[offset++] = 0x00 // 版本
-        this.diskDataBuffer[offset++] = 0x00 // 面
-        this.diskDataBuffer[offset++] = 0x00 // 磁盘号
-        
-        // 填充其余区域为安全值
-        for (let i = offset; i < this.diskDataBuffer.length; i++) {
-            this.diskDataBuffer[i] = 0xFF
-        }
-        
-        console.log('FDS: Fallback disk buffer initialized')
     }
 
     /**
@@ -187,10 +116,6 @@ export default class FDSMapper extends Mapper {
     public setBIOS(biosData: Uint8Array): void {
         if (biosData.length === 8192) {
             this.biosData = new Uint8Array(biosData)
-            
-            // **重要修复** - BIOS RESET向量应该指向BIOS内部处理程序
-            // 让BIOS检查控制向量后决定是否跳转到$DFFC (游戏RESET向量)
-            // 不修改BIOS RESET向量，保持原始BIOS行为
             
             console.log('FDS: External BIOS loaded (8KB) - keeping original RESET vector for proper boot sequence')
         }
@@ -356,17 +281,6 @@ export default class FDSMapper extends Mapper {
             this.biosVectorsSet = true
         }
     }
-
-    /**
-     * 更新BIOS状态 - 不硬编码，让BIOS自然处理状态转换
-     */
-    private updateBIOSStatus(): void {
-        if (!this.cpuram || !this.gameStarted) return
-
-        // 不硬编码任何值，只提供正确的磁盘数据和IRQ信号
-        // 让BIOS自己根据许可证数据和文件头信息决定$0102等状态
-        console.log('FDS: BIOS data and IRQ signals ready - letting BIOS handle status naturally')
-    }
     
     /**
      * 加载单个文件
@@ -447,7 +361,6 @@ export default class FDSMapper extends Mapper {
                         }
                         console.log(`FDS: Nametable data loaded at $${loadAddr.toString(16)} -> CHR RAM offset $${chrOffset.toString(16)}`)
                         
-                        // **关键修复** - 确保BIOS能检测到许可证文件并进行验证
                         if (loadAddr === 0x2800 && size === 224) {
                             console.log('FDS: Detected license/nametable data block - ensuring BIOS compatibility')
                             
@@ -504,7 +417,6 @@ export default class FDSMapper extends Mapper {
     // Memory mapping
     public override cartWrite(addr: number, data: number): void {
 
-        // **关键修复** - 监控零页写入以实现动态内存管理
         if (addr === 0x0002 || addr === 0x0003) {
             if (this.cpuram) {
                 this.cpuram.write(addr, data)
@@ -545,10 +457,6 @@ export default class FDSMapper extends Mapper {
     
     public override cartRead(addr: number): number {
 
-        // **关键修复** - 不要拦截 $EF00-$EFFF 区域的读取
-        // 让CPU直接从RAM读取我们在init()中初始化的 $FF 值
-        // BIOS会通过间接寻址 ($00),Y 读取这个区域进行验证
-        
         // 处理Work RAM区域的文件缓冲区（仅限$0200-$02FF）
         if (this.cpuram && addr >= 0x0200 && addr < 0x0300) {
             this.updateZeroPagePointer()
@@ -694,9 +602,8 @@ export default class FDSMapper extends Mapper {
                 break
             case 0x4025:
 
-                // VirtuaNES逻辑: bit6是读写开始位，bit0是重置位
+                // bit6是读写开始位，bit0是重置位
                 
-                // **关键修复** - 先处理Transfer Reset（bit0），再处理块转换
                 // bit0: Transfer Reset (1=重置传输时序)
                 const currentResetBit = (data & 0x01) !== 0
                 
@@ -720,14 +627,14 @@ export default class FDSMapper extends Mapper {
                     console.log('FDS: Transfer RESET released (bit0=0)')
                 }
                 
-                // **关键修复** - 当bit6=1时也自动清除reset状态
+                // 当bit6=1时也自动清除reset状态
                 // 这允许BIOS在设置bit0=1后直接写入bit6=1来开始读取
                 if (data & 0x40 && this.driveReset) {
                     this.driveReset = false
                     console.log('FDS: Transfer RESET auto-released by bit6=1')
                 }
                 
-                // **关键修复** - 当马达开启(bit1=0)时也自动清除reset状态
+                // 当马达开启(bit1=0)时也自动清除reset状态
                 // FCEUX行为：BIOS写入$2D后期望$4032立即返回$40
                 const motorStart = (data & 0x02) === 0
                 if (motorStart && this.driveReset) {
@@ -747,7 +654,7 @@ export default class FDSMapper extends Mapper {
                     this.diskTimerIrq = false
                 }
                 
-                // VirtuaNES块状态转换: 当!RW_start && (data & 0x40)时进行块转换
+                // 当!RW_start && (data & 0x40)时进行块转换
                 // **关键修复** - 不在重置状态下进行块转换
                 const canTransition = !this.rwStart && data & 0x40 && !this.driveReset
                 
@@ -760,8 +667,7 @@ export default class FDSMapper extends Mapper {
                     
                     this.blockPoint = 0
 
-                    // **关键修复** - 重置传输状态，让新块的第一个字节立即准备好
-                    this.diskTransferComplete = false
+                    // 重置传输状态，让新块的第一个字节立即准备好
                     this.dataReady = false
                     
                     // **FDS硬件特性** - 磁盘持续旋转,块开始时第一个字节可能已经在磁头下
@@ -772,14 +678,14 @@ export default class FDSMapper extends Mapper {
                         case 0: // BLOCK_READY
                             this.blockMode = 1 // BLOCK_VOLUME_LABEL
 
-                            // **关键修复** - FDS磁盘格式：前15字节是磁盘头
+                            // FDS磁盘格式：前15字节是磁盘头
                             // 真正的VOLUME_LABEL块从offset 15开始
                             this.point = 15
                             console.log('FDS: Block transition READY -> VOLUME_LABEL (starting at offset 15)')
                             break
                         case 1: // BLOCK_VOLUME_LABEL  
                             this.blockMode = 2 // BLOCK_FILE_AMOUNT
-                            // **关键修复** - BIOS只读16字节，但磁盘上VOLUME_LABEL是56字节
+                            // BIOS只读16字节，但磁盘上VOLUME_LABEL是56字节
                             // 需要跳过完整的56字节到达FILE_AMOUNT
                             this.point += 56
                             console.log('FDS: Block transition VOLUME_LABEL -> FILE_AMOUNT')
@@ -800,9 +706,6 @@ export default class FDSMapper extends Mapper {
                             console.log('FDS: Block transition FILE_DATA -> FILE_HEADER (next file)')
                             break
                     }
-                    
-                    // VirtuaNES: 第一次访问标志 - 最初的1回目の書き込みを無視するため
-                    this.firstAccess = true
                 }
                 
                 // 读写开始控制 (bit6) - VirtuaNES: RW_start = data & 0x40
@@ -812,7 +715,7 @@ export default class FDSMapper extends Mapper {
                 this.diskReadMode = (data & 0x04) !== 0 // bit2=1时是读模式（VirtuaNES逻辑）
                 
                 // 磁盘马达控制 (bit1) - 注意：0=开启, 1=停止
-                // **关键修复** - 在FILE_DATA阶段保持磁盘马达开启
+                // 在FILE_DATA阶段保持磁盘马达开启
                 const motorStop = (data & 0x02) !== 0
                 if (this.blockMode === 4 && motorStop) {
                     console.log('FDS: Preventing motor shutdown during FILE_DATA phase')
@@ -890,11 +793,11 @@ export default class FDSMapper extends Mapper {
                         data = this.diskData[globalOffset]
                         console.log(`FDS: $4031 read [$${globalOffset.toString(16)}] = $${data.toString(16).padStart(2, '0')} (Block ${this.blockMode}, byte ${this.blockPoint}/${this.getBlockSize()})`)
                         
-                        // **关键修复** - 读取后清除标志和CPU IRQ
+                        // 读取后清除标志和CPU IRQ
                         this.dataReady = false
                         this.diskIrqPending = false
                         
-                        // **重要修复** - 重置 counter,从读取时刻开始计时下一个 IRQ
+                        // 重置 counter,从读取时刻开始计时下一个 IRQ
                         // 这意味着下一个 IRQ 将在读取后 149 周期触发,不是从上一个 IRQ 后 149 周期
                         this.diskTransferCounter = 0
                         
@@ -917,7 +820,7 @@ export default class FDSMapper extends Mapper {
                 // FCEUX返回: $42 (bit1=1, 未准备好) → $40 (bit1=0, 准备好)
                 let driveStatus = 0x40 // bit6: 基础状态位（总是1）
                 
-                // **关键修复** - 更准确的磁盘状态检测
+                // 更准确的磁盘状态检测
                 const diskDataAvailable = this.diskData && this.diskData.length > 0
                 
                 // bit0: 磁盘插入状态 (0=插入, 1=未插入)
@@ -963,14 +866,8 @@ export default class FDSMapper extends Mapper {
     public override init(): void {
         super.init()
         
-        // **关键发现** - 不需要初始化$EF00-$EFFF
-        // 根据FCEUX trace,$EF00-$EFFF应该映射到BIOS区域,但BIOS会自己管理这块内存
-        // 我们之前的错误是试图预初始化这个区域,导致破坏了BIOS代码/数据
-        
         // 设置磁盘状态 - 磁盘已插入并准备好
         this.diskEject = 0 // 磁盘已插入
-        this.diskMountCount = 120 // 跳过插入过程，直接完成
-        this.diskReady = true // 磁盘准备好
         this.diskMotorOn = true // 磁盘马达默认开启
         this.diskReadMode = true // 默认读模式
         
@@ -984,8 +881,6 @@ export default class FDSMapper extends Mapper {
         }
         
         console.log('FDS: Disk insertion started (VirtuaNES style)')
-        
-        // FDS游戏会自行设置调色板，不需要预设
         
         // 确保PPU处于可访问状态，让BIOS能正确初始化
         this.ensurePPUReady()
@@ -1001,106 +896,6 @@ export default class FDSMapper extends Mapper {
         // 模拟BIOS的PPU初始化过程
         // 根据FDS_BIOS.md，BIOS会初始化PPU寄存器
         console.log('FDS: Ensuring PPU is ready for BIOS initialization')
-    }
-
-    /**
-     * 设置基础背景调色板，确保BIOS文字可见
-     */
-    private setupBasicBackgroundPalette(): void {
-        
-        // 强制检查游戏状态 - 如果游戏已开始，绝不设置调色板
-        if (this.gameStarted) {
-            console.log('FDS: Blocking palette setup - game is already running')
-            
-            return
-        }
-
-        // 设置最基础的背景调色板，让"NOW LOADING"等BIOS文字可见
-        // 根据日志，游戏会设置精灵调色板，但背景调色板需要预设
-        
-        // 背景调色板0 ($3F00-$3F03) - 黑色背景，匹配游戏期望
-        this.ppuWrite(0x3F00, 0x00) // 通用背景色（黑色） - 匹配FCEUX数据
-        this.ppuWrite(0x3F01, 0x00) // 黑色
-        this.ppuWrite(0x3F02, 0x10) // 浅灰
-        this.ppuWrite(0x3F03, 0x30) // 白色
-        
-        // 背景调色板1 ($3F04-$3F07) - 会自动镜像$3F00
-        this.ppuWrite(0x3F05, 0x06) // 深红
-        this.ppuWrite(0x3F06, 0x16) // 红色
-        this.ppuWrite(0x3F07, 0x26) // 浅红
-        
-        console.log('FDS: Basic background palette set for text visibility')
-    }
-
-    /**
-     * 模拟BIOS跳转到游戏代码
-     */
-    private forceJumpToGame(): void {
-
-        // 模拟BIOS完成许可证检查后跳转到游戏RESET向量
-        // 这里我们需要触发CPU跳转到$6000（游戏代码开始位置）
-        
-        if (this.cpuram) {
-
-            // 清除BIOS相关的显示状态，让游戏接管
-            console.log('FDS: Clearing BIOS display state for game takeover')
-            
-            // 尝试通过CPU接口强制跳转到游戏代码
-            if (this.cpu) {
-                
-                // 强制设置CPU的PC寄存器到游戏开始地址
-                // 这是最直接的方法让CPU开始执行游戏代码
-                console.log('FDS: Forcing CPU to jump to game code at $6000')
-                
-                // 设置CPU状态，模拟RESET向量跳转
-                // 注意：这需要CPU接口支持，可能需要特殊的方法
-                try {
-                    
-                    // 获取当前PC值进行调试
-                    const currentPC = (this.cpu as any).PC || 0
-                    console.log(`FDS: Current CPU PC before jump: $${currentPC.toString(16).toUpperCase()
-                        .padStart(4, '0')}`)
-                    
-                    // 尝试访问CPU的程序计数器
-                    if (this.cpu.setPC) {
-                        this.cpu.setPC(0x6000)
-                        
-                        // 验证PC是否真的被设置了
-                        const newPC = (this.cpu as any).PC || 0
-                        console.log(`FDS: CPU PC after setPC: $${newPC.toString(16).toUpperCase()
-                            .padStart(4, '0')}`)
-                        
-                        if (newPC === 0x6000) {
-                            console.log('FDS: ✓ CPU PC successfully set to game code entry point')
-                            
-                            // 验证游戏代码是否仍然存在于内存中
-                            const gameCodeByte = this.workRam[0] // $6000 对应 workRam[0]
-                            console.log(`FDS: Game code at $6000: $${gameCodeByte.toString(16).toUpperCase()
-                                .padStart(2, '0')}`)
-                        } 
-                        else {
-                            console.log(`FDS: ✗ CPU PC setting failed - expected $6000, got $${newPC.toString(16)
-                                .toUpperCase()
-                                .padStart(4, '0')}`)
-                        }
-                    }
-                    else {
-                        console.log('FDS: CPU interface does not support PC setting - trying alternative method')
-                        
-                        // 备用方案：模拟RESET信号
-                        if (this.cpu.reset) {
-                            this.cpu.reset()
-                            console.log('FDS: CPU reset triggered - should read RESET vector')
-                        }
-                    }
-                }
-                catch(error) {
-                    console.log('FDS: CPU jump attempt failed:', error)
-                }
-            }
-        }
-        
-        console.log('FDS: BIOS jump simulation complete')
     }
     
     // IRQ处理
@@ -1173,7 +968,7 @@ export default class FDSMapper extends Mapper {
         
         if (!this.diskReadMode || !this.rwStart 
             || this.driveReset || this.blockMode === 0 
-            || this.dataReady) { // **关键修复** - 数据未被读取时不累积cycles
+            || this.dataReady) { // 数据未被读取时不累积cycles
             return
         }
         
@@ -1190,7 +985,7 @@ export default class FDSMapper extends Mapper {
             console.log(`FDS: clockIRQ accumulating - counter:${this.diskTransferCounter}`)
         }
         
-        // **关键修复** - 防止累积器溢出,最多累积到一个字节的时间
+        // 防止累积器溢出,最多累积到一个字节的时间
         if (this.diskTransferCounter > this.CYCLES_PER_BYTE * 2) {
             console.log(`FDS: clockIRQ counter overflow! ${this.diskTransferCounter} -> ${this.CYCLES_PER_BYTE * 2}`)
             this.diskTransferCounter = this.CYCLES_PER_BYTE * 2
@@ -1212,70 +1007,18 @@ export default class FDSMapper extends Mapper {
 
                 // 准备下一个字节
                 this.dataReady = true
-                
-                // **重要修复** - 不在这里重置 counter!
-                // counter 应该在 BIOS 读取 $4031 时重置
-                // 这样 IRQ 间隔是从"读取数据"到"下一个IRQ",而不是"IRQ到IRQ"
-                
-                // **关键修复** - 标记 IRQ pending
-                // 实际的 CPU IRQ 激活由上面的电平触发逻辑处理
                 this.diskIrqPending = true
                 
                 console.log(`FDS: Disk IRQ triggered for byte ${this.blockPoint}/${blockSize} in block ${this.blockMode}`)
             }
             else {
 
-                // **关键修复** - 块读取完成后不自动转换
+                // 块读取完成后不自动转换
                 // 让BIOS通过$4025的bit6控制块转换
                 console.log(`FDS: Block ${this.blockMode} read complete (${blockSize} bytes) - waiting for BIOS block transition`)
-                this.diskTransferComplete = true
 
                 // 不再调用autoTransitionToNextBlock，让BIOS控制
             }
-        }
-    }
-    
-    /**
-     * 自动转换到下一个块
-     */
-    private autoTransitionToNextBlock(): void {
-        switch (this.blockMode) {
-            case 1: // VOLUME_LABEL -> FILE_AMOUNT
-                console.log('FDS: Auto transition VOLUME_LABEL -> FILE_AMOUNT')
-
-                // **关键修复** - BIOS只读16字节，但磁盘上VOLUME_LABEL实际是56字节
-                // 需要跳过剩余的40字节到达FILE_AMOUNT块
-                this.point += 56 // 跳过完整的VOLUME_LABEL块（16字节已读 + 40字节跳过）
-                this.blockMode = 2
-                this.blockPoint = 0
-                this.diskTransferComplete = false
-                break
-                
-            case 2: // FILE_AMOUNT -> FILE_HEADER
-                console.log('FDS: Auto transition FILE_AMOUNT -> FILE_HEADER')
-                this.blockMode = 3
-                this.blockPoint = 0
-                this.diskTransferComplete = false
-                break
-                
-            case 3: // FILE_HEADER -> FILE_DATA
-                console.log('FDS: Auto transition FILE_HEADER -> FILE_DATA')
-                this.blockMode = 4
-                this.blockPoint = 0
-                this.diskTransferComplete = false
-                break
-                
-            case 4: // FILE_DATA 完成，回到 READY 等待下一个文件
-                console.log('FDS: Auto transition FILE_DATA -> READY (file complete)')
-                this.blockMode = 0
-                this.blockPoint = 0
-                this.point += this.currentFileSize // 移动到下一个文件
-                this.diskTransferComplete = false
-                break
-                
-            default:
-                console.log(`FDS: No auto transition for block mode ${this.blockMode}`)
-                break
         }
     }
     
@@ -1297,16 +1040,6 @@ export default class FDSMapper extends Mapper {
             default:
                 return 0
         }
-    }
-    
-    /**
-     * 插入磁盘 - 简化版本，磁盘始终已插入
-     */
-    private insertDisk(): void {
-        this.diskEject = 0 // 磁盘已插入
-        this.diskMountCount = 121 // 跳过插入过程
-        this.diskReady = true // 磁盘准备好
-        console.log('FDS: Disk always ready (simplified)')
     }
 
     /**
