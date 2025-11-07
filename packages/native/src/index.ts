@@ -61,19 +61,35 @@ class NESEmulator {
         this.frameDuration = 1000 / this.targetFPS
     }
 
-    public setFDSBIOS(biosData: Uint8Array) {
-        this.nes.setFDSBIOS(biosData)
-    }
-
-    private mainLoop() {
+    private mainLoop = () => {
         const now = performance.now()
-        const deltaTime = now - this.lastFrameTime
-        if (this.status === 1 && deltaTime >= this.frameDuration) {
-            this.nes.runFrame()
-            this.lastFrameTime += this.frameDuration
+        let deltaTime = now - this.lastFrameTime
+
+        if (deltaTime > 1000) {
+            this.lastFrameTime = now
+            deltaTime = 0
         }
 
-        this.animationFrameId = requestAnimationFrame(() => this.mainLoop())
+        // if (this.status === 1) {
+        while (deltaTime >= this.frameDuration) {
+            this.nes.runFrame()
+            this.lastFrameTime += this.frameDuration
+            deltaTime -= this.frameDuration
+        }
+
+        // }
+
+        // if (this.status === 1) {
+        this.animationFrameId = requestAnimationFrame(this.mainLoop)
+
+        // }
+        // else {
+        //     this.animationFrameId = null
+        // }
+    }
+
+    private run() {
+        this.animationFrameId = requestAnimationFrame(this.mainLoop)
     }
 
     public async start() {
@@ -84,12 +100,12 @@ class NESEmulator {
                 }
                 this.status = 1
                 this.lastFrameTime = performance.now()
-                this.mainLoop()
+                this.run()
                 await this.audioOutput.start()
                 
                 break
             case 2: // Paused
-                this.resume()
+                await this.resume()
                 break
             case 1: // Running
                 // Already running
@@ -97,16 +113,30 @@ class NESEmulator {
         }
     }
 
-    public pause() {
+    public async pause() {
         if (this.status !== 1) return // Not running
-        this.audioOutput.pause()
+        try {
+            await this.audioOutput.pause()
+        }
+        catch {
+
+            // ignore if suspend failed or wasn't a promise
+        }
+
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId)
+            this.animationFrameId = null
+        }
         this.status = 2
     }
 
-    public resume() {
+    public async resume() {
         if (this.status !== 2) return // Not paused
-        this.audioOutput.resume()
+
+        await this.audioOutput.resume()
         this.status = 1
+        this.lastFrameTime = performance.now()
+        this.run()
     }
 
     public stop() {

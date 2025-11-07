@@ -231,14 +231,15 @@ class WebNESAudioOutput implements AudioOutputInterface {
     pause() {
         this.isPlaying = false
         if (this.audioContext && this.audioContext.state === 'running') {
-            this.audioContext.suspend()
+            
+            return this.audioContext.suspend()
         }
     }
 
-    resume() {
+    async resume() {
         this.isPlaying = true
         if (this.audioContext && this.audioContext.state === 'suspended') {
-            this.audioContext.resume()
+            await this.audioContext.resume()
         }
     }
 

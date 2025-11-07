@@ -1,6 +1,6 @@
 {
   "name": "@nesjs/react",
-  "version": "2.2.8",
+  "version": "2.2.9",
   "module": "./dist/nesjs-react.es.js",
   "main": "./dist/nesjs-react.umd.js",
   "types": "./dist/index.d.ts",
