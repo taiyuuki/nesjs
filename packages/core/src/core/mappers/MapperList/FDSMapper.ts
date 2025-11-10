@@ -38,7 +38,6 @@ export default class FDSMapper extends Mapper {
     private diskEject: number = 0 // 磁盘弹出状态 (0=已插入, 1=未插入)
     
     // 数据传输状态
-    private diskDataBuffer: Uint8Array = new Uint8Array(65500) // FDS磁盘数据缓冲
     private lastDriveStatus: number = 0 // 用于减少日志输出
     
     // FDS磁盘块状态机（根据VirtuaNES实现）
@@ -66,9 +65,6 @@ export default class FDSMapper extends Mapper {
     private dataReady: boolean = false // 数据准备好标志
     private readonly CYCLES_PER_BYTE = 149 // 每字节传输周期数 - FDS硬件实际速率约96.4μs/byte ≈ 149 CPU cycles @ 1.79MHz
     private firstClockLog: boolean = false // 调试标志 - 避免重复日志
-    
-    // BIOS控制向量设置标志
-    private biosVectorsSet: boolean = false
     
     // 游戏状态跟踪
     private gameStarted: boolean = false
@@ -234,9 +230,6 @@ export default class FDSMapper extends Mapper {
                 
                 if (filesLoaded > 0) {
 
-                    // 设置RESET向量
-                    this.setupVectorControls()
-
                     // 启用音频寄存器
                     this.soundRegistersEnabled = true
                     console.log('FDS: Game started successfully!')
@@ -247,38 +240,6 @@ export default class FDSMapper extends Mapper {
         }
         catch(error) {
             console.warn('FDS: File parsing failed:', error)
-        }
-    }
-    
-    /**
-     * 设置FDS BIOS向量控制参数
-     */
-    private setupVectorControls(): void {
-
-        // 检查$6000处的游戏代码
-        const gameCode = this.workRam.slice(0, 16)
-        const codeHex = Array.from(gameCode)
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join(' ')
-        console.log(`FDS: Game code at $6000: ${codeHex}`)
-        
-        // 根据FCEUX调试数据，游戏RESET向量$DFFC-$DFFD应该设置为 00 60 (指向$6000)
-        // 这与FCEUX数据完全匹配：DFFC-DFFD从 00 00 变为 00 60
-        const resetVectorOffset = 0xDFFC - 0xA000 + 0x4000 // $DFFC在扩展Work RAM中的偏移
-        this.workRam[resetVectorOffset] = 0x00 // RESET vector low (低字节)
-        this.workRam[resetVectorOffset + 1] = 0x60 // RESET vector high (高字节) - 指向$6000
-        
-        console.log('FDS: Game RESET vector set to $6000 (00 60) - matches FCEUX debug data')
-        console.log(`FDS: Vector location: $DFFC-$DFFD = ${this.workRam[resetVectorOffset].toString(16).padStart(2, '0')} ${this.workRam[resetVectorOffset + 1].toString(16).padStart(2, '0')}`)
-    }
-
-    /**
-     * 设置BIOS控制向量（让BIOS自然处理）
-     */
-    private setBIOSControlVectors(): void {
-        if (this.cpuram && !this.biosVectorsSet) {
-            console.log('FDS: Letting BIOS handle control vectors and license check naturally')
-            this.biosVectorsSet = true
         }
     }
     
@@ -468,12 +429,6 @@ export default class FDSMapper extends Mapper {
                 
                 return data
             }
-        }
-
-        // 延迟设置BIOS控制向量（当cpuram可用时）
-        if (!this.biosVectorsSet && this.cpuram) {
-            console.log(`FDS: Setting BIOS control vectors - gameStarted: ${this.gameStarted}`)
-            this.setBIOSControlVectors()
         }
         
         // **新增** - 检测游戏代码跳转
