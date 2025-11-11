@@ -30,8 +30,20 @@ const screenshot = () => {
     nesRef.value?.screenshot(true) // true = 自动下载
 }
 
-const downloadSave = () => {
-    nesRef.value?.downloadSaveState()
+let state: any = null
+const saveState = () => {
+    state = nesRef.value?.save()
+    console.log('Saved State:', state)
+}
+
+const loadState = () => {
+    if (state) {
+        nesRef.value?.load(state)
+        console.log('State Loaded')
+    }
+    else {
+        console.log('No State to Load')
+    }
 }
 
 const selectROM = async(event: Event) => {
@@ -90,8 +102,11 @@ const setFDSBIOS = async(event: Event) => {
       <button @click="screenshot">
         截图
       </button>
-      <button @click="downloadSave">
-        下载存档
+      <button @click="saveState">
+        保存状态
+      </button>
+      <button @click="loadState">
+        加载状态
       </button>
     </div>
     <div

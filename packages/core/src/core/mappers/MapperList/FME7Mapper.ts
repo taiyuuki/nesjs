@@ -140,4 +140,60 @@ export default class FME7Mapper extends Mapper {
             this.chr_map[i] = 1024 * this.charbanks[i] % this.chrsize
         }
     }
+
+    protected override postLoadState(state: any): void {
+
+        // 重新创建音频芯片实例，避免读档后方法丢失
+        this.sndchip = new Sunsoft5BSoundChip()
+        this.hasInitSound = false
+
+        // 恢复 bank 映射
+        this.setbanks()
+
+        // 如果状态中包含音频芯片的字段，尝试通过写入寄存器来恢复
+        if (state && state.sndchip && typeof state.sndchip === 'object') {
+            const s = state.sndchip
+
+            // timers 可能被序列化为对象数组，包含 period 字段
+            if (Array.isArray(s.timers)) {
+                for (let i = 0; i < 3; ++i) {
+                    const t = s.timers[i]
+                    if (t && typeof t.period === 'number') {
+                        const period = t.period & 0xfff
+                        this.sndchip.write(i * 2 + 0, period & 0xff)
+                        this.sndchip.write(i * 2 + 1, period >> 8 & 0xf)
+                    }
+                }
+            }
+
+            // 恢复音量和 envelope 标志（寄存器 8/9/10）
+            if (Array.isArray(s.volume) || Array.isArray(s.useenvelope)) {
+                for (let ch = 0; ch < 3; ++ch) {
+                    const vol = Array.isArray(s.volume) && typeof s.volume[ch] === 'number' ? s.volume[ch] & 0xf : 0
+                    const useenv = Array.isArray(s.useenvelope) && !!s.useenvelope[ch]
+                    this.sndchip.write(8 + ch, vol | (useenv ? 0x10 : 0))
+                }
+            }
+
+            // 恢复 enable 位（寄存器 7，注意写入时该寄存器的位是取反关系）
+            if (Array.isArray(s.enable)) {
+                let mask = 0
+                for (let ch = 0; ch < 3; ++ch) {
+
+                    // write expects bit=1 => disable, bit=0 => enable
+                    if (!s.enable[ch]) mask |= 1 << ch
+                }
+                this.sndchip.write(7, mask)
+            }
+        }
+
+        // 恢复 IRQ/中断状态：若之前标记为 interrupted，需要在 CPU 上重新申请中断
+        if (this.interrupted && this.cpu) {
+            this.interrupted = false
+            if (this.irqenabled && this.irqcounter === 0) {
+                ++this.cpu.interrupt
+                this.interrupted = true
+            }
+        }
+    }
 }
