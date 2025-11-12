@@ -1,6 +1,7 @@
 import { Mapper } from '../Mapper'
 import { FDSSoundChip } from '../../audio/FDSSoundChip'
 import type { ROMLoader } from '../../ROMLoader'
+import { MirrorType } from '../../types'
 
 /**
  * FDS (Famicom Disk System) Mapper 实现
@@ -31,7 +32,6 @@ export default class FDSMapper extends Mapper {
     private diskIoEnable: boolean = false
     private diskReadMode: boolean = true
     private diskMotorOn: boolean = false
-    private controlRegister: number = 0 // $4025 控制寄存器值
     private lastResetBit: boolean = false // 上次bit1的状态，用于边沿检测
     
     // 磁盘状态管理（根据VirtuaNES）
@@ -45,12 +45,14 @@ export default class FDSMapper extends Mapper {
     private blockPoint: number = 0 // 块内偏移
     private point: number = 0 // 磁盘数据全局偏移
     private currentFileSize: number = 0 // 当前文件大小
+    private currentFileLoadAddr: number = 0 // 当前文件加载地址
     private rwStart: boolean = false // 读写开始标志
     private driveReset: boolean = false // 驱动器重置标志（VirtuaNES兼容）
+    private blockCompleteLogged: boolean = false // 块完成日志标志（避免重复输出）
+    private shouldDetectBlockId: boolean = false // Block transition 后应检测 Block ID 标志
     
-    private static readonly SIZE_VOLUME_LABEL = 16
-    private static readonly SIZE_FILE_AMOUNT = 2
-    private static readonly SIZE_FILE_HEADER = 16
+    private static readonly SIZE_VOLUME_LABEL = 55 // Volume Label 数据大小是 55 字节（不包括 Block ID）
+    private static readonly SIZE_FILE_AMOUNT = 1 // File Amount 块内容大小是 1 字节（不包括 Block ID）
     
     // IRQ控制
     private irqReload: number = 0
@@ -64,7 +66,6 @@ export default class FDSMapper extends Mapper {
     private diskTransferCounter: number = 0 // 磁盘传输周期计数器
     private dataReady: boolean = false // 数据准备好标志
     private readonly CYCLES_PER_BYTE = 149 // 每字节传输周期数 - FDS硬件实际速率约96.4μs/byte ≈ 149 CPU cycles @ 1.79MHz
-    private firstClockLog: boolean = false // 调试标志 - 避免重复日志
     
     // 游戏状态跟踪
     private gameStarted: boolean = false
@@ -85,20 +86,42 @@ export default class FDSMapper extends Mapper {
     // 音频芯片
     private soundChip: FDSSoundChip
     private soundRegistersEnabled: boolean = false
-    
+
     constructor(loader: ROMLoader) {
         super(loader)
         
         // 保存磁盘数据
         this.diskData = loader.fdsData
         
+        // **调试** - 检查磁盘数据结构
+        if (this.diskData && this.diskData.length > 0x4a) {
+            const byte4a = this.diskData[0x4a]
+            const byte4b = this.diskData[0x4b]
+            const byte4c = this.diskData[0x4c]
+            console.log(`FDS: Disk data at $4a: $${byte4a.toString(16).padStart(2, '0')} $${byte4b.toString(16).padStart(2, '0')} $${byte4c.toString(16).padStart(2, '0')}`)
+            
+            // 检查 Block 1, 2, 3 的 Block ID
+            if (this.diskData.length > 0) {
+                const block1ID = this.diskData[0]
+                const block2ID = this.diskData[0x38]
+                const block3ID = this.diskData[0x3a]
+                console.log(`FDS: Block IDs - Block1:$${block1ID.toString(16)}, Block2:$${block2ID.toString(16)}, Block3:$${block3ID.toString(16)}`)
+            }
+        }
+        
         this.hasprgram = false
+        
+        // **FDS 默认 Mirroring** - BIOS 在启动时设置为 Horizontal Mirroring
+        this.setmirroring(MirrorType.H_MIRROR)
         
         // 初始化CHR保护
         this.initTime = Date.now()
         
         // 初始化音频芯片
         this.soundChip = new FDSSoundChip()
+        
+        // **关键修复** - 游戏开始时应该检测第一个 Block ID
+        this.shouldDetectBlockId = true
         
         // 解析和加载磁盘文件
         this.loadBootFiles()
@@ -116,7 +139,7 @@ export default class FDSMapper extends Mapper {
             console.log('FDS: External BIOS loaded (8KB) - keeping original RESET vector for proper boot sequence')
         }
         else {
-            console.warn(`FDS: Invalid BIOS size: ${biosData.length}, expected 8192 bytes`)
+            console.log(`FDS: Invalid BIOS size: ${biosData.length}, expected 8192 bytes`)
 
             // 不设置BIOS，让游戏尝试直接从Work RAM启动
         }
@@ -192,7 +215,7 @@ export default class FDSMapper extends Mapper {
                     if (offset + 16 >= this.diskData.length) break
                     
                     if (this.diskData[offset] !== 0x03) {
-                        console.warn(`FDS: Expected file header block, got ${this.diskData[offset]}`)
+                        console.log(`FDS: Expected file header block, got ${this.diskData[offset]}`)
                         break
                     }
                     
@@ -208,7 +231,7 @@ export default class FDSMapper extends Mapper {
                     
                     // 文件数据块 (block 4)
                     if (offset >= this.diskData.length || this.diskData[offset] !== 0x04) {
-                        console.warn('FDS: Expected file data block')
+                        console.log('FDS: Expected file data block')
                         break
                     }
                     
@@ -239,7 +262,7 @@ export default class FDSMapper extends Mapper {
             }
         }
         catch(error) {
-            console.warn('FDS: File parsing failed:', error)
+            console.log('FDS: File parsing failed:', error)
         }
     }
     
@@ -249,7 +272,7 @@ export default class FDSMapper extends Mapper {
     private loadFile(type: number, loadAddr: number, size: number, dataOffset: number): boolean {
         try {
             if (dataOffset + size > this.diskData.length) {
-                console.warn('FDS: File data exceeds disk bounds')
+                console.log('FDS: File data exceeds disk bounds')
 
                 return false
             }
@@ -276,7 +299,7 @@ export default class FDSMapper extends Mapper {
                         console.log(`FDS: Program loaded to extended Work RAM at $${loadAddr.toString(16)} (${size} bytes)`)
                     }
                     else {
-                        console.warn(`FDS: Program load address $${loadAddr.toString(16)} not supported`)
+                        console.log(`FDS: Program load address $${loadAddr.toString(16)} not supported`)
                     }
                     break
                     
@@ -360,7 +383,7 @@ export default class FDSMapper extends Mapper {
                     break
                     
                 default:
-                    console.warn(`FDS: Unsupported file type ${type}`)
+                    console.log(`FDS: Unsupported file type ${type}`)
 
                     return false
             }
@@ -369,7 +392,7 @@ export default class FDSMapper extends Mapper {
             
         }
         catch(error) {
-            console.warn('FDS: File load failed:', error)
+            console.log('FDS: File load failed:', error)
 
             return false
         }
@@ -397,8 +420,23 @@ export default class FDSMapper extends Mapper {
         }
         else if (addr >= 0x6000 && addr < 0x8000) {
 
-            // Work RAM
+            // Work RAM ($6000-$7FFF)
             this.workRam[addr - 0x6000] = data
+        }
+        else if (addr >= 0x8000 && addr < 0xa000) {
+
+            // Bank 4: Work RAM $2000-$3FFF (映射到 $8000-$9FFF)
+            this.workRam[addr - 0x8000 + 0x2000] = data
+        }
+        else if (addr >= 0xa000 && addr < 0xc000) {
+
+            // Bank 5: Work RAM $4000-$5FFF (映射到 $a000-$bFFF)
+            this.workRam[addr - 0xa000 + 0x4000] = data
+        }
+        else if (addr >= 0xc000 && addr < 0xe000) {
+
+            // Bank 6: Work RAM $6000-$7FFF (映射到 $c000-$dFFF)
+            this.workRam[addr - 0xc000 + 0x6000] = data
         }
         else if (addr >= 0x4020 && addr <= 0x4026) {
 
@@ -435,8 +473,6 @@ export default class FDSMapper extends Mapper {
         if (addr >= 0x6000 && addr < 0x8000 && this.cartReadCount <= 3) {
             console.log(`FDS: 🎉 GAME CODE EXECUTION detected at $${addr.toString(16)} - BIOS loading complete!`)
         }
-        
-        // 先解决磁盘I/O问题，许可证验证是后续步骤
         
         // 监控BIOS控制向量状态
         if (this.cpuram && this.cartReadCount % 100000 === 0) {
@@ -550,54 +586,48 @@ export default class FDSMapper extends Mapper {
                 this.diskIoEnable = (data & 0x01) !== 0
                 console.log(`FDS: Disk I/O ${this.diskIoEnable ? 'enabled' : 'disabled'}`)
                 break
-            case 0x4024:
 
-                // 磁盘数据写入寄存器
-                // 简化实现
+            case 0x4024: // BIOS CRC 写入 (已禁用)
                 break
+
             case 0x4025:
-
-                // bit6是读写开始位，bit0是重置位
                 
-                // bit0: Transfer Reset (1=重置传输时序)
-                const currentResetBit = (data & 0x01) !== 0
+                // bit1: Transfer Reset (1=重置传输时序) - **FCEUX uses bit1, not bit0!**
+                const currentResetBit = (data & 0x02) !== 0
                 
-                // 只在bit0从0变为1时触发重置（上升沿）
+                // 只在bit1从0变为1时触发重置（上升沿）
                 if (currentResetBit && !this.lastResetBit) {
-
-                    // bit0上升沿检测到 - 这才是真正的重置信号
-
+                    
                     this.point = 0
                     this.blockPoint = 0
                     this.blockMode = 0 // BLOCK_READY
                     this.rwStart = false
                     this.driveReset = true
-                    console.log('FDS: Transfer RESET detected (bit0 rising edge)')
+                    this.shouldDetectBlockId = true
+                    
+                    console.log('FDS: Transfer RESET detected (bit1 rising edge) - resetting to block 0')
                 }
                 else if (!currentResetBit && this.driveReset) {
 
-                    // bit0清除时 - 清除重置状态
+                    // bit1清除时 - 清除重置状态
 
                     this.driveReset = false
-                    console.log('FDS: Transfer RESET released (bit0=0)')
+                    console.log('FDS: Transfer RESET released (bit1=0)')
                 }
-                
-                // 当bit6=1时也自动清除reset状态
-                // 这允许BIOS在设置bit0=1后直接写入bit6=1来开始读取
+
                 if (data & 0x40 && this.driveReset) {
                     this.driveReset = false
                     console.log('FDS: Transfer RESET auto-released by bit6=1')
                 }
                 
-                // 当马达开启(bit1=0)时也自动清除reset状态
-                // FCEUX行为：BIOS写入$2D后期望$4032立即返回$40
                 const motorStart = (data & 0x02) === 0
                 if (motorStart && this.driveReset) {
                     this.driveReset = false
-                    console.log('FDS: Transfer RESET auto-released by motor start')
+                    
+                    // console.log('FDS: Transfer RESET auto-released by motor start')
                 }
                 
-                // 保存当前bit0状态用于下次边沿检测
+                // 保存当前bit1状态用于下次边沿检测
                 this.lastResetBit = currentResetBit
                 
                 // IRQ传输控制 (bit7) - VirtuaNES关键逻辑
@@ -609,62 +639,85 @@ export default class FDSMapper extends Mapper {
                     this.diskTimerIrq = false
                 }
                 
-                // 当!RW_start && (data & 0x40)时进行块转换
-                // **关键修复** - 不在重置状态下进行块转换
-                const canTransition = !this.rwStart && data & 0x40 && !this.driveReset
+                const rwStartRisingEdge = !this.rwStart && (data & 0x40) !== 0
+
+                const blockSize = this.getBlockSize()
+                const blockComplete = this.blockPoint >= blockSize && blockSize > 0
+                const canTransition = rwStartRisingEdge && !this.driveReset && blockComplete
                 
-                // **调试** - 只在块转换时显示
-                if (data & 0x40) {
-                    console.log(`FDS: Block transition attempt - rwStart:${this.rwStart}, bit6:1, driveReset:${this.driveReset}, canTransition:${canTransition}`)
+                // **调试** - 只在块转换尝试时显示
+                if (data & 0x40 || !this.rwStart) {
+                    console.log(`FDS: Block transition check [data=$${data.toString(16)}] - this.rwStart:${this.rwStart}, data&0x40:${(data & 0x40) !== 0}, rising:${rwStartRisingEdge}, canTransition:${canTransition}, blockPoint:${this.blockPoint}/${blockSize}`)
                 }
                 
                 if (canTransition) {
-                    
+
+                    // **FCEUX逻辑** - 前进全局指针，重置块内偏移
+                    // **关键修复** - 必须使用 blockSize！blockPoint 可能超出（IRQ 持续触发）
+                    const blockSize = this.getBlockSize()
+                    this.point += blockSize // 使用 blockSize 而不是 blockPoint
                     this.blockPoint = 0
-
-                    // 重置传输状态，让新块的第一个字节立即准备好
-                    this.dataReady = false
+                    this.blockCompleteLogged = false
                     
-                    // **FDS硬件特性** - 磁盘持续旋转,块开始时第一个字节可能已经在磁头下
-                    // 设置counter=149让第一个IRQ在下一个CPU周期就触发
-                    this.diskTransferCounter = this.CYCLES_PER_BYTE
-                    
-                    switch (this.blockMode) {
-                        case 0: // BLOCK_READY
-                            this.blockMode = 1 // BLOCK_VOLUME_LABEL
-
-                            // FDS磁盘格式：前15字节是磁盘头
-                            // 真正的VOLUME_LABEL块从offset 15开始
-                            this.point = 15
-                            console.log('FDS: Block transition READY -> VOLUME_LABEL (starting at offset 15)')
-                            break
-                        case 1: // BLOCK_VOLUME_LABEL  
-                            this.blockMode = 2 // BLOCK_FILE_AMOUNT
-                            // BIOS只读16字节，但磁盘上VOLUME_LABEL是56字节
-                            // 需要跳过完整的56字节到达FILE_AMOUNT
-                            this.point += 56
-                            console.log('FDS: Block transition VOLUME_LABEL -> FILE_AMOUNT')
-                            break
-                        case 2: // BLOCK_FILE_AMOUNT
-                            this.blockMode = 3 // BLOCK_FILE_HEADER
-                            this.point += FDSMapper.SIZE_FILE_AMOUNT
-                            console.log('FDS: Block transition FILE_AMOUNT -> FILE_HEADER')
-                            break
-                        case 3: // BLOCK_FILE_HEADER
-                            this.blockMode = 4 // BLOCK_FILE_DATA
-                            this.point += FDSMapper.SIZE_FILE_HEADER
-                            console.log('FDS: Block transition FILE_HEADER -> FILE_DATA')
-                            break
-                        case 4: // BLOCK_FILE_DATA
-                            this.blockMode = 3 // 回到 FILE_HEADER (下一个文件)
-                            this.point += this.currentFileSize + 1
-                            console.log('FDS: Block transition FILE_DATA -> FILE_HEADER (next file)')
-                            break
+                    // **FCEUX逻辑** - 自动递增 blockMode！
+                    const oldBlockMode = this.blockMode
+                    this.blockMode++
+                    if (this.blockMode > 4) {
+                        this.blockMode = 3 // FILEDATA (4) → FILEHDR (3)
                     }
+                    
+                    console.log(`FDS: ★ FCEUX Block transition: Block ${oldBlockMode} → Block ${this.blockMode}, point: ${this.point - blockSize} + ${blockSize} = ${this.point}`)
+
+                    // 重置传输状态
+                    this.dataReady = false
+                    this.diskTransferCounter = this.CYCLES_PER_BYTE
                 }
                 
                 // 读写开始控制 (bit6) - VirtuaNES: RW_start = data & 0x40
+                const wasRwStart = this.rwStart
                 this.rwStart = (data & 0x40) !== 0
+                
+                // **FCEUX逻辑** - 当rwStart变为false时，重置传输计数器
+                if (wasRwStart && !this.rwStart) {
+
+                    // 暂停传输 - 重置计数器，下次恢复时从0开始
+                    this.diskTransferCounter = 0
+                    this.dataReady = false
+                }
+                
+                // **关键修复** - 当rwStart从false变true时（恢复读取），处理待读取的数据
+                if (!wasRwStart && this.rwStart && !this.driveReset) {
+
+                    // **死锁修复** - 在rwStart时检测Block ID并设置blockMode
+                    // **重要**：只在 block transition 后（shouldDetectBlockId=true）且 blockPoint=0 时检测
+                    // 如果是 FILE_DATA 中途暂停/恢复，不应该重新检测 Block ID
+                    if (this.shouldDetectBlockId && this.blockPoint === 0) {
+                        const globalOffset = this.point + this.blockPoint
+                        if (this.diskData && globalOffset < this.diskData.length) {
+                            const possibleBlockId = this.diskData[globalOffset]
+                            if (possibleBlockId >= 1 && possibleBlockId <= 4) {
+                                const blockNames = ['', 'VOLUME_LABEL', 'FILE_AMOUNT', 'FILE_HEADER', 'FILE_DATA']
+                                this.blockMode = possibleBlockId
+                                this.shouldDetectBlockId = false // 清除标志
+                                console.log(`FDS: ★ Auto-detected Block ID at rwStart: ${possibleBlockId} (${blockNames[possibleBlockId]}) at offset $${globalOffset.toString(16)}`)
+                            }
+                        }
+                    }
+
+                    // 如果已经有数据准备好（dataReady=true），立即触发IRQ让BIOS读取
+                    if (this.dataReady) {
+                        if (this.cpu) {
+                            this.cpu.interrupt |= 0x20 // IRQ_MAPPER2
+                        }
+                        console.log(`FDS: rwStart resumed - dataReady=true, triggering IRQ immediately, blockPoint=${this.blockPoint}`)
+                    }
+                    else {
+
+                        // 没有数据准备好，设置counter让下一个字节立即准备
+                        this.diskTransferCounter = this.CYCLES_PER_BYTE
+                        console.log(`FDS: rwStart resumed - counter reset to ${this.CYCLES_PER_BYTE}, dataReady=false, blockPoint=${this.blockPoint}`)
+                    }
+                }
                 
                 // 读写模式控制 (bit2) - VirtuaNES: RW_mode = data & 0x04, 读取条件是RW_mode为真
                 this.diskReadMode = (data & 0x04) !== 0 // bit2=1时是读模式（VirtuaNES逻辑）
@@ -681,11 +734,11 @@ export default class FDSMapper extends Mapper {
                     this.diskMotorOn = !motorStop // 0=开启, 1=停止
                 }
                 
-                // **调试信息** - 只在关键状态变化时输出
-                if (this.controlRegister !== data && (data & 0x40 || this.blockMode > 0)) {
-                    console.log(`FDS: $4025 = $${data.toString(16).padStart(2, '0')} - Motor:${this.diskMotorOn}, Block:${this.blockMode}, rwStart:${this.rwStart}`)
-                }
-                this.controlRegister = data
+                // **FCEUX 逻辑** - Mirroring 控制 (bit3)
+                // FCEUX: setmirror(((V >> 3) & 1) ^ 1)
+                // bit3=0 → (0^1)=1 → Vertical, bit3=1 → (1^1)=0 → Horizontal
+                const mirrorBit = data >> 3 & 1 ^ 1
+                this.setmirroring(mirrorBit === 1 ? MirrorType.V_MIRROR : MirrorType.H_MIRROR)
                 
                 break
             case 0x4026:
@@ -712,13 +765,6 @@ export default class FDSMapper extends Mapper {
                 // bit1: Disk IRQ发生（磁盘数据传输IRQ）
                 if (this.diskIrqPending) {
                     status |= 0x02
-                    
-                    // 不在这里清除! 应该在 $4031 读取时清除
-                    // this.diskIrqPending = false
-                }
-
-                if (this.blockMode === 1) {
-                    console.log(`FDS: $4030 read = $${status.toString(16).padStart(2, '0')} (diskIrqPending:${this.diskIrqPending}, dataReady:${this.dataReady}, byte ${this.blockPoint})`)
                 }
 
                 return status
@@ -739,34 +785,112 @@ export default class FDSMapper extends Mapper {
                     return 0x00
                 }
                 
+                // **关键修复** - 无论 dataReady 状态，都读取当前位置数据
+                // BIOS 可能会连续读取多次，每次都应该返回当前字节并前进
+                const globalOffset = this.point + this.blockPoint
+                const blockSize = this.getBlockSize()
                 let data = 0
                 
-                // 只在数据准备好时读取
-                if (this.dataReady) {
-                    const globalOffset = this.point + this.blockPoint
-                    if (globalOffset < this.diskData.length) {
-                        data = this.diskData[globalOffset]
-                        console.log(`FDS: $4031 read [$${globalOffset.toString(16)}] = $${data.toString(16).padStart(2, '0')} (Block ${this.blockMode}, byte ${this.blockPoint}/${this.getBlockSize()})`)
+                // **FCEUX兼容** - 读取全局offset的数据
+                // 只有当全局offset超出磁盘数据时才返回$00
+                if (globalOffset < this.diskData.length) {
+                    data = this.diskData[globalOffset]
+                    
+                    // **关键修复** - 如果 blockPoint=0，检查是否是 Block ID
+                    // 或者当shouldDetectBlockId=true时也检测(用于跨Block连续读取)
+                    if (this.blockPoint === 0 || this.shouldDetectBlockId && data >= 1 && data <= 4) {
                         
-                        // 读取后清除标志和CPU IRQ
-                        this.dataReady = false
-                        this.diskIrqPending = false
-                        
-                        // 重置 counter,从读取时刻开始计时下一个 IRQ
-                        // 这意味着下一个 IRQ 将在读取后 149 周期触发,不是从上一个 IRQ 后 149 周期
-                        this.diskTransferCounter = 0
-                        
-                        console.log('FDS: $4031 read complete, cleared flags and RESET counter to 0')
-                        
-                        // 清除 CPU IRQ - 这会在下一个 clockIRQ 前停止 IRQ
-                        if (this.cpu) {
-                            this.cpu.interrupt &= ~0x20
-                            console.log('FDS: Cleared CPU IRQ flag')
+                        // Block ID: 1=VOLUME_LABEL, 2=FILE_AMOUNT, 3=FILE_HEADER, 4=FILE_DATA
+                        if (data >= 1 && data <= 4) {
+                            const blockNames = ['', 'VOLUME_LABEL', 'FILE_AMOUNT', 'FILE_HEADER', 'FILE_DATA']
+                            this.blockMode = data
+                            this.shouldDetectBlockId = false // 清除标志
+                            console.log(`FDS: ★ Block ID detected: ${data} (${blockNames[data]}) at offset $${globalOffset.toString(16)}, blockPoint=${this.blockPoint}`)
                         }
+                    }
+                    
+                    // 只在块开始、结束和块转换时记录
+                    if (this.blockPoint === 0 || this.blockPoint === blockSize - 1) {
+                        console.log(`FDS: $4031 read [$${globalOffset.toString(16)}] = $${data.toString(16).padStart(2, '0')} (Block ${this.blockMode}, byte ${this.blockPoint}/${blockSize}), dataReady:${this.dataReady}`)
                         
-                        this.blockPoint++
+                        // **调试** - Block 4 byte 0 读取后，记录状态
+                        if (this.blockMode === 4 && this.blockPoint === 0) {
+                            console.log(`FDS: ⚠️ Block 4 (FILE_DATA) started - fileSize:${this.currentFileSize}, blockSize:${blockSize}, diskReadMode:${this.diskReadMode}, rwStart:${this.rwStart}`)
+                        }
+                    }
+                    
+                    // **调试** - 追踪 FILE_DATA 每 50 个字节的读取
+                    if (this.blockMode === 4 && this.blockPoint % 50 === 0 && this.blockPoint < 300) {
+                        console.log(`FDS: $4031 read FILE_DATA byte ${this.blockPoint}, data=$${data.toString(16).padStart(2, '0')}`)
                     }
                 }
+                else {
+
+                    // 全局偏移超出磁盘数据范围
+                    data = 0x00
+                    console.log(`FDS: $4031 read beyond disk data (globalOffset:${globalOffset}/${this.diskData.length}) - returning $00`)
+                }
+                
+                // **关键修复** - 在FILE_HEADER模式下提取加载地址和文件大小
+                if (this.blockMode === 3) {
+                    
+                    // FILE_HEADER 结构:
+                    // byte 0: Block ID ($03)
+                    // byte 1: 文件序号
+                    // byte 2: 文件ID  
+                    // byte 3-10: 文件名 (8字节)
+                    // byte 11-12: 加载地址 (2字节, little-endian)
+                    // byte 13-14: 文件大小 (2字节, little-endian)
+                    // byte 15: 文件类型
+                    
+                    if (this.blockPoint === 11) {
+                        
+                        // 加载地址低字节
+                        this.currentFileLoadAddr = data
+                    }
+                    else if (this.blockPoint === 12) {
+                        
+                        // 加载地址高字节
+                        this.currentFileLoadAddr |= data << 8
+                        console.log(`FDS: FILE_HEADER - extracted load address: $${this.currentFileLoadAddr.toString(16).padStart(4, '0')}`)
+                    }
+                    else if (this.blockPoint === 13) {
+                        
+                        // 文件大小低字节
+                        this.currentFileSize = data
+                    }
+                    else if (this.blockPoint === 14) {
+                        
+                        // 文件大小高字节
+                        this.currentFileSize |= data << 8
+                        console.log(`FDS: FILE_HEADER - extracted file size: ${this.currentFileSize} bytes`)
+                    }
+                }
+                
+                // 只有在 dataReady 时才清除标志
+                if (this.dataReady) {
+                    
+                    // 读取后清除标志和CPU IRQ
+                    this.dataReady = false
+                    this.diskIrqPending = false
+                    
+                    // **关键修复** - 重置counter，让BIOS有时间处理数据！
+                    // 虽然磁盘在持续旋转，但BIOS需要时间处理每个字节
+                    // 下一个字节会在149周期后准备好
+                    this.diskTransferCounter = 0
+                    
+                    // console.log('FDS: $4031 read complete, cleared flags, counter reset to 0')
+                    
+                    // 清除 CPU IRQ - 让BIOS能够从IRQ handler返回
+                    if (this.cpu) {
+                        this.cpu.interrupt &= ~0x20
+                        
+                        // console.log('FDS: Cleared CPU IRQ flag')
+                    }
+                }
+                
+                // **关键修复** - 无论 dataReady 状态，每次读取都前进 blockPoint
+                this.blockPoint++
                 
                 return data
             case 0x4032:
@@ -820,6 +944,32 @@ export default class FDSMapper extends Mapper {
     // 初始化覆盖
     public override init(): void {
         super.init()
+        
+        // **调试** - 显示BIOS向量
+        if (this.biosData) {
+            const resetLow = this.biosData[0x1FFC]
+            const resetHigh = this.biosData[0x1FFD]
+            const irqLow = this.biosData[0x1FFE]
+            const irqHigh = this.biosData[0x1FFF]
+            console.log(`FDS: BIOS Vectors - RESET=$${resetHigh.toString(16).padStart(2, '0')}${resetLow.toString(16).padStart(2, '0')}, IRQ=$${irqHigh.toString(16).padStart(2, '0')}${irqLow.toString(16).padStart(2, '0')}`)
+            
+            // **调试** - 显示 IRQ handler 代码 ($E1CE-$E1D5)
+            const e1ce = 0x1CE // $E1CE - $E000 = 0x1CE
+            const bytes = []
+            for (let i = 0; i < 8; i++) {
+                bytes.push(this.biosData[e1ce + i].toString(16).padStart(2, '0'))
+            }
+            console.log(`FDS: BIOS ROM $E1CE-$E1D5: ${bytes.join(' ')}`)
+            console.log('FDS: Expected: AE 31 40 (LDX $4031), 8D 24 40 (STA $4024)')
+            
+            // 显示更多地址
+            const e1d1 = 0x1D1
+            const bytes2 = []
+            for (let i = 0; i < 6; i++) {
+                bytes2.push(this.biosData[e1d1 + i].toString(16).padStart(2, '0'))
+            }
+            console.log(`FDS: BIOS ROM $E1D1-$E1D6: ${bytes2.join(' ')} (should be: 8D 24 40 68 68 68)`)
+        }
         
         // 设置磁盘状态 - 磁盘已插入并准备好
         this.diskEject = 0 // 磁盘已插入
@@ -907,94 +1057,110 @@ export default class FDSMapper extends Mapper {
      */
     public clockIRQ(cpuCycles: number): void {
 
-        // **调试** - 在块模式下记录第一次调用
-        if (this.blockMode === 1 && !this.firstClockLog) {
-            console.log(`FDS: clockIRQ first call in block 1 - readMode:${this.diskReadMode}, rwStart:${this.rwStart}, reset:${this.driveReset}, dataReady:${this.dataReady}, counter:${this.diskTransferCounter}`)
-            this.firstClockLog = true
-        }
-
         // 只在所有条件都满足时才处理IRQ：
         // 1. 磁盘读取模式
         // 2. 读写已开始（rwStart） - 一旦开始就持续到块结束
         // 3. 驱动器未重置
         // 4. 当前在有效的块模式（不是READY）
-        // 5. 数据未准备好（防止重复触发）
-        // 注意：不检查马达状态，因为BIOS可能在IRQ期间关闭马达
+        // **关键修复** - 移除dataReady检查，让周期持续累积
+        // 磁盘在持续旋转，数据在持续流动，不管BIOS是否读取
         
         if (!this.diskReadMode || !this.rwStart 
-            || this.driveReset || this.blockMode === 0 
-            || this.dataReady) { // 数据未被读取时不累积cycles
+            || this.driveReset || this.blockMode === 0) {
+            
+            // **调试** - 记录为什么返回（只在rwStart=true时记录）
+            if (this.rwStart && !this.blockMode) {
+                console.log(`FDS: ❌ clockIRQ blocked - readMode:${this.diskReadMode}, rwStart:${this.rwStart}, reset:${this.driveReset}, blockMode:${this.blockMode}`)
+            }
+
             return
-        }
-        
-        // **调试** - 重置日志标志
-        if (this.blockMode !== 1) {
-            this.firstClockLog = false
         }
         
         // 累积周期计数器
         this.diskTransferCounter += cpuCycles
         
-        // **调试** - 记录累积过程
-        if (this.blockMode === 1 && this.diskTransferCounter % 30 === 0) {
-            console.log(`FDS: clockIRQ accumulating - counter:${this.diskTransferCounter}`)
-        }
-        
         // 防止累积器溢出,最多累积到一个字节的时间
         if (this.diskTransferCounter > this.CYCLES_PER_BYTE * 2) {
-            console.log(`FDS: clockIRQ counter overflow! ${this.diskTransferCounter} -> ${this.CYCLES_PER_BYTE * 2}`)
+
+            // console.log(`FDS: clockIRQ counter overflow! ${this.diskTransferCounter} -> ${this.CYCLES_PER_BYTE * 2}`)
             this.diskTransferCounter = this.CYCLES_PER_BYTE * 2
-        }
-        
-        // **IRQ 电平触发** - 只要 diskIrqPending=true,就持续激活 IRQ
-        if (this.diskIrqPending && this.cpu) {
-            this.cpu.interrupt |= 0x20 // 持续激活 IRQ_MAPPER2
         }
         
         // 检查是否达到一个字节的传输周期
         if (this.diskTransferCounter >= this.CYCLES_PER_BYTE) {
-            
-            console.log(`FDS: clockIRQ reached ${this.CYCLES_PER_BYTE} cycles, preparing byte ${this.blockPoint}`)
-            
+
             // 检查是否还有数据需要传输
             const blockSize = this.getBlockSize()
-            if (this.blockPoint < blockSize) {
 
-                // 准备下一个字节
-                this.dataReady = true
-                this.diskIrqPending = true
-                
-                console.log(`FDS: Disk IRQ triggered for byte ${this.blockPoint}/${blockSize} in block ${this.blockMode}`)
+            if (this.dataReady) {
+
+                // BIOS还没读取上一个字节，等待（不输出日志，会太频繁）
+                // console.log(`FDS: Waiting for BIOS to read byte ${this.blockPoint} (dataReady still true)`)
             }
             else {
 
-                // 块读取完成后不自动转换
-                // 让BIOS通过$4025的bit6控制块转换
-                console.log(`FDS: Block ${this.blockMode} read complete (${blockSize} bytes) - waiting for BIOS block transition`)
-
-                // 不再调用autoTransitionToNextBlock，让BIOS控制
+                // 准备下一个字节（即使超出 block 范围，也要触发 IRQ）
+                this.dataReady = true
+                this.diskIrqPending = true
+                
+                // **关键修复** - 立即设置CPU IRQ，不要等到下一帧！
+                if (this.cpu) {
+                    this.cpu.interrupt |= 0x20 // IRQ_MAPPER2
+                }
+                
+                // 只在块开始和结束时记录
+                if (this.blockPoint === 0 || this.blockPoint === blockSize - 1) {
+                    console.log(`FDS: Disk IRQ triggered for byte ${this.blockPoint}/${blockSize} in block ${this.blockMode}`)
+                }
+            }
+            
+            // 块读取完成后不自动转换，让BIOS通过$4025的bit6控制块转换
+            if (this.blockPoint >= blockSize) {
+                
+                // **修复** - 只输出一次，避免每个周期都打印
+                if (!this.blockCompleteLogged) {
+                    console.log(`FDS: Block ${this.blockMode} read complete (${blockSize} bytes) - waiting for BIOS block transition`)
+                    this.blockCompleteLogged = true
+                }
             }
         }
     }
     
     /**
-     * 获取当前块的大小
+     * 获取当前块的大小（包括 Block ID）
      */
     private getBlockSize(): number {
+        let size = 0
         switch (this.blockMode) {
             case 0: // READY
-                return 0
+                size = 0
+                break
             case 1: // VOLUME_LABEL
-                return FDSMapper.SIZE_VOLUME_LABEL
+                // Block ID (1) + Volume Label 数据 (55) = 56
+                size = 1 + FDSMapper.SIZE_VOLUME_LABEL
+                break
             case 2: // FILE_AMOUNT
-                return FDSMapper.SIZE_FILE_AMOUNT
+                // Block ID (1) + File count (1) = 2
+                size = 1 + FDSMapper.SIZE_FILE_AMOUNT
+                break
             case 3: // FILE_HEADER
-                return FDSMapper.SIZE_FILE_HEADER
+                // Block ID (1) + 序号(1) + 文件ID(1) + 文件名(8) + 地址(2) + 大小(2) + 类型(1) = 16
+                size = 16
+                break
             case 4: // FILE_DATA
-                return this.currentFileSize
+                // Block ID (1) + 文件数据 (currentFileSize)
+                size = 1 + this.currentFileSize
+
+                // **调试** - 记录FILE_DATA的blockSize计算
+                if (size <= 1) {
+                    console.log(`FDS: ⚠️ getBlockSize() for FILE_DATA = ${size} (currentFileSize=${this.currentFileSize})`)
+                }
+                break
             default:
-                return 0
+                size = 0
         }
+
+        return size
     }
 
     /**
@@ -1116,6 +1282,10 @@ export default class FDSMapper extends Mapper {
     // HSync处理 - 每扫描线调用一次
     public override notifyscanline(_scanline: number): void {
 
+        // **关键修复** - 调用clockIRQ处理磁盘数据传输时序
+        // 每扫描线约113.67 CPU cycles
+        this.clockIRQ(114)
+
         // Timer IRQ处理
         if (this.irqEnabled && this.irqCounter > 0) {
             this.irqCounter--
@@ -1177,8 +1347,6 @@ export default class FDSMapper extends Mapper {
             for (let i = 0; i < copyLength; i++) {
                 this.fileDataBuffer[i] = this.diskData[i]
             }
-            
-            // 文件缓冲区准备完成
         }
     }
 }
