@@ -96,6 +96,12 @@ export interface NESComponentExpose {
     /** Get debug information */
     getDebugInfo(): any
 
+    /** Get name table data for debugging */
+    getNameTables(): any
+
+    /** Get NES instance for debugging */
+    getNESInstance(): any
+
     /** Whether the game is playing */
     readonly isPlaying: boolean
 

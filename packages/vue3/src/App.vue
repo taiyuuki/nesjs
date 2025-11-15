@@ -2,9 +2,21 @@
 import { computed, reactive, ref } from 'vue'
 import { NESComponentExpose } from './types'
 import NesVue from './components/nes-vue.vue'
+import NametableDebug from './components/NametableDebug.vue'
 
 const nesRef = ref<NESComponentExpose>()
 const romUrl = ref<string | Blob>('Super Mario Bros (JU).nes')
+const showDebugPanel = ref(false)
+
+// 预设的ROM选项
+const romPresets = {
+  'Super Mario Bros (JU).nes': 'Super Mario Bros (JU).nes',
+  'Metal Slader Glory (J).nes': 'Metal Slader Glory (J).nes'
+}
+
+const switchROM = (romName: string) => {
+  romUrl.value = romName
+}
 
 // 模拟器配置
 const emulatorConfig = reactive({
@@ -58,6 +70,10 @@ const getROMInfo = async() => {
     const info = nesRef.value?.getROMInfo()
     console.log('ROM Info:', info)
 }
+
+const toggleDebugPanel = () => {
+    showDebugPanel.value = !showDebugPanel.value
+}
 </script>
 
 <template>
@@ -73,11 +89,21 @@ const getROMInfo = async() => {
       @loaded="getROMInfo"
     />
     <div class="controls">
-      <input
-        type="file"
-        accept="*.nes"
-        @change="selectROM"
-      >
+      <div class="rom-selector">
+        <label>快速ROM切换:</label>
+        <select @change="switchROM(($event.target as HTMLSelectElement).value)" :value="romUrl">
+          <option v-for="(path, name) in romPresets" :key="name" :value="path">
+            {{ name }}
+          </option>
+        </select>
+      </div>
+      <div class="file-input">
+        <input
+          type="file"
+          accept="*.nes"
+          @change="selectROM"
+        >
+      </div>
       <button @click="togglePlay">
         {{ isPlaying ? '暂停' : '开始' }}
       </button>
@@ -93,7 +119,13 @@ const getROMInfo = async() => {
       <button @click="loadState">
         加载状态
       </button>
+      <button @click="toggleDebugPanel">
+        {{ showDebugPanel ? '隐藏调试' : '显示调试' }}
+      </button>
     </div>
+
+    <!-- Nametable调试面板 -->
+    <NametableDebug v-if="showDebugPanel" :nes-ref="nesRef" :enabled="showDebugPanel" @close="showDebugPanel = false" />
   </div>
 </template>
 
@@ -112,7 +144,23 @@ const getROMInfo = async() => {
 
 .controls {
   display: flex;
+  flex-direction: column;
   gap: 10px;
+  align-items: center;
+}
+
+.rom-selector,
+.file-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f8f8f8;
 }
 
 button {

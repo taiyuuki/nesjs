@@ -380,6 +380,52 @@ function getDebugInfo() {
     return emulator?.nes.getDebugInfo()
 }
 
+function getNameTables() {
+    if (!emulator?.nes) {
+        return null
+    }
+
+    // 使用any类型来访问私有属性进行调试
+    const nes = emulator.nes as any
+    if (!nes.ppu || !nes.mapper) {
+        return null
+    }
+
+    const mapper = nes.mapper
+    const ppu = nes.ppu
+
+    return {
+        nt0: mapper.nt0 || [],
+        nt1: mapper.nt1 || [],
+        nt2: mapper.nt2 || [],
+        nt3: mapper.nt3 || [],
+        exram: (mapper as any).exram || null,
+        exramMode: (mapper as any).exramMode || 0,
+        chrMode: (mapper as any).chrMode || 0,
+        prgMode: (mapper as any).prgMode || 0,
+        fillnt: (mapper as any).fillnt || [],
+        chrregsA: (mapper as any).chrregsA || [],
+        chrregsB: (mapper as any).chrregsB || [],
+        chrmap: mapper.chr_map || [],
+        chrmapB: mapper.chrmapB || [],
+        pput0: mapper.pput0 || [],
+        pput1: mapper.pput1 || [],
+        pput2: mapper.pput2 || [],
+        pput3: mapper.pput3 || [],
+        chrOr: (mapper as any).chrOr || 0,
+        exlatch: (mapper as any).exlatch || 0,
+        spritemode: (mapper as any).spritemode || false,
+        haschrram: mapper.haschrram || false,
+        // 添加一些PPU状态信息
+        scanline: ppu.scanline || 0,
+        cycles: ppu.cycles || 0
+    }
+}
+
+function getNESInstance() {
+    return emulator?.nes
+}
+
 defineExpose<NESComponentExpose>({
     start,
     reset,
@@ -398,6 +444,8 @@ defineExpose<NESComponentExpose>({
     clearAllCheats,
     getROMInfo,
     getDebugInfo,
+    getNameTables,
+    getNESInstance,
     get isPlaying() { return isPlaying.value },
     get isLoading() { return isLoading.value },
 })

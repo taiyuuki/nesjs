@@ -61,6 +61,10 @@ class NESEmulator {
         this.frameDuration = 1000 / this.targetFPS
     }
 
+    getNESInstance() {
+        return this.nes
+    }
+
     private mainLoop = () => {
         const now = performance.now()
         let deltaTime = now - this.lastFrameTime

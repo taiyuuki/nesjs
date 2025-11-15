@@ -330,7 +330,20 @@ export default class MMC5Mapper extends Mapper {
             case 1:
                 this.setppubank(4, 4, this.chrregsA[7])
                 this.setppubank(4, 0, this.chrregsA[3])
-                this.setppubankB(4, 0, this.chrregsB[3])
+
+                // MMC5 CHR模式1修复：修正4KB bank计算
+                // 原始问题：chrregsB[3]和chrregsA[7]在CHR模式1中应该使用4KB单位计算，不是1KB单位
+                const correctBankStart_B = this.chrregsB[3] * 4096 // 4KB单位
+                this.chrmapB[0] = correctBankStart_B + 0 * 1024 // $0000-$03FF
+                this.chrmapB[1] = correctBankStart_B + 1 * 1024 // $0400-$07FF
+                this.chrmapB[2] = correctBankStart_B + 2 * 1024 // $0800-$0BFF
+                this.chrmapB[3] = correctBankStart_B + 3 * 1024 // $0C00-$0FFF
+
+                // $1000-$1FFF区域也应用4KB修正
+                const correctBankStart_A = this.chrregsA[7] * 4096 // 4KB单位
+                for (let i = 0; i < 4; i++) {
+                    this.chr_map[4 + i] = correctBankStart_A + i * 1024
+                }
                 break
             case 2:
                 this.setppubank(2, 6, this.chrregsA[7])
@@ -392,6 +405,7 @@ export default class MMC5Mapper extends Mapper {
     }
 
     override ppuRead(addr: number): number {
+        
         if (addr < 0x2000) {
             if (++this.fetchcount === 3) {
                 this.spritemode = true
@@ -422,7 +436,7 @@ export default class MMC5Mapper extends Mapper {
                         return result
                     }
                 }
-
+                
                 if (this.haschrram) {
                     return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
                 }
@@ -597,11 +611,6 @@ export default class MMC5Mapper extends Mapper {
         if (this.soundchip) {
 
             // 从APU中移除旧的音频芯片
-            if (this.cpuram?.apu) {
-
-                // 注意：这里假设APU有removeExpnSound方法，如果没有，可能需要调整
-                // this.cpuram.apu.removeExpnSound(this.soundchip);
-            }
             this.soundchip = undefined
         }
         
