@@ -48,9 +48,6 @@ export interface NESComponentExpose {
     /** Inject FDS BIOS (8KB) */
     setFDSBIOS(bios: Uint8Array): void
 
-    /** Get NES core instance for debugging */
-    getNES(): any
-
     /** Start the game */
     start(): Promise<void>
 
@@ -101,6 +98,12 @@ export interface NESComponentExpose {
 
     /** Get debug information */
     getDebugInfo(): any
+
+    /** Get name table data for debugging */
+    getNameTables(): any
+
+    /** Get NES instance for debugging */
+    getNESInstance(): any
 
     /** Whether the game is playing */
     readonly isPlaying: boolean
