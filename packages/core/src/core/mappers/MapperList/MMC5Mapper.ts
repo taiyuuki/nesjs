@@ -19,7 +19,7 @@ export default class MMC5Mapper extends Mapper {
     chrregsA = new Array<number>(8).fill(0)
     chrregsB = new Array<number>(4).fill(0)
     prgregs = new Uint8Array(4)
-    chrmapB = new Array<number>(4).fill(0)
+    chrmapB = new Array<number>(8).fill(0) // 扩展到8个元素以支持完整的CHR空间
     romHere = [false, false, false]
     scanctrLine = 0
     irqCounter = 20
@@ -34,6 +34,8 @@ export default class MMC5Mapper extends Mapper {
     prevprevfetch = 0
     spritemode = false
     cachedChrBank = 0
+    _debugLogCount = 0
+    _lastLoggedRegs = ''
 
     /**
      * MMC5 存档恢复后的特殊处理
@@ -134,7 +136,7 @@ export default class MMC5Mapper extends Mapper {
         this.prgMode = 3
         this.setupPRG()
         
-        for (let i = 0; i < 4; ++i) {
+        for (let i = 0; i < 8; ++i) {
             this.chrmapB[i] = 1024 * i % this.chrsize
         }
         this.setupCHR()
@@ -328,21 +330,26 @@ export default class MMC5Mapper extends Mapper {
     setupCHR() {
         switch (this.chrMode) {
             case 1:
-                this.setppubank(4, 4, this.chrregsA[7])
-                this.setppubank(4, 0, this.chrregsA[3])
 
-                // MMC5 CHR模式1修复：修正4KB bank计算
-                // 原始问题：chrregsB[3]和chrregsA[7]在CHR模式1中应该使用4KB单位计算，不是1KB单位
-                const correctBankStart_B = this.chrregsB[3] * 4096 // 4KB单位
-                this.chrmapB[0] = correctBankStart_B + 0 * 1024 // $0000-$03FF
-                this.chrmapB[1] = correctBankStart_B + 1 * 1024 // $0400-$07FF
-                this.chrmapB[2] = correctBankStart_B + 2 * 1024 // $0800-$0BFF
-                this.chrmapB[3] = correctBankStart_B + 3 * 1024 // $0C00-$0FFF
-
-                // $1000-$1FFF区域也应用4KB修正
-                const correctBankStart_A = this.chrregsA[7] * 4096 // 4KB单位
+                // MMC5 CHR模式1完整修复：
+                // chrregsA[3]控制$0000-$0FFF，chrregsA[7]控制$1000-$1FFF
+                // 两者都使用4KB单位计算
+                
+                // $0000-$0FFF: 使用chrregsA[3]，4KB单位
+                const bankStart_A3 = this.chrregsA[3] * 4096
                 for (let i = 0; i < 4; i++) {
-                    this.chr_map[4 + i] = correctBankStart_A + i * 1024
+                    this.chr_map[i] = bankStart_A3 + i * 1024
+                }
+
+                // $1000-$1FFF: 使用chrregsA[7]，4KB单位
+                const bankStart_A7 = this.chrregsA[7] * 4096
+                for (let i = 0; i < 4; i++) {
+                    this.chr_map[4 + i] = bankStart_A7 + i * 1024
+                }
+                
+                // chrmapB暂时不使用，保持与chr_map一致即可
+                for (let i = 0; i < 8; i++) {
+                    this.chrmapB[i] = this.chr_map[i]
                 }
                 break
             case 2:
@@ -441,7 +448,10 @@ export default class MMC5Mapper extends Mapper {
                     return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
                 }
                 else {
-                    return this.chr[this.chrmapB[addr >> 10 & 3] + (addr & 1023)]
+
+                    // 简单方案：直接使用chr_map，不使用chrmapB
+                    // 因为setupCHR已经正确设置了chr_map
+                    return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
                 }
             }
         }
@@ -633,7 +643,7 @@ export default class MMC5Mapper extends Mapper {
         this.setupPRG()
         
         // 重置CHR映射
-        for (let i = 0; i < 4; ++i) {
+        for (let i = 0; i < 8; ++i) {
             this.chrmapB[i] = 1024 * i % this.chrsize
         }
         this.setupCHR()

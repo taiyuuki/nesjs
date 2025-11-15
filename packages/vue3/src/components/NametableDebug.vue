@@ -427,6 +427,153 @@ const findCorrectBank = () => {
     }
 }
 
+// 标题界面状态捕获
+const captureTitleScreenState = () => {
+    try {
+        const nes = props.nesRef.getNESInstance() as any
+        if (!nes) {
+            testResult.value = 'NES实例未获取'
+
+            return
+        }
+
+        const mapper = nes.mapper || {}
+        if (!mapper) {
+            testResult.value = 'Mapper实例未找到'
+
+            return
+        }
+
+        // 获取关键的MMC5状态
+        const chrregsA = mapper.chrregsA || []
+        const chrregsB = mapper.chrregsB || []
+        const exram = mapper.exram || []
+        const workRam = nes.cpuram?.ram
+
+        let result = '📸 标题界面状态捕获:\n\n'
+
+        // 1. MMC5寄存器状态
+        result += '=== MMC5 CHR 寄存器 ===\n'
+        result += `chrregsA[7]: 0x${(chrregsA[7] || 0).toString(16)} (${chrregsA[7] || 0})\n`
+        result += `chrregsB[3]: 0x${(chrregsB[3] || 0).toString(16)} (${chrregsB[3] || 0})\n`
+        result += `exramMode: ${mapper.exramMode || 'undefined'}\n`
+        result += `chrMode: ${mapper.chrMode || 'undefined'}\n\n`
+
+        // 2. MMC5内部寄存器 (需要直接读取内存)
+        result += '=== MMC5 内部寄存器 ===\n'
+        if (workRam) {
+            const reg5104 = workRam[0x5104] || 0
+            const reg5204 = workRam[0x5204] || 0
+            result += `$5104 (EXRAM模式): 0x${reg5104.toString(16)}\n`
+            result += `$5204 (IRQ控制): 0x${reg5204.toString(16)}\n`
+            result += `$5203 (扫描线): 0x${(workRam[0x5203] || 0).toString(16)}\n`
+        }
+        else {
+            result += '无法访问CPU RAM\n'
+        }
+        result += '\n'
+
+        // 3. EXRAM数据样本
+        result += '=== EXRAM 数据样本 ===\n'
+        if (exram.length > 0) {
+
+            // 取前64字节和最后64字节的样本
+            const first64 = exram.slice(0, 64) as number[]
+            const last64 = exram.slice(-64) as number[]
+
+            result += `前64字节 (${first64.map(v => `0x${v.toString(16).padStart(2, '0')}`).join(' ')}\n`
+            result += `后64字节 (${last64.map(v => `0x${v.toString(16).padStart(2, '0')}`).join(' ')}\n`
+
+            // 统计数据分布
+            const stats = { 0: 0, 255: 0, other: 0 }
+            exram.forEach((v: number) => {
+                if (v === 0) stats[0]++
+                else if (v === 255) stats[255]++
+                else stats.other++
+            })
+            result += `数据统计: 0x00=${stats[0]}, 0xFF=${stats[255]}, 其他=${stats.other}\n`
+        }
+        else {
+            result += 'EXRAM数据不可用\n'
+        }
+        result += '\n'
+
+        // 4. CHR映射状态
+        result += '=== CHR 映射状态 ===\n'
+        if (mapper.chrmapB) {
+            const chrmapBArray = mapper.chrmapB.slice(0, 4) as number[]
+            result += `chrmapB: ${chrmapBArray.map(v => `0x${v.toString(16)}`).join(', ')}\n`
+        }
+        if (mapper.chr_map) {
+            const chrMapArray = mapper.chr_map.slice(4, 8) as number[]
+            result += `chr_map[4-7]: ${chrMapArray.map(v => `0x${v.toString(16)}`).join(', ')}\n`
+        }
+
+        testResult.value = result
+        console.log('标题界面状态:', result)
+    }
+    catch(error) {
+        console.error('标题界面状态捕获失败:', error)
+        testResult.value = '状态捕获失败'
+    }
+}
+
+// 实时打印MMC5寄存器值
+const printMMC5Registers = () => {
+    try {
+        const nes = props.nesRef.getNESInstance() as any
+        if (!nes) {
+            testResult.value = 'NES实例未获取'
+            return
+        }
+
+        const mapper = nes.mapper
+        if (!mapper) {
+            testResult.value = 'Mapper实例未找到'
+            return
+        }
+
+        let result = '📊 MMC5寄存器实时状态:\n\n'
+
+        // 关键寄存器状态
+        result += '=== 8x16精灵相关寄存器 ===\n'
+        result += `chrregsB[0] ($5128): 0x${(mapper.chrregsB?.[0] || 0).toString(16)}\n`
+        result += `chrregsB[1] ($5129): 0x${(mapper.chrregsB?.[1] || 0).toString(16)}\n`
+        result += `chrregsB[2] ($512A): 0x${(mapper.chrregsB?.[2] || 0).toString(16)}\n`
+        result += `chrregsB[3] ($512B): 0x${(mapper.chrregsB?.[3] || 0).toString(16)}\n`
+        result += `chrOr ($5130): 0x${((mapper.chrOr || 0) >>> 8).toString(16)} (原始: 0x${(mapper.chrOr || 0).toString(16)})\n\n`
+
+        // CHR模式状态
+        result += '=== CHR模式状态 ===\n'
+        result += `chrMode: ${mapper.chrMode || 'undefined'}\n`
+        result += `chrregsA[3] ($5123): 0x${(mapper.chrregsA?.[3] || 0).toString(16)}\n`
+        result += `chrregsA[7] ($5127): 0x${(mapper.chrregsA?.[7] || 0).toString(16)}\n\n`
+
+        // 计算最终的bank值
+        result += '=== 计算8x16精灵bank ===\n'
+        for (let i = 0; i < 4; i++) {
+            const bank = (mapper.chrregsB?.[i] || 0) | (mapper.chrOr || 0)
+            const addr = bank * 1024
+            result += `精灵区域${i}: bank=0x${bank.toString(16)}, addr=0x${addr.toString(16)}\n`
+        }
+        result += '\n'
+
+        // CHR映射状态
+        result += '=== CHR映射状态 ===\n'
+        result += `chrmapB[0]: 0x${((mapper.chrmapB?.[0] || 0) >>> 10).toString(16)}\n`
+        result += `chrmapB[1]: 0x${((mapper.chrmapB?.[1] || 0) >>> 10).toString(16)}\n`
+        result += `chrmapB[2]: 0x${((mapper.chrmapB?.[2] || 0) >>> 10).toString(16)}\n`
+        result += `chrmapB[3]: 0x${((mapper.chrmapB?.[3] || 0) >>> 10).toString(16)}\n\n`
+
+        testResult.value = result
+        console.log('MMC5寄存器状态:', result)
+    }
+    catch(error) {
+        console.error('MMC5寄存器打印失败:', error)
+        testResult.value = '寄存器打印失败'
+    }
+}
+
 // MMC5状态调试
 const debugMMC5State = () => {
     try {
@@ -453,8 +600,10 @@ const debugMMC5State = () => {
             chrMode,
             chrregsB3: `0x${chrregsB[3]?.toString(16) || 'undefined'} (${chrregsB[3] || 'undefined'})`,
             chrregsA7: `0x${chrregsA[7]?.toString(16) || 'undefined'} (${chrregsA[7] || 'undefined'})`,
-            chrregsB: chrregsB.slice(0, 8).map((v: number, i: number) => `[${i}]:0x${v?.toString(16) || 'undefined'}(${v || 'undefined'})`).join(' '),
-            chrregsA: chrregsA.slice(0, 8).map((v: number, i: number) => `[${i}]:0x${v?.toString(16) || 'undefined'}(${v || 'undefined'})`).join(' ')
+            chrregsB: chrregsB.slice(0, 8).map((v: number, i: number) => `[${i}]:0x${v?.toString(16) || 'undefined'}(${v || 'undefined'})`)
+                .join(' '),
+            chrregsA: chrregsA.slice(0, 8).map((v: number, i: number) => `[${i}]:0x${v?.toString(16) || 'undefined'}(${v || 'undefined'})`)
+                .join(' '),
         })
 
         testResult.value = `MMC5: CHR模式=${chrMode}, chrregsB[3]=0x${chrregsB[3]?.toString(16) || 'undefined'}(${chrregsB[3] || 'undefined'}), chrregsA[7]=0x${chrregsA[7]?.toString(16) || 'undefined'}(${chrregsA[7] || 'undefined'})`
@@ -628,6 +777,20 @@ onMounted(() => {
           @click="findCorrectBank"
         >
           🎯 查找正确Bank
+        </button>
+        <button
+          class="nes-btn"
+          style="margin-left: 10px; background: #f39c12; color: white;"
+          @click="captureTitleScreenState"
+        >
+          📸 标题界面状态
+        </button>
+        <button
+          class="nes-btn"
+          style="margin-left: 10px; background: #16a085; color: white;"
+          @click="printMMC5Registers"
+        >
+          📊 MMC5寄存器
         </button>
         <pre
           v-if="testResult"

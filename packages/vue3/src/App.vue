@@ -10,12 +10,12 @@ const showDebugPanel = ref(false)
 
 // 预设的ROM选项
 const romPresets = {
-  'Super Mario Bros (JU).nes': 'Super Mario Bros (JU).nes',
-  'Metal Slader Glory (J).nes': 'Metal Slader Glory (J).nes'
+    'Super Mario Bros (JU).nes': 'Super Mario Bros (JU).nes',
+    'Metal Slader Glory (J).nes': 'Metal Slader Glory (J).nes',
 }
 
 const switchROM = (romName: string) => {
-  romUrl.value = romName
+    romUrl.value = romName
 }
 
 // 模拟器配置
@@ -91,8 +91,15 @@ const toggleDebugPanel = () => {
     <div class="controls">
       <div class="rom-selector">
         <label>快速ROM切换:</label>
-        <select @change="switchROM(($event.target as HTMLSelectElement).value)" :value="romUrl">
-          <option v-for="(path, name) in romPresets" :key="name" :value="path">
+        <select
+          :value="romUrl"
+          @change="switchROM(($event.target as HTMLSelectElement).value)"
+        >
+          <option
+            v-for="(path, name) in romPresets"
+            :key="name"
+            :value="path"
+          >
             {{ name }}
           </option>
         </select>
@@ -125,7 +132,12 @@ const toggleDebugPanel = () => {
     </div>
 
     <!-- Nametable调试面板 -->
-    <NametableDebug v-if="showDebugPanel" :nes-ref="nesRef" :enabled="showDebugPanel" @close="showDebugPanel = false" />
+    <NametableDebug
+      v-if="showDebugPanel"
+      :nes-ref="nesRef"
+      :enabled="showDebugPanel"
+      @close="showDebugPanel = false"
+    />
   </div>
 </template>
 
