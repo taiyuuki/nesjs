@@ -34,8 +34,6 @@ export default class MMC5Mapper extends Mapper {
     prevprevfetch = 0
     spritemode = false
     cachedChrBank = 0
-    _debugLogCount = 0
-    _lastLoggedRegs = ''
 
     /**
      * MMC5 存档恢复后的特殊处理
@@ -114,20 +112,7 @@ export default class MMC5Mapper extends Mapper {
     override loadROM(): void {
         super.loadROM()
 
-        // MMC5 支持最多 256KB CHR (64个4KB banks)
-        // 如果CHR ROM很小,扩展为CHR RAM
-        if (this.chrsize < 262144) {
-            this.haschrram = true
-            const newChrSize = 262144 // 256KB
-            const newChr = new Array(newChrSize).fill(0)
-
-            for (let i = 0; i < this.chr.length; i++) {
-                newChr[i] = this.chr[i]
-            }
-
-            this.chr = newChr
-            this.chrsize = newChrSize
-        }
+        this.haschrram = false
         
         this.prgregs[3] = this.prgsize / 8192 - 1
         this.prgregs[2] = this.prgsize / 8192 - 1
