@@ -16,10 +16,8 @@ export default class MMC5Mapper extends Mapper {
     wrambank = 0
     scanctrEnable = false
     irqPend = false
-    chrregsA = new Array<number>(8).fill(0)
-    chrregsB = new Array<number>(4).fill(0)
+    chrregs = new Array<number>(8).fill(0)
     prgregs = new Uint8Array(4)
-    chrmapB = new Array<number>(4).fill(0)
     romHere = [false, false, false]
     scanctrLine = 0
     irqCounter = 20
@@ -112,20 +110,7 @@ export default class MMC5Mapper extends Mapper {
     override loadROM(): void {
         super.loadROM()
 
-        // MMC5 支持最多 256KB CHR (64个4KB banks)
-        // 如果CHR ROM很小,扩展为CHR RAM
-        if (this.chrsize < 262144) {
-            this.haschrram = true
-            const newChrSize = 262144 // 256KB
-            const newChr = new Array(newChrSize).fill(0)
-
-            for (let i = 0; i < this.chr.length; i++) {
-                newChr[i] = this.chr[i]
-            }
-
-            this.chr = newChr
-            this.chrsize = newChrSize
-        }
+        this.haschrram = false
         
         this.prgregs[3] = this.prgsize / 8192 - 1
         this.prgregs[2] = this.prgsize / 8192 - 1
@@ -134,9 +119,6 @@ export default class MMC5Mapper extends Mapper {
         this.prgMode = 3
         this.setupPRG()
         
-        for (let i = 0; i < 4; ++i) {
-            this.chrmapB[i] = 1024 * i % this.chrsize
-        }
         this.setupCHR()
         this.prgram = new Uint8Array(65536)
     }
@@ -203,11 +185,10 @@ export default class MMC5Mapper extends Mapper {
                     break
                 case 0x5120: case 0x5121: case 0x5122: case 0x5123:
                 case 0x5124: case 0x5125: case 0x5126: case 0x5127:
-                    this.chrregsA[addr - 0x5120] = data | this.chrOr
+                    this.chrregs[addr - 0x5120] = data | this.chrOr
                     this.setupCHR()
                     break
                 case 0x5128: case 0x5129: case 0x512a: case 0x512b:
-                    this.chrregsB[addr - 0x5128] = data | this.chrOr
                     this.setupCHR()
                     break
                 case 0x5130:
@@ -328,49 +309,39 @@ export default class MMC5Mapper extends Mapper {
     setupCHR() {
         switch (this.chrMode) {
             case 1:
-                this.setppubank(4, 4, this.chrregsA[7])
-                this.setppubank(4, 0, this.chrregsA[3])
-
-                // MMC5 CHR模式1修复：修正4KB bank计算
-                // 原始问题：chrregsB[3]和chrregsA[7]在CHR模式1中应该使用4KB单位计算，不是1KB单位
-                const correctBankStart_B = this.chrregsB[3] * 4096 // 4KB单位
-                this.chrmapB[0] = correctBankStart_B + 0 * 1024 // $0000-$03FF
-                this.chrmapB[1] = correctBankStart_B + 1 * 1024 // $0400-$07FF
-                this.chrmapB[2] = correctBankStart_B + 2 * 1024 // $0800-$0BFF
-                this.chrmapB[3] = correctBankStart_B + 3 * 1024 // $0C00-$0FFF
-
-                // $1000-$1FFF区域也应用4KB修正
-                const correctBankStart_A = this.chrregsA[7] * 4096 // 4KB单位
+                
+                // $0000-$0FFF: 使用chrregsA[3]，4KB单位
+                const bankStart_A3 = this.chrregs[3] * 4096
                 for (let i = 0; i < 4; i++) {
-                    this.chr_map[4 + i] = correctBankStart_A + i * 1024
+                    this.chr_map[i] = bankStart_A3 + i * 1024
                 }
+
+                // $1000-$1FFF: 使用chrregsA[7]，4KB单位
+                const bankStart_A7 = this.chrregs[7] * 4096
+                for (let i = 0; i < 4; i++) {
+                    this.chr_map[4 + i] = bankStart_A7 + i * 1024
+                }
+                
                 break
             case 2:
-                this.setppubank(2, 6, this.chrregsA[7])
-                this.setppubank(2, 4, this.chrregsA[5])
-                this.setppubank(2, 2, this.chrregsA[3])
-                this.setppubank(2, 0, this.chrregsA[1])
-                this.setppubankB(2, 2, this.chrregsB[3])
-                this.setppubankB(2, 0, this.chrregsB[1])
+                this.setppubank(2, 6, this.chrregs[7])
+                this.setppubank(2, 4, this.chrregs[5])
+                this.setppubank(2, 2, this.chrregs[3])
+                this.setppubank(2, 0, this.chrregs[1])
                 break
             case 3:
-                this.setppubank(1, 7, this.chrregsA[7])
-                this.setppubank(1, 6, this.chrregsA[6])
-                this.setppubank(1, 5, this.chrregsA[5])
-                this.setppubank(1, 4, this.chrregsA[4])
-                this.setppubank(1, 3, this.chrregsA[3])
-                this.setppubank(1, 2, this.chrregsA[2])
-                this.setppubank(1, 1, this.chrregsA[1])
-                this.setppubank(1, 0, this.chrregsA[0])
-                this.setppubankB(1, 3, this.chrregsB[3])
-                this.setppubankB(1, 2, this.chrregsB[2])
-                this.setppubankB(1, 1, this.chrregsB[1])
-                this.setppubankB(1, 0, this.chrregsB[0])
+                this.setppubank(1, 7, this.chrregs[7])
+                this.setppubank(1, 6, this.chrregs[6])
+                this.setppubank(1, 5, this.chrregs[5])
+                this.setppubank(1, 4, this.chrregs[4])
+                this.setppubank(1, 3, this.chrregs[3])
+                this.setppubank(1, 2, this.chrregs[2])
+                this.setppubank(1, 1, this.chrregs[1])
+                this.setppubank(1, 0, this.chrregs[0])
                 break
             case 0:
             default:
-                this.setppubank(8, 0, this.chrregsA[7])
-                this.setppubankB(4, 0, this.chrregsB[3])
+                this.setppubank(8, 0, this.chrregs[7])
                 break
         }
     }
@@ -378,12 +349,6 @@ export default class MMC5Mapper extends Mapper {
     setppubank(banksize: number, bankpos: number, banknum: number) {
         for (let i = 0; i < banksize; ++i) {
             this.chr_map[i + bankpos] = 1024 * (banknum + i) % this.chrsize
-        }
-    }
-
-    setppubankB(banksize: number, bankpos: number, banknum: number) {
-        for (let i = 0; i < banksize; ++i) {
-            this.chrmapB[i + bankpos] = 1024 * (banknum + i) % this.chrsize
         }
     }
 
@@ -441,7 +406,10 @@ export default class MMC5Mapper extends Mapper {
                     return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
                 }
                 else {
-                    return this.chr[this.chrmapB[addr >> 10 & 3] + (addr & 1023)]
+
+                    // 简单方案：直接使用chr_map，不使用chrmapB
+                    // 因为setupCHR已经正确设置了chr_map
+                    return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
                 }
             }
         }
@@ -599,8 +567,7 @@ export default class MMC5Mapper extends Mapper {
         this.wrambank = 0
         this.scanctrEnable = false
         this.irqPend = false
-        this.chrregsA.fill(0)
-        this.chrregsB.fill(0)
+        this.chrregs.fill(0)
         this.prgregs.fill(0)
         this.romHere.fill(false)
         this.scanctrLine = 0
@@ -632,10 +599,6 @@ export default class MMC5Mapper extends Mapper {
         this.prgregs[0] = this.prgsize / 8192 - 1
         this.setupPRG()
         
-        // 重置CHR映射
-        for (let i = 0; i < 4; ++i) {
-            this.chrmapB[i] = 1024 * i % this.chrsize
-        }
         this.setupCHR()
         
         // 重置镜像设置为默认值
