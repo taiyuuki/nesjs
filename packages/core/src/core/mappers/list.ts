@@ -16,7 +16,6 @@ export const MAPPER_LIST: Record<number, string | undefined> = {
     '16': 'BandaiMapper',
     '18': 'Mapper18',
     '19': 'NamcoMapper',
-    '20': 'FDSMapper',
     '21': 'VRC4Mapper',
     '22': 'VRC2Mapper',
     '23': 'VRC4Mapper',

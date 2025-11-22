@@ -2161,12 +2161,6 @@ export class CPU {
 
     public setPC(value: number): void { this.PC = value & 0xffff }
 
-    // 调试方法：执行单条指令
-    public debugExecuteInstruction(): void {
-        const instr = this.ram.read(this.PC++)
-        this.executeInstruction(instr)
-    }
-
     // 调试方法：读取内存
     public debugRead(addr: number): number {
         return this.ram.read(addr)

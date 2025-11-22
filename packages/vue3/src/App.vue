@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { NESComponentExpose } from './types'
 import NesVue from './components/nes-vue.vue'
 import NametableDebug from './components/NametableDebug.vue'
 
 const nesRef = ref<NESComponentExpose>()
-const romUrl = ref<string | Blob>('Super Mario Bros (JU).nes')
+const romUrl = ref<string | Blob>('Super Mario Bros. 2J (J).fds')
+const biosURL = ref('DISKSYS.ROM')
 const showDebugPanel = ref(false)
 
 // 预设的ROM选项
 const romPresets = {
     'Super Mario Bros (JU).nes': 'Super Mario Bros (JU).nes',
-    'Metal Slader Glory (J).nes': 'Metal Slader Glory (J).nes',
+    'Super Mario Bros. 2J (J).fds': 'Super Mario Bros. 2J (J).fds',
 }
 
 const switchROM = (romName: string) => {
@@ -71,18 +72,33 @@ const getROMInfo = async() => {
     console.log('ROM Info:', info)
 }
 
-const setFDSBIOS = async(event: Event) => {
-    const input = event.target as HTMLInputElement
-    if (input.files && input.files.length > 0) {
-        const file = input.files[0]
-        const arrayBuffer = await file.arrayBuffer()
-        const biosData = new Uint8Array(arrayBuffer)
-        nesRef.value?.setFDSBIOS(biosData)
+// 调试FDS NMI向量读取
+const debugNMI = () => {
+    if (nesRef.value) {
+        const nesInstance = nesRef.value.getNESInstance()
+        if (nesInstance && nesInstance.mapper) {
+            // 测试$00FA/$00FB的读取
+            console.log('FDS NMI Vector Debug:')
+            console.log('Reading $00FA:', nesInstance.mapper.cartRead(0x00FA).toString(16))
+            console.log('Reading $00FB:', nesInstance.mapper.cartRead(0x00FB).toString(16))
+            console.log('Reading $FFFA:', nesInstance.mapper.cartRead(0xFFFA).toString(16))
+            console.log('Reading $FFFB:', nesInstance.mapper.cartRead(0xFFFB).toString(16))
+        }
     }
 }
+
 const toggleDebugPanel = () => {
     showDebugPanel.value = !showDebugPanel.value
 }
+
+const loadBios = async() => {
+    const response = await fetch(biosURL.value)
+    const arrayBuffer = await response.arrayBuffer()
+    const biosData = new Uint8Array(arrayBuffer)
+    nesRef.value?.setFDSBIOS(biosData)
+}
+
+onMounted(loadBios)
 </script>
 
 <template>
@@ -98,11 +114,6 @@ const toggleDebugPanel = () => {
       @loaded="getROMInfo"
     />
     <div class="controls">
-      <input
-        type="file"
-        accept="*.fds"
-        @change="setFDSBIOS"
-      >
       <input
         type="file"
         accept="*.nes"
@@ -123,13 +134,6 @@ const toggleDebugPanel = () => {
           </option>
         </select>
       </div>
-      <div class="file-input">
-        <input
-          type="file"
-          accept="*.nes"
-          @change="selectROM"
-        >
-      </div>
       <button @click="togglePlay">
         {{ isPlaying ? '暂停' : '开始' }}
       </button>
@@ -147,6 +151,9 @@ const toggleDebugPanel = () => {
       </button>
       <button @click="toggleDebugPanel">
         {{ showDebugPanel ? '隐藏调试' : '显示调试' }}
+      </button>
+      <button @click="debugNMI">
+        调试NMI向量
       </button>
     </div>
     <div

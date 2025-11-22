@@ -34,6 +34,11 @@ export class CPURAM {
 
     public read(addr: number): number {
 
+        // if (addr === 0x077B) {
+        //     console.log(`CPURAM: READ 0x077B, value=${this.wram[0x077B]}, PC=${this.mapper?.cpu?.getPC().toString(16)
+        //         .toUpperCase()}`)
+        // }
+
         if (addr <= 0x1fff) {
             return this.wram[addr & 0x7FF]
         }
@@ -58,6 +63,19 @@ export class CPURAM {
     }
 
     public write(addr: number, data: number): void {
+
+        // if (addr === 0x077B) {
+        //     console.log(`CPURAM: WRITE 0x077B, value=${data}, PC=${this.mapper?.cpu?.getPC().toString(16)
+        //         .toUpperCase()}`)
+        // }
+
+        if (addr === 0x01FE) {
+            console.log(`CPURAM: WRITE 0x01FE, value=${data.toString(16).toUpperCase()}, PC=${this.mapper?.cpu?.getPC()
+                .toString(16)
+                .toUpperCase()}, SP=${this.mapper?.cpu?.getS().toString(16)
+                .toUpperCase()}`)
+        }
+
         if (addr <= 0x1fff) {
             this.wram[addr & 0x7FF] = data & 0xff
         }
