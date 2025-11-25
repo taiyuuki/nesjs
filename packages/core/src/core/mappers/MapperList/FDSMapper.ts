@@ -203,19 +203,9 @@ export default class FDSMapper extends Mapper {
 
                         // Load to Work RAM
                         const ramOffset = loadAddr - 0x6000
-                        console.log(`FDS: loadFile type=0 to $${loadAddr.toString(16).padStart(4, '0')
-                            .toUpperCase()}, size=$${size.toString(16)}, ramOffset=$${ramOffset.toString(16)}`)
 
                         for (let i = 0; i < size && ramOffset + i < this.workRam.length; i++) {
                             this.workRam[ramOffset + i] = this.diskData[dataOffset + i]
-
-                            // 调试60D2位置的数据加载
-                            if (ramOffset + i === 0x0D2) { // 60D2 - 6000 = 0D2
-                                console.log(`FDS: *** Loading $60D2 position: workRam[0x${(ramOffset + i).toString(16).padStart(3, '0')
-                                    .toUpperCase()}] = $${this.diskData[dataOffset + i].toString(16).padStart(2, '0')
-                                    .toUpperCase()} (diskData[0x${(dataOffset + i).toString(16).padStart(4, '0')
-                                    .toUpperCase()}]) ***`)
-                            }
                         }
                     }
                     else if (loadAddr >= 0xA000 && loadAddr < 0xE000) {
@@ -772,8 +762,6 @@ export default class FDSMapper extends Mapper {
     // 初始化覆盖
     public override init(): void {
         super.init()
-
-        console.log(`*** FDS INIT: diskData length = ${this.diskData?.length || 0} ***`)
 
         // 设置磁盘状态 - 磁盘已插入并准备好
         this.diskEject = 0 // 磁盘已插入

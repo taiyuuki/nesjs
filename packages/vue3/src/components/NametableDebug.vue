@@ -287,9 +287,8 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- MMC5状态信息 -->
     <div class="mmc5-info">
-      <h4>MMC5 Mapper状态</h4>
+      <h4>Mapper状态</h4>
       <div class="mapper-info">
         <div class="info-row">
           <span>CHR模式:</span>

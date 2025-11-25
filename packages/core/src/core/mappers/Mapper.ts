@@ -191,7 +191,6 @@ export class Mapper {
         this.region = this.loader.tvtype
         this.submapper = this.loader.submapper
         this.crc = Mapper.crc32(this.prg)
-        console.log(`Loaded ROM with CRC32: ${this.crc.toString(16).toUpperCase()}`)
         
         // CRC "数据库" 用于某些无法识别的游戏
         if (this.crc === 0x41243492 // low g man (u)

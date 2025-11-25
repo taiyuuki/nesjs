@@ -657,7 +657,7 @@ export class CPU {
             case 0xf2:
                 
                 // CPU halt - 在实际硬件中会锁定CPU
-                console.log('CPU JAM/KIL instruction executed - CPU halted')
+                console.warn('CPU JAM/KIL instruction executed - CPU halted')
 
                 break
 

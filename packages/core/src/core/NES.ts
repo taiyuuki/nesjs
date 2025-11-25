@@ -24,6 +24,7 @@ import { ControllerAdapter } from './ControllerAdapter'
 import { BinarySaveState } from './BinarySaveState'
 import type { Cheater } from './Cheater'
 import type { TVType } from './types'
+import type FDSMapper from './mappers/MapperList/FDSMapper'
 
 /**
  * 游戏手柄实现
@@ -154,12 +155,10 @@ export class NES {
         }
         
         this.fdsBiosData = new Uint8Array(biosData)
-        console.log('FDS BIOS loaded successfully (8KB)')
         
         // 如果已经加载了FDS ROM，立即设置BIOS
-        if (this.mapper && 'setBIOS' in this.mapper && typeof this.mapper.setBIOS === 'function') {
-            (this.mapper as any).setBIOS(this.fdsBiosData)
-            console.log('FDS BIOS set to active mapper')
+        if (this.mapper?.getMapperType() === -2) {
+            (this.mapper as FDSMapper).setBIOS(this.fdsBiosData)
         }
     }
 
@@ -244,18 +243,13 @@ export class NES {
 
             // 如果是FDS ROM且已加载BIOS，设置BIOS
             if (loader.isFDS && this.fdsBiosData) {
-                if ('setBIOS' in this.mapper && typeof this.mapper.setBIOS === 'function') {
-                    (this.mapper as any).setBIOS(this.fdsBiosData)
-                    console.log('FDS BIOS applied to mapper')
+                if (this.mapper.getMapperType() === -2) {
+                    (this.mapper as FDSMapper).setBIOS(this.fdsBiosData)
                 }
             }
             else if (loader.isFDS && !this.fdsBiosData) {
                 console.warn('FDS ROM detected but no BIOS loaded. Please call loadFDSBIOS() before loading FDS ROMs.')
             }
-
-            // if (this.mapper.supportsSaves()) {
-            //     this.loadSRAM()
-            // }
 
             this.cpu.init()
             this.mapper.init()
