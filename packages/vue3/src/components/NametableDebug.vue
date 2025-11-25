@@ -7,6 +7,8 @@ const props = defineProps<{
     enabled: boolean
 }>()
 
+const emit = defineEmits<{ close: [] }>()
+
 // 响应式数据
 const testResult = ref('')
 const nameTableData = reactive({
@@ -282,6 +284,7 @@ onMounted(() => {
       <h3>Nametable 调试面板</h3>
       <button
         class="close-btn"
+        @click="emit('close')"
       >
         ✕
       </button>
@@ -439,6 +442,9 @@ onMounted(() => {
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .close-btn:hover {

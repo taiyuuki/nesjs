@@ -5,7 +5,7 @@ import NesVue from './components/nes-vue.vue'
 import NametableDebug from './components/NametableDebug.vue'
 
 const nesRef = ref<NESComponentExpose>()
-const romUrl = ref<string | Blob>('Super Mario Bros. 2J (J).fds')
+const romUrl = ref<string | Blob>('Super Mario Bros (JU).nes')
 const biosURL = ref('DISKSYS.ROM')
 const showDebugPanel = ref(false)
 
@@ -72,21 +72,6 @@ const getROMInfo = async() => {
     console.log('ROM Info:', info)
 }
 
-// 调试FDS NMI向量读取
-const debugNMI = () => {
-    if (nesRef.value) {
-        const nesInstance = nesRef.value.getNESInstance()
-        if (nesInstance && nesInstance.mapper) {
-            // 测试$00FA/$00FB的读取
-            console.log('FDS NMI Vector Debug:')
-            console.log('Reading $00FA:', nesInstance.mapper.cartRead(0x00FA).toString(16))
-            console.log('Reading $00FB:', nesInstance.mapper.cartRead(0x00FB).toString(16))
-            console.log('Reading $FFFA:', nesInstance.mapper.cartRead(0xFFFA).toString(16))
-            console.log('Reading $FFFB:', nesInstance.mapper.cartRead(0xFFFB).toString(16))
-        }
-    }
-}
-
 const toggleDebugPanel = () => {
     showDebugPanel.value = !showDebugPanel.value
 }
@@ -144,16 +129,13 @@ onMounted(loadBios)
         截图
       </button>
       <button @click="saveState">
-        保存状态
+        存档
       </button>
       <button @click="loadState">
-        加载状态
+        读档
       </button>
       <button @click="toggleDebugPanel">
         {{ showDebugPanel ? '隐藏调试' : '显示调试' }}
-      </button>
-      <button @click="debugNMI">
-        调试NMI向量
       </button>
     </div>
     <div
@@ -186,7 +168,6 @@ onMounted(loadBios)
 
 .controls {
   display: flex;
-  flex-direction: column;
   gap: 10px;
   align-items: center;
 }
