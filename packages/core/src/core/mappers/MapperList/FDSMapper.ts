@@ -26,16 +26,36 @@ export default class FDSMapper extends Mapper {
     // CHR RAM (8KB) 
     private chrRam: Uint8Array = new Uint8Array(8192)
     
-    // FDS磁盘数据
-    private diskData: Uint8Array
-    
+    // FDS磁盘数据 - 支持多磁盘面（最多8面 = 4张磁盘 × 2面）
+    private diskDataArray: (Uint8Array | null)[] = [null, null, null, null, null, null, null, null]
+    private totalSides: number = 0 // 总磁盘面数
+
+    // 磁盘面选择和插入状态
+    private selectDisk: number = 0 // 当前选中的磁盘面 (0-7)
+    private inDisk: number = 255 // 当前插入的磁盘面 (255=未插入)
+
+    /**
+     * 获取当前插入的磁盘数据
+     */
+    private get diskData(): Uint8Array | null {
+        if (this.inDisk === 255 || this.inDisk >= 8) {
+            return null
+        }
+
+        return this.diskDataArray[this.inDisk]
+    }
+
+    /**
+     * 检查磁盘是否已插入
+     */
+    private get isDiskInserted(): boolean {
+        return this.inDisk !== 255 && this.inDisk < this.totalSides
+    }
+
     // 磁盘系统控制
     private diskReadMode: boolean = true
     private diskMotorOn: boolean = false
     private lastResetBit: boolean = false // 上次bit1的状态，用于边沿检测
-    
-    // 磁盘状态管理
-    private diskEject: number = 0 // 磁盘弹出状态 (0=已插入, 1=未插入)
     
     // FDS磁盘块状态机
     private blockMode: number = 0 // 当前块类型: 0=READY, 1=VOLUME_LABEL, 2=FILE_AMOUNT, 3=FILE_HEADER, 4=FILE_DATA
@@ -77,15 +97,19 @@ export default class FDSMapper extends Mapper {
 
     constructor(loader: ROMLoader) {
         super(loader)
-        
-        // 保存磁盘数据
-        this.diskData = loader.fdsData
-          
+
+        // 保存磁盘数据到第一个磁盘面
+        if (loader.fdsData && loader.fdsData.length > 0) {
+            this.diskDataArray[0] = loader.fdsData
+            this.totalSides = 1
+            this.inDisk = 0 // 默认插入第一个磁盘面
+        }
+
         this.hasprgram = false
-        
+
         // 初始化音频芯片
         this.soundChip = new FDSSoundChip()
-        
+
         // 解析和加载磁盘文件
         this.loadBootFiles()
     }
@@ -103,19 +127,19 @@ export default class FDSMapper extends Mapper {
      * 加载启动文件
      */
     private loadBootFiles(): void {
-
-        if (this.diskData.length < 16) {
+        const diskData = this.diskData
+        if (!diskData || diskData.length < 16) {
             return
         }
-            
+
         // ROMLoader已经解析过头部，直接从磁盘数据开始
         let offset = 0
         let filesLoaded = 0
         const bootFileCode = 255 // 通常启动文件的ID较小
-            
+
         // 解析磁盘信息块并提取许可证信息
-        if (offset < this.diskData.length && this.diskData[offset] === 0x01) {
-                
+        if (offset < diskData.length && diskData[offset] === 0x01) {
+
             // 磁盘信息块结构（56字节）：
             // +0: Block code (0x01)
             // +1-15: '*NINTENDO-HVC*' (15字节)
@@ -130,59 +154,59 @@ export default class FDSMapper extends Mapper {
             // +26-31: 日期 (6字节)
             // +32-47: 保留 (16字节)
             // +48-55: CRC (8字节)
-                
+
             offset += 56 // 跳过磁盘信息块
         }
         else {
             return
         }
-            
-        // 解析文件计数块  
-        if (offset < this.diskData.length && this.diskData[offset] === 0x02) {
-            const fileCount = this.diskData[offset + 1]
+
+        // 解析文件计数块
+        if (offset < diskData.length && diskData[offset] === 0x02) {
+            const fileCount = diskData[offset + 1]
             offset += 2
-                
+
             // 解析每个文件
-            for (let fileIndex = 0; fileIndex < fileCount && offset < this.diskData.length; fileIndex++) {
-                    
+            for (let fileIndex = 0; fileIndex < fileCount && offset < diskData.length; fileIndex++) {
+
                 // 文件头块 (block 3)
-                if (offset + 16 >= this.diskData.length) break
-                    
-                if (this.diskData[offset] !== 0x03) {
+                if (offset + 16 >= diskData.length) break
+
+                if (diskData[offset] !== 0x03) {
                     break
                 }
-                    
-                const fileId = this.diskData[offset + 2]
-                const loadAddr = this.diskData[offset + 11] | this.diskData[offset + 12] << 8
-                const fileSize = this.diskData[offset + 13] | this.diskData[offset + 14] << 8
-                const fileType = this.diskData[offset + 15]
-                                  
+
+                const fileId = diskData[offset + 2]
+                const loadAddr = diskData[offset + 11] | diskData[offset + 12] << 8
+                const fileSize = diskData[offset + 13] | diskData[offset + 14] << 8
+                const fileType = diskData[offset + 15]
+
                 offset += 16
-                    
+
                 // 文件数据块 (block 4)
-                if (offset >= this.diskData.length || this.diskData[offset] !== 0x04) {
+                if (offset >= diskData.length || diskData[offset] !== 0x04) {
                     break
                 }
-                    
+
                 offset += 1 // 跳过block code
-                    
+
                 // 检查是否是启动文件
                 if (fileId <= bootFileCode) {
-                         
+
                     if (this.loadFile(fileType, loadAddr, fileSize, offset)) {
                         filesLoaded++
                     }
                 }
-                    
+
                 offset += fileSize // 跳过文件数据
             }
-                
+
             if (filesLoaded > 0) {
 
                 // 启用音频寄存器
                 this.soundRegistersEnabled = true
             }
-                
+
         }
     }
     
@@ -190,12 +214,17 @@ export default class FDSMapper extends Mapper {
      * 加载单个文件
      */
     private loadFile(type: number, loadAddr: number, size: number, dataOffset: number): boolean {
+        const diskData = this.diskData
+        if (!diskData) {
+            return false
+        }
+
         try {
-            if (dataOffset + size > this.diskData.length) {
+            if (dataOffset + size > diskData.length) {
 
                 return false
             }
-            
+
             switch (type) {
                 case 0: // Program data
                     if (loadAddr >= 0x6000 && loadAddr < 0x8000) {
@@ -204,7 +233,7 @@ export default class FDSMapper extends Mapper {
                         const ramOffset = loadAddr - 0x6000
 
                         for (let i = 0; i < size && ramOffset + i < this.workRam.length; i++) {
-                            this.workRam[ramOffset + i] = this.diskData[dataOffset + i]
+                            this.workRam[ramOffset + i] = diskData[dataOffset + i]
                         }
                     }
                     else if (loadAddr >= 0xA000 && loadAddr < 0xE000) {
@@ -212,26 +241,26 @@ export default class FDSMapper extends Mapper {
                         // 暂存到Work RAM的后半部分，后续映射时再处理
                         const ramOffset = loadAddr - 0xA000 + 0x4000 // 存储到Work RAM后半部分
                         for (let i = 0; i < size && ramOffset + i < this.workRam.length; i++) {
-                            this.workRam[ramOffset + i] = this.diskData[dataOffset + i]
+                            this.workRam[ramOffset + i] = diskData[dataOffset + i]
                         }
                     }
                     break
-                    
-                case 1: // Character data  
+
+                case 1: // Character data
                     // 根据loadAddr决定加载位置
                     if (loadAddr === 0x0000 || loadAddr < 0x2000) {
 
                         // Pattern table data - 加载到CHR RAM前4KB
                         const patternSize = Math.min(size, 0x1000)
                         for (let i = 0; i < patternSize; i++) {
-                            this.chrRam[i] = this.diskData[dataOffset + i]
+                            this.chrRam[i] = diskData[dataOffset + i]
                         }
-                        
+
                         // 如果还有更多数据，可能是nametable数据
                         if (size > 0x1000) {
                             const nameTableSize = Math.min(size - 0x1000, 0x1000)
                             for (let i = 0; i < nameTableSize; i++) {
-                                this.chrRam[0x1000 + i] = this.diskData[dataOffset + 0x1000 + i]
+                                this.chrRam[0x1000 + i] = diskData[dataOffset + 0x1000 + i]
                             }
                         }
                     }
@@ -239,11 +268,11 @@ export default class FDSMapper extends Mapper {
 
                         // 直接按地址加载
                         for (let i = 0; i < size && i < this.chrRam.length; i++) {
-                            this.chrRam[i] = this.diskData[dataOffset + i]
+                            this.chrRam[i] = diskData[dataOffset + i]
                         }
                     }
                     break
-                    
+
                 case 2: // Name table data
                     // 通过正常的PPU写入到Nametable（pput0/pput1）
                     // 这样BIOS的许可检查才能正确读取到数据
@@ -252,7 +281,7 @@ export default class FDSMapper extends Mapper {
                         // 通过PPU写入，自动处理镜像映射到pput0/pput1
                         for (let i = 0; i < size; i++) {
                             const ppuAddr = loadAddr + i
-                            const data = this.diskData[dataOffset + i]
+                            const data = diskData[dataOffset + i]
 
                             // 使用PPU写入，数据会被正确写入到pput（内部VRAM）
                             this.ppuWrite(ppuAddr, data)
@@ -524,9 +553,10 @@ export default class FDSMapper extends Mapper {
                     // 只在 block transition 后（shouldDetectBlockId=true）且 blockPoint=0 时检测
                     // 如果是 FILE_DATA 中途暂停/恢复，不应该重新检测 Block ID
                     if (this.shouldDetectBlockId && this.blockPoint === 0) {
+                        const diskData = this.diskData
                         const globalOffset = this.point + this.blockPoint
-                        if (this.diskData && globalOffset < this.diskData.length) {
-                            const possibleBlockId = this.diskData[globalOffset]
+                        if (diskData && globalOffset < diskData.length) {
+                            const possibleBlockId = diskData[globalOffset]
                             if (possibleBlockId >= 1 && possibleBlockId <= 4) {
                                 this.blockMode = possibleBlockId
                                 this.shouldDetectBlockId = false // 清除标志
@@ -630,7 +660,8 @@ export default class FDSMapper extends Mapper {
                     return 0x00
                 }
 
-                if (!this.diskMotorOn || !this.diskData || this.diskData.length === 0) {
+                const diskData4031 = this.diskData
+                if (!this.diskMotorOn || !diskData4031 || diskData4031.length === 0) {
 
                     // 磁盘未准备好
                     return 0x00
@@ -641,8 +672,8 @@ export default class FDSMapper extends Mapper {
                 let data = 0
 
                 // 读取全局offset的数据
-                if (globalOffset < this.diskData.length) {
-                    data = this.diskData[globalOffset]
+                if (globalOffset < diskData4031.length) {
+                    data = diskData4031[globalOffset]
 
                     // 如果 blockPoint=0，检查是否是 Block ID
                     if (this.blockPoint === 0 || this.shouldDetectBlockId && data >= 1 && data <= 4) {
@@ -729,20 +760,20 @@ export default class FDSMapper extends Mapper {
                 // Drive status register
                 // $42 (bit1=1, 未准备好) → $40 (bit1=0, 准备好)
                 let driveStatus = 0x40 // bit6: 基础状态位（总是1）
-                
+
                 // 更准确的磁盘状态检测
-                const diskDataAvailable = this.diskData && this.diskData.length > 0
-                
+                const diskDataAvailable = this.isDiskInserted && this.diskData !== null
+
                 // bit0: 磁盘插入状态 (0=插入, 1=未插入)
-                if (this.diskEject !== 0 || !diskDataAvailable) {
+                if (!this.isDiskInserted || !diskDataAvailable) {
                     driveStatus |= 0x01 // 磁盘未插入或数据不可用
                 }
-                
+
                 // bit1: 驱动器准备状态 (0=准备好, 1=未准备好)
                 // 1. 在重置状态(driveReset=true)时返回 $42 (bit1=1)
                 // 2. 重置释放后返回 $40 (bit1=0)
                 // 3. 条件：磁盘插入 && 非重置状态 && 数据可用
-                if (this.diskEject === 0 && !this.driveReset && diskDataAvailable) {
+                if (this.isDiskInserted && !this.driveReset && diskDataAvailable) {
 
                     // 准备好 (bit1=0) - 注意：不要求马达开启
                 }
@@ -767,13 +798,13 @@ export default class FDSMapper extends Mapper {
         super.init()
 
         // 设置磁盘状态 - 磁盘已插入并准备好
-        this.diskEject = 0 // 磁盘已插入
+        // inDisk 在构造函数中已设置，如果磁盘数据有效则为 0，否则为 255
         this.diskMotorOn = true // 磁盘马达默认开启
         this.diskReadMode = true // 默认读模式
 
         // 确保磁盘数据有效
-        if (!this.diskData || this.diskData.length === 0) {
-            this.diskEject = 1 // 设置为未插入状态避免ERR.FF
+        if (!this.isDiskInserted) {
+            this.inDisk = 255 // 设置为未插入状态避免ERR.FF
         }
 
     }
@@ -943,5 +974,197 @@ export default class FDSMapper extends Mapper {
                 }
             }
         }
+    }
+
+    // ========== 磁盘翻页公共接口 ==========
+
+    /**
+     * 获取磁盘信息
+     * @returns 磁盘信息对象
+     */
+    public getDiskInfo(): { totalSides: number; selectedSide: number; insertedSide: number } {
+        return {
+            totalSides: this.totalSides,
+            selectedSide: this.selectDisk,
+            insertedSide: this.inDisk,
+        }
+    }
+
+    /**
+     * 选择下一个磁盘面
+     * 必须先弹出当前磁盘才能选择
+     * @returns 是否成功选择
+     */
+    public selectNextDiskSide(): boolean {
+        if (this.totalSides === 0) {
+            return false
+        }
+        if (this.inDisk !== 255) {
+
+            // 磁盘已插入，必须先弹出
+            return false
+        }
+
+        // 循环切换：0->1->2->3...
+        this.selectDisk = (this.selectDisk + 1) % this.totalSides & 3
+
+        return true
+    }
+
+    /**
+     * 选择上一个磁盘面
+     * 必须先弹出当前磁盘才能选择
+     * @returns 是否成功选择
+     */
+    public selectPrevDiskSide(): boolean {
+        if (this.totalSides === 0) {
+            return false
+        }
+        if (this.inDisk !== 255) {
+
+            // 磁盘已插入，必须先弹出
+            return false
+        }
+
+        // 循环切换
+        this.selectDisk = (this.selectDisk - 1 + this.totalSides) % this.totalSides & 3
+
+        return true
+    }
+
+    /**
+     * 选择指定的磁盘面
+     * 必须先弹出当前磁盘才能选择
+     * @param side 磁盘面编号 (0-7)
+     * @returns 是否成功选择
+     */
+    public selectDiskSide(side: number): boolean {
+        if (this.totalSides === 0) {
+            return false
+        }
+        if (this.inDisk !== 255) {
+
+            // 磁盘已插入，必须先弹出
+            return false
+        }
+        if (side < 0 || side >= this.totalSides) {
+            return false
+        }
+
+        this.selectDisk = side & 3
+
+        return true
+    }
+
+    /**
+     * 插入或弹出磁盘
+     * 如果磁盘未插入，则插入当前选中的磁盘面
+     * 如果磁盘已插入，则弹出
+     * @returns 操作后的状态：true=已插入，false=已弹出
+     */
+    public toggleDiskInsert(): boolean {
+        if (this.totalSides === 0) {
+            return false
+        }
+
+        if (this.inDisk === 255) {
+
+            // 插入磁盘
+            this.inDisk = this.selectDisk
+
+            // 重置磁盘读取状态
+            this.point = 0
+            this.blockPoint = 0
+            this.blockMode = 0
+            this.driveReset = true
+            this.shouldDetectBlockId = true
+            this.dataReady = false
+            this.diskTransferCounter = 0
+
+            return true
+        }
+        else {
+
+            // 弹出磁盘
+            this.inDisk = 255
+
+            // 清除磁盘相关状态
+            this.dataReady = false
+            this.diskIrqPending = false
+
+            return false
+        }
+    }
+
+    /**
+     * 插入磁盘
+     * @returns 是否成功插入
+     */
+    public insertDiskSide(): boolean {
+        if (this.totalSides === 0 || this.inDisk !== 255) {
+            return false
+        }
+
+        this.inDisk = this.selectDisk
+
+        // 重置磁盘读取状态
+        this.point = 0
+        this.blockPoint = 0
+        this.blockMode = 0
+        this.driveReset = true
+        this.shouldDetectBlockId = true
+        this.dataReady = false
+        this.diskTransferCounter = 0
+
+        return true
+    }
+
+    /**
+     * 弹出磁盘
+     * @returns 是否成功弹出
+     */
+    public ejectDisk(): boolean {
+        if (this.inDisk === 255) {
+            return false
+        }
+
+        this.inDisk = 255
+
+        // 清除磁盘相关状态
+        this.dataReady = false
+        this.diskIrqPending = false
+
+        return true
+    }
+
+    /**
+     * 添加新的磁盘面数据
+     * 用于支持多磁盘游戏
+     * @param data 磁盘面数据
+     * @returns 分配的磁盘面编号
+     */
+    public addDiskSide(data: Uint8Array): number {
+        if (this.totalSides >= 8) {
+            return -1 // 最多支持8面
+        }
+
+        const sideIndex = this.totalSides
+        this.diskDataArray[sideIndex] = new Uint8Array(data)
+        this.totalSides++
+
+        return sideIndex
+    }
+
+    /**
+     * 获取磁盘面的人类可读标签
+     * @param side 磁盘面编号
+     * @returns 标签字符串，如 "Disk 1 Side A"
+     */
+    public getDiskSideLabel(side?: number): string {
+        const sideNum = side === undefined ? this.selectDisk : side
+        const diskNum = (sideNum >> 1) + 1
+        const sideLabel = sideNum & 1 ? 'B' : 'A'
+
+        return `Disk ${diskNum} Side ${sideLabel}`
     }
 }
