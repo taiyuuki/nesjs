@@ -419,11 +419,12 @@ export default class FDSMapper extends Mapper {
             case 0x4022:
 
                 // Timer IRQ control
+                // bit定义：bit0 = Repeat, bit1 = IRQ Enabled
                 const wasEnabled = this.irqEnabled
                 this.irqRepeat = (data & 0x01) !== 0 // bit 0: Repeat Flag
                 this.irqEnabled = (data & 0x02) !== 0 // bit 1: IRQ Enabled
 
-                // 当启用 IRQ 时（bit1=1），重置计数器
+                // 当启用 IRQ 时，重置计数器
                 if (this.irqEnabled) {
                     this.irqCounter = this.irqReload
                 }
@@ -628,17 +629,11 @@ export default class FDSMapper extends Mapper {
                 if (this.diskTimerIrq) {
                     status |= 0x01
                     this.diskTimerIrq = false // 读取后清除
-                    // 同时清除CPU的Timer IRQ标志
-                    if (this.cpu) {
-                        this.cpu.interrupt &= ~0x04
-                    }
                 }
 
                 // bit1: Disk IRQ发生（磁盘数据传输IRQ）
                 if (this.diskIrqPending) {
                     status |= 0x02
-
-                    // 注意：读取$4030不清除diskIrqPending，需要读取$4031才清除
                 }
 
                 // bit3: Nametable arrangement (from $4025.3)
@@ -649,6 +644,11 @@ export default class FDSMapper extends Mapper {
                 // bit6: CRC control (0=CRC passed, 1=CRC error) - always set to 0 (passed)
                 // bit4: End of Head (1 when disk head is on innermost track)
                 // bit5: Unknown interrupt source
+
+                // 读取$4030时清除CPU Timer IRQ中断标志
+                if (this.cpu) {
+                    this.cpu.interrupt &= ~0x04
+                }
 
                 return status
             case 0x4031:
@@ -822,33 +822,11 @@ export default class FDSMapper extends Mapper {
      */
     public clockIRQ(cpuCycles: number): void {
 
-        // Timer IRQ 处理 - 每个 CPU 周期递减
-        // 只在磁盘传输不活动时处理，避免干扰磁盘读取 timing
+        // 磁盘传输 IRQ 处理
+        // 只在所有条件都满足时才处理IRQ
         const diskTransferActive = this.diskReadMode && this.rwStart
             && !this.driveReset && this.blockMode !== 0 && this.diskMotorOn
 
-        if (!diskTransferActive) {
-            if (this.irqCounter > 0) {
-                this.irqCounter -= cpuCycles
-                if (this.irqCounter <= 0) {
-                    if (this.irqEnabled) {
-                        this.diskTimerIrq = true
-                        if (this.cpu) {
-                            this.cpu.interrupt |= 0x04
-                        }
-                    }
-                    if (this.irqRepeat) {
-                        this.irqCounter = this.irqReload
-                    }
-                    else {
-                        this.irqEnabled = false
-                    }
-                }
-            }
-        }
-
-        // 磁盘传输 IRQ 处理
-        // 只在所有条件都满足时才处理IRQ
         if (!diskTransferActive) {
             return // 不满足条件，不处理磁盘IRQ
         }
@@ -954,23 +932,38 @@ export default class FDSMapper extends Mapper {
     }
 
     // HSync处理 - 每扫描线调用一次
-    // 这个方法在 PPU cycles === 257 时调用，即扫描线末尾
-    // Timer IRQ 已在 clockIRQ 中每个 CPU 周期处理，这里只处理其他扫描线逻辑
     public override notifyscanline(_scanline: number): void {
+
+        const cycles = 114 // 每扫描线约113.67 CPU cycles
+
+        // 磁盘传输IRQ处理
+        this.clockIRQ(cycles)
 
         // FDS磁盘寻址IRQ处理
         if (this.diskSeekIrq > 0) {
-            this.diskSeekIrq -= 114
+            this.diskSeekIrq -= cycles
             if (this.diskSeekIrq <= 0) {
                 if (this.fdsRegs && this.fdsRegs[5] & 0x80) {
+                    // 设置Disk Seek IRQ标志
+                    this.diskTimerIrq = true
+                }
+            }
+        }
 
-                    // 设置Disk Seek IRQ标志（bit1，与Disk Transfer IRQ共享）
-                    this.diskIrqPending = true
-
-                    // 同时触发CPU IRQ，让BIOS知道磁盘已准备好
-                    if (this.cpu) {
-                        this.cpu.interrupt |= 0x20 // IRQ_MAPPER2
-                    }
+        // Timer IRQ处理 - 使用CPU周期递减
+        if (this.irqEnabled && this.irqCounter > 0) {
+            this.irqCounter -= cycles // 每扫描线递减约114 CPU周期
+            if (this.irqCounter <= 0) {
+                // 总是设置diskTimerIrq标志
+                this.diskTimerIrq = true
+                if (this.cpu) {
+                    this.cpu.interrupt |= 0x04 // IRQ_MAPPER
+                }
+                if (this.irqRepeat) {
+                    this.irqCounter = this.irqReload
+                }
+                else {
+                    this.irqEnabled = false
                 }
             }
         }
