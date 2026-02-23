@@ -944,6 +944,7 @@ export default class FDSMapper extends Mapper {
             this.diskSeekIrq -= cycles
             if (this.diskSeekIrq <= 0) {
                 if (this.fdsRegs && this.fdsRegs[5] & 0x80) {
+
                     // 设置Disk Seek IRQ标志
                     this.diskTimerIrq = true
                 }
@@ -954,6 +955,7 @@ export default class FDSMapper extends Mapper {
         if (this.irqEnabled && this.irqCounter > 0) {
             this.irqCounter -= cycles // 每扫描线递减约114 CPU周期
             if (this.irqCounter <= 0) {
+
                 // 总是设置diskTimerIrq标志
                 this.diskTimerIrq = true
                 if (this.cpu) {
