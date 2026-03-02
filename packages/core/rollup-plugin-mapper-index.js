@@ -1,13 +1,87 @@
 
 import path from 'node:path'
 import fs from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import fastGlob from 'fast-glob'
+import { Linter } from 'eslint'
+
+// 向上查找配置文件
+function findConfigFile(filename, startDir) {
+    let currentDir = startDir
+    while (true) {
+        const filePath = path.join(currentDir, filename)
+        if (fs.existsSync(filePath)) {
+            return filePath
+        }
+        const parentDir = path.dirname(currentDir)
+        if (parentDir === currentDir) {
+            return null
+        }
+        currentDir = parentDir
+    }
+}
 
 export default function mapperIndexPlugin(options = {}) {
     const {
         dir = 'src/core/mappers/MapperList',
         output = 'src/core/mappers/dyn.ts',
     } = options
+
+    let linter = null
+
+    let eslintConfig = null
+
+    async function loadEslintConfig() {
+        if (eslintConfig) return eslintConfig
+
+        try {
+            const configPath = findConfigFile('eslint.config.mjs', process.cwd())
+            if (!configPath) {
+                console.warn('[mapper-index-generator] ESLint config not found')
+
+                return null
+            }
+
+            const configModule = await import(pathToFileURL(configPath).href)
+            let configs = configModule.default
+
+            // 处理可能的 Promise
+            if (configs && typeof configs.then === 'function') {
+                configs = await configs
+            }
+
+            // 确保是数组
+            if (!Array.isArray(configs)) {
+                console.warn('[mapper-index-generator] ESLint config is not an array')
+
+                return null
+            }
+
+            eslintConfig = configs
+            linter = new Linter({ configType: 'flat' })
+
+            return { linter, configs: eslintConfig }
+        }
+        catch(e) {
+            console.warn('[mapper-index-generator] Failed to load ESLint config:', e.message)
+
+            return null
+        }
+    }
+
+    async function lintFix(content, filename) {
+        const eslint = await loadEslintConfig()
+        if (!eslint) return content
+
+        const { linter, configs } = eslint
+        const result = linter.verifyAndFix(content, configs, { filename })
+
+        if (result.messages.length > 0) {
+            console.warn('[mapper-index-generator] ESLint warnings:', result.messages)
+        }
+
+        return result.output
+    }
 
     return {
         name: 'rollup-plugin-mapper-index',
@@ -33,13 +107,9 @@ export default function mapperIndexPlugin(options = {}) {
             })
             content += '}\n\n'
 
-            // const imports = files.map(f => {
-            //     const varName = toValidVar(f)
+            // 使用 ESLint 修复代码格式
+            content = await lintFix(content, absOut)
 
-            //     return `import ${varName} from './MapperList/${f.replace('.ts', '')}'`
-            // }).join('\n')
-            // const exportArr = files.map(f => toValidVar(f)).join(', ')
-            // const exports = `export default [${exportArr}]\n`
             fs.writeFileSync(absOut, content)
 
             this.warn(`[mapper-index-generator] Generated ${output}`)
