@@ -116,7 +116,7 @@ export default class VRC2Mapper extends Mapper {
             ...state,
             prgbank0: this.prgbank0,
             prgbank1: this.prgbank1,
-            chrbank: [...this.chrbank],
+            chrbank:  [...this.chrbank],
         }
     }
 

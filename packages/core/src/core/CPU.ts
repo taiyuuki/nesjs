@@ -15,8 +15,8 @@ enum DummyType {
  */
 export class CPU {
     private readonly ram: CPURAM
-    private cycles: number = 0 // 增加以从 cpu 偷取周期
-    public clocks: number = 0 // 用于与 cpu 同步
+    private cycles:       number = 0 // 增加以从 cpu 偷取周期
+    public clocks:        number = 0 // 用于与 cpu 同步
     
     // 寄存器
     private A: number = 0
@@ -26,24 +26,24 @@ export class CPU {
     public PC: number = 0
     
     // 标志位
-    private carryFlag: boolean = false
-    private zeroFlag: boolean = false
+    private carryFlag:          boolean = false
+    private zeroFlag:           boolean = false
     private interruptsDisabled: boolean = true
-    private decimalModeFlag: boolean = false
-    private overflowFlag: boolean = false
-    private negativeFlag: boolean = false
-    private previntflag: boolean = false
-    private nmi: boolean = false
-    private prevnmi: boolean = false
+    private decimalModeFlag:    boolean = false
+    private overflowFlag:       boolean = false
+    private negativeFlag:       boolean = false
+    private previntflag:        boolean = false
+    private nmi:                boolean = false
+    private prevnmi:            boolean = false
     
-    private pb: number = 0 // 如果访问跨越页边界则设置为 1
+    private pb:       number = 0 // 如果访问跨越页边界则设置为 1
     public interrupt: number = 0
-    public nmiNext: boolean = false
-    public idle: boolean = false
+    public nmiNext:   boolean = false
+    public idle:      boolean = false
     
     // NES 6502 缺少十进制模式，但大多数其他 6502 有它
     private static readonly decimalModeEnable: boolean = false
-    private static readonly idleLoopSkip: boolean = true
+    private static readonly idleLoopSkip:      boolean = true
     
     private interruptDelay: boolean = false
     
@@ -55,9 +55,9 @@ export class CPU {
     // 这足以在滚动改变后几个 PPU 时钟移动它
     // 确保 Battletoads 获得其精灵 0 命中。
     private static readonly battletoadsHackOn: boolean = true
-    private dirtyBattletoadsHack: boolean = false
-    private hackAddr: number = 0
-    private hackData: number = 0
+    private dirtyBattletoadsHack:              boolean = false
+    private hackAddr:                          number = 0
+    private hackData:                          number = 0
 
     constructor(cpuram: CPURAM) {
         this.ram = cpuram
@@ -2139,12 +2139,12 @@ export class CPU {
 
     public getCPUState(): any {
         return {
-            PC: this.PC,
-            A: this.A,
-            X: this.X,
-            Y: this.Y,
-            SP: this.S,
-            P: this.getP(),
+            PC:     this.PC,
+            A:      this.A,
+            X:      this.X,
+            Y:      this.Y,
+            SP:     this.S,
+            P:      this.getP(),
             cycles: this.cycles,
         }
     }

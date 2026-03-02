@@ -9,14 +9,14 @@ import mapperIndexPlugin from './rollup-plugin-mapper-index.js'
 
 const config = defineConfig([
     {
-        input: ['src/index.ts'],
+        input:  ['src/index.ts'],
         output: [
             {
-                dir: 'dist/esm',
+                dir:    'dist/esm',
                 format: 'esm',
             },
             {
-                dir: 'dist/cjs',
+                dir:    'dist/cjs',
                 format: 'cjs',
             },
         ],
@@ -25,18 +25,18 @@ const config = defineConfig([
             mapperIndexPlugin(),
             ts(),
             babelPlugin({
-                exclude: '**/node_modules/**',
+                exclude:      '**/node_modules/**',
                 babelHelpers: 'bundled',
-                extensions: ['.ts'],
+                extensions:   ['.ts'],
             }),
             commonjs(),
             terser(),
         ],
     },
     {
-        input: 'src/index.ts',
+        input:  'src/index.ts',
         output: {
-            dir: 'dist/types',
+            dir:    'dist/types',
             format: 'esm',
         },
         plugins: [dts()],

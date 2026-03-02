@@ -109,11 +109,11 @@ export class BinarySaveState {
             // fallback到基本PPU状态
             ppuState = {
                 registers: [],
-                palette: new Array(32).fill(0),
-                oam: new Array(256).fill(0),
-                vram: [],
-                scanline: 0,
-                cycle: 0,
+                palette:   new Array(32).fill(0),
+                oam:       new Array(256).fill(0),
+                vram:      [],
+                scanline:  0,
+                cycle:     0,
             }
         }
         
@@ -130,7 +130,7 @@ export class BinarySaveState {
             // fallback到空APU状态
             apuState = {
                 registers: [],
-                channels: [],
+                channels:  [],
             }
         }
         
@@ -156,18 +156,18 @@ export class BinarySaveState {
                 mapperType,
             },
             cpu: {
-                PC: cpuPC,
-                A: cpuA,
-                X: cpuX,
-                Y: cpuY,
-                SP: cpuSP,
-                P: cpuP,
+                PC:     cpuPC,
+                A:      cpuA,
+                X:      cpuX,
+                Y:      cpuY,
+                SP:     cpuSP,
+                P:      cpuP,
                 cycles: cpuCycles,
-                ram: Array.from(cpuRam),
+                ram:    Array.from(cpuRam),
             },
-            ppu: ppuState,
-            apu: apuState,
-            mapper: { state: mapperState },
+            ppu:         ppuState,
+            apu:         apuState,
+            mapper:      { state: mapperState },
             controllers: {
                 player1: {
                     buttonState: p1ButtonState,
@@ -243,7 +243,7 @@ export class BinarySaveState {
  */
 class BinaryWriter {
     private buffer: Uint8Array
-    private view: DataView
+    private view:   DataView
     private offset: number = 0
     
     constructor(initialSize: number = 1024 * 256) {
@@ -316,7 +316,7 @@ class BinaryWriter {
  * 二进制读取器
  */
 class BinaryReader {
-    private view: DataView
+    private view:   DataView
     private offset: number = 0
     
     constructor(private buffer: Uint8Array) {

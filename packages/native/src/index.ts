@@ -13,16 +13,16 @@ export type NESEmulatorOptions = AudioOptions & CanvasRendererOptions & Emulator
 }
 
 class NESEmulator {
-    nes: NES
-    renderer: CanvasRenderer
-    audioOutput: WebNESAudioOutput
-    frameDuration: number
+    nes:              NES
+    renderer:         CanvasRenderer
+    audioOutput:      WebNESAudioOutput
+    frameDuration:    number
     lastFrameTime = 0
     targetFPS = 60
     status = 0 // 0: stopped, 1: running, 2: paused
     animationFrameId: number | null = null
-    romData: Uint8Array | null = null
-    controller: NESController
+    romData:          Uint8Array | null = null
+    controller:       NESController
 
     constructor(cvs: HTMLCanvasElement, config?: NESEmulatorOptions) {
         this.nes = new NES(config || {})

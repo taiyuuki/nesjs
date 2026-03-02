@@ -46,7 +46,7 @@ class CRC16 {
 
 class CRC32 {
     private static TABLE: Uint32Array
-    private crc: number
+    private crc:          number
 
     constructor() {
         this.crc = 0xFFFFFFFF // 初始值

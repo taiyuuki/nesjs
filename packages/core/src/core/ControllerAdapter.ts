@@ -6,10 +6,10 @@ import type { GamepadInterface } from './interfaces'
  */
 export class ControllerAdapter {
 
-    private buttonState: number = 0
-    private strobeState: boolean = false
-    private buttonIndex: number = 0
-    private gamepad: GamepadInterface
+    private buttonState:      number = 0
+    private strobeState:      boolean = false
+    private buttonIndex:      number = 0
+    private gamepad:          GamepadInterface
     private consecutiveReads: number = 0
 
     constructor(gamepad: GamepadInterface) {
@@ -104,9 +104,9 @@ export class ControllerAdapter {
     // 用于存档
     public getControllerState() {
         return {
-            buttonState: this.buttonState,
-            strobeState: this.strobeState,
-            buttonIndex: this.buttonIndex,
+            buttonState:      this.buttonState,
+            strobeState:      this.strobeState,
+            buttonIndex:      this.buttonIndex,
             consecutiveReads: this.consecutiveReads,
         }
     }
@@ -119,14 +119,14 @@ export class ControllerAdapter {
         this.consecutiveReads = state.consecutiveReads || 0
         
         Object.assign(this.gamepad.buttonStates, {
-            A: this.buttonState >> 0 & 1,
-            B: this.buttonState >> 1 & 1,
+            A:      this.buttonState >> 0 & 1,
+            B:      this.buttonState >> 1 & 1,
             SELECT: this.buttonState >> 2 & 1,
-            START: this.buttonState >> 3 & 1,
-            UP: this.buttonState >> 4 & 1,
-            DOWN: this.buttonState >> 5 & 1,
-            LEFT: this.buttonState >> 6 & 1,
-            RIGHT: this.buttonState >> 7 & 1,
+            START:  this.buttonState >> 3 & 1,
+            UP:     this.buttonState >> 4 & 1,
+            DOWN:   this.buttonState >> 5 & 1,
+            LEFT:   this.buttonState >> 6 & 1,
+            RIGHT:  this.buttonState >> 7 & 1,
         })
     }
 

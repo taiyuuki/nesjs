@@ -5,7 +5,7 @@ import { copyright } from './utils'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-    title: 'NESJS',
+    title:       'NESJS',
     description: 'A modern NES emulator written in TypeScript.',
 
     head: [
@@ -25,15 +25,15 @@ export default defineConfig({
     markdown: {
         theme: {
             light: 'light-plus',
-            dark: 'github-dark',
+            dark:  'github-dark',
         },
     },
 
     themeConfig: {
-        logo: '/icon.png',
+        logo:    '/icon.png',
         outline: { level: [2, 3] },
-        footer: {
-            message: 'Released under the MIT License.',
+        footer:  {
+            message:   'Released under the MIT License.',
             copyright: copyright(),
         },
         socialLinks: [

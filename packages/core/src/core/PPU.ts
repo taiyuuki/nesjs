@@ -4,65 +4,65 @@ import { TVType, Utils } from './types'
 import { compressArrayIfPossible, decompressArray } from './utils'
 
 export class PPU {
-    public mapper: Mapper
-    public scanline: number = 0
-    public cycles: number = 0
+    public mapper:       Mapper
+    public scanline:     number = 0
+    public cycles:       number = 0
     public readonly pal: Uint8Array
     
-    private oamaddr: number = 0
-    private oamstart: number = 0
+    private oamaddr:    number = 0
+    private oamstart:   number = 0
     private readbuffer: number = 0
-    private loopyV: number = 0x0 
-    private loopyT: number = 0x0 
-    private loopyX: number = 0 
+    private loopyV:     number = 0x0 
+    private loopyT:     number = 0x0 
+    private loopyX:     number = 0 
     private framecount: number = 0
-    private div: number = 2
+    private div:        number = 2
     
-    private readonly OAM: Uint8Array = new Uint8Array(256).fill(0xff)
-    private readonly secOAM: Uint8Array = new Uint8Array(32).fill(0)
+    private readonly OAM:             Uint8Array = new Uint8Array(256).fill(0xff)
+    private readonly secOAM:          Uint8Array = new Uint8Array(32).fill(0)
     private readonly spriteshiftregH: Uint8Array = new Uint8Array(8)
     private readonly spriteshiftregL: Uint8Array = new Uint8Array(8)
-    private readonly spriteXlatch: Uint8Array = new Uint8Array(8)
-    private readonly spritepals: Uint8Array = new Uint8Array(8)
-    private readonly bitmap: Uint8Array = new Uint8Array(240 * 256)
-    private readonly bgcolors: Uint8Array = new Uint8Array(256)
+    private readonly spriteXlatch:    Uint8Array = new Uint8Array(8)
+    private readonly spritepals:      Uint8Array = new Uint8Array(8)
+    private readonly bitmap:          Uint8Array = new Uint8Array(240 * 256)
+    private readonly bgcolors:        Uint8Array = new Uint8Array(256)
     
     private readonly spritebgflags: Uint8Array = new Uint8Array(8) // 用0/1代替boolean
 
-    private dotcrawl: boolean = true
+    private dotcrawl:    boolean = true
     private sprite0here: boolean = false
     
-    private even: boolean = true
-    private bgpattern: boolean = false
-    private sprpattern: boolean = false
-    private spritesize: boolean = false
-    private nmicontrol: boolean = false
-    private grayscale: boolean = false
-    private bgClip: boolean = false
-    private spriteClip: boolean = false
-    private bgOn: boolean = false
-    private spritesOn: boolean = false
-    private vblankflag: boolean = false
-    private sprite0hit: boolean = false
+    private even:           boolean = true
+    private bgpattern:      boolean = false
+    private sprpattern:     boolean = false
+    private spritesize:     boolean = false
+    private nmicontrol:     boolean = false
+    private grayscale:      boolean = false
+    private bgClip:         boolean = false
+    private spriteClip:     boolean = false
+    private bgOn:           boolean = false
+    private spritesOn:      boolean = false
+    private vblankflag:     boolean = false
+    private sprite0hit:     boolean = false
     private spriteoverflow: boolean = false
     
-    private emph: number = 0
-    private vraminc: number = 1
-    private openbus: number = 0 
-    private nextattr: number = 0
-    private linelowbits: number = 0
-    private linehighbits: number = 0
-    private penultimateattr: number = 0
-    private numscanlines: number = 262
-    private vblankline: number = 241
+    private emph:                number = 0
+    private vraminc:             number = 1
+    private openbus:             number = 0 
+    private nextattr:            number = 0
+    private linelowbits:         number = 0
+    private linehighbits:        number = 0
+    private penultimateattr:     number = 0
+    private numscanlines:        number = 262
+    private vblankline:          number = 241
     private readonly cpudivider: Uint8Array = new Uint8Array([3, 3, 3, 3, 3])
     
-    private tileAddr: number = 0
+    private tileAddr:      number = 0
     private cpudividerctr: number = 0
 
-    private found: number = 0
-    private bgShiftRegH: number = 0
-    private bgShiftRegL: number = 0
+    private found:           number = 0
+    private bgShiftRegH:     number = 0
+    private bgShiftRegL:     number = 0
     private bgAttrShiftRegH: number = 0
     private bgAttrShiftRegL: number = 0
 
@@ -780,60 +780,60 @@ export class PPU {
         return {
             
             control: {
-                bgpattern: this.bgpattern,
+                bgpattern:  this.bgpattern,
                 sprpattern: this.sprpattern,
                 spritesize: this.spritesize,
                 nmicontrol: this.nmicontrol,
-                vraminc: this.vraminc,
+                vraminc:    this.vraminc,
             },
             mask: {
-                grayscale: this.grayscale,
-                bgClip: this.bgClip,
+                grayscale:  this.grayscale,
+                bgClip:     this.bgClip,
                 spriteClip: this.spriteClip,
-                bgOn: this.bgOn,
-                spritesOn: this.spritesOn,
-                emph: this.emph,
+                bgOn:       this.bgOn,
+                spritesOn:  this.spritesOn,
+                emph:       this.emph,
             },
             status: {
-                vblankflag: this.vblankflag,
-                sprite0hit: this.sprite0hit,
+                vblankflag:     this.vblankflag,
+                sprite0hit:     this.sprite0hit,
                 spriteoverflow: this.spriteoverflow,
             },
-            palette: compressArrayIfPossible(this.pal),
-            oam: compressArrayIfPossible(this.OAM),
-            oamaddr: this.oamaddr,
-            scanline: this.scanline,
-            cycles: this.cycles,
-            loopyV: this.loopyV,
-            loopyT: this.loopyT,
-            loopyX: this.loopyX,
+            palette:    compressArrayIfPossible(this.pal),
+            oam:        compressArrayIfPossible(this.OAM),
+            oamaddr:    this.oamaddr,
+            scanline:   this.scanline,
+            cycles:     this.cycles,
+            loopyV:     this.loopyV,
+            loopyT:     this.loopyT,
+            loopyX:     this.loopyX,
             readbuffer: this.readbuffer,
-            openbus: this.openbus,
+            openbus:    this.openbus,
             framecount: this.framecount,
-            div: this.div,
+            div:        this.div,
             
-            bgShiftRegH: this.bgShiftRegH,
-            bgShiftRegL: this.bgShiftRegL,
+            bgShiftRegH:     this.bgShiftRegH,
+            bgShiftRegL:     this.bgShiftRegL,
             bgAttrShiftRegH: this.bgAttrShiftRegH,
             bgAttrShiftRegL: this.bgAttrShiftRegL,
-            nextattr: this.nextattr,
-            linelowbits: this.linelowbits,
-            linehighbits: this.linehighbits,
+            nextattr:        this.nextattr,
+            linelowbits:     this.linelowbits,
+            linehighbits:    this.linehighbits,
             penultimateattr: this.penultimateattr,
-            tileAddr: this.tileAddr,
-            found: this.found,
+            tileAddr:        this.tileAddr,
+            found:           this.found,
             
-            sprite0here: this.sprite0here,
-            even: this.even,
-            secOAM: compressArrayIfPossible(this.secOAM),
+            sprite0here:     this.sprite0here,
+            even:            this.even,
+            secOAM:          compressArrayIfPossible(this.secOAM),
             spriteshiftregH: compressArrayIfPossible(this.spriteshiftregH),
             spriteshiftregL: compressArrayIfPossible(this.spriteshiftregL),
-            spriteXlatch: compressArrayIfPossible(this.spriteXlatch),
-            spritepals: compressArrayIfPossible(this.spritepals),
-            spritebgflags: compressArrayIfPossible(this.spritebgflags),
-            oamstart: this.oamstart,
-            dotcrawl: this.dotcrawl,
-            cpudividerctr: this.cpudividerctr,
+            spriteXlatch:    compressArrayIfPossible(this.spriteXlatch),
+            spritepals:      compressArrayIfPossible(this.spritepals),
+            spritebgflags:   compressArrayIfPossible(this.spritebgflags),
+            oamstart:        this.oamstart,
+            dotcrawl:        this.dotcrawl,
+            cpudividerctr:   this.cpudividerctr,
         }
     }
 

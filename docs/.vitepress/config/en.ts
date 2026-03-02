@@ -1,6 +1,6 @@
 export default {
-    label: 'English',
-    lang: 'en',
+    label:       'English',
+    lang:        'en',
     themeConfig: {
         nav: [
             { text: 'Home', link: '/' },
@@ -9,7 +9,7 @@ export default {
 
         sidebar: [
             {
-                text: 'Guide',
+                text:  'Guide',
                 items: [
                     { text: '@nesjs/core', link: '/guide/core' },
                     { text: '@nesjs/native', link: '/guide/native' },

@@ -8,9 +8,9 @@ export default function App() {
     const [romUrl, setRomUrl] = useState<Blob | string>('Super Mario Bros (JU).nes')
 
     const [emulatorConfig] = useState({
-        scale: 3,
-        smoothing: false,
-        clip8px: false,
+        scale:           3,
+        smoothing:       false,
+        clip8px:         false,
         audioBufferSize: 1024,
         audioSampleRate: 44100,
     })

@@ -31,13 +31,13 @@ export interface NESOptions {
 export interface NESEvents extends EmulatorEvents {
 
     /** Game status change event */
-    onStatusChange?: (status: 'paused' | 'running' | 'stopped')=> void
+    onStatusChange?: (status: 'paused' | 'running' | 'stopped') => void
 
     /** Loading status change event */
-    onLoadingChange?: (loading: boolean)=> void
+    onLoadingChange?: (loading: boolean) => void
 
     /** Component ready event */
-    onReady?: ()=> void
+    onReady?: () => void
 }
 
 /**

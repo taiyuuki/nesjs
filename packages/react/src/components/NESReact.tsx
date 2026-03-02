@@ -13,9 +13,9 @@ import type {
 } from '../types'
 
 export interface NESEmulatorReactProps extends NESOptions {
-    onLoaded?: ()=> void
-    onError?: (error: Error)=> void
-    onReady?: ()=> void // canvas+emulator实例创建完成，但未必加载ROM
+    onLoaded?: () => void
+    onError?:  (error: Error) => void
+    onReady?:  () => void // canvas+emulator实例创建完成，但未必加载ROM
 }
 
 const NESEmulatorReact = forwardRef<
@@ -28,9 +28,9 @@ const NESEmulatorReact = forwardRef<
         volume = 50,
         debugMode = false,
         emulatorConfig = {
-            scale: 2,
-            clip8px: true,
-            smoothing: false,
+            scale:           2,
+            clip8px:         true,
+            smoothing:       false,
             audioBufferSize: 1024,
             audioSampleRate: 44100,
         },
@@ -282,10 +282,10 @@ const NESEmulatorReact = forwardRef<
         reset,
         stop,
         pause,
-        play: resume,
+        play:  resume,
         togglePlay,
         save,
-        load: loadSave,
+        load:  loadSave,
         screenshot,
         downloadSaveState,
         uploadSaveState,

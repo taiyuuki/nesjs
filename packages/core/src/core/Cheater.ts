@@ -86,8 +86,8 @@ export class Cheater {
                 cheat,
             )
         }
-        catch(_error) {
-            throw new Error(`Invalid cheat code format: ${code}`)
+        catch(cause) {
+            throw new Error(`Invalid cheat code format: ${code}`, { cause })
         }
     }
 

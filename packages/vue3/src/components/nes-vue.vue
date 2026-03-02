@@ -5,17 +5,17 @@ import type { NESComponentExpose, NESOptions } from '../types'
 
 // 接收 props
 const props = withDefaults(defineProps<NESOptions>(), {
-    autoStart: false,
-    volume: 50,
-    debugMode: false,
-    mashingSpeed: 16,
+    autoStart:      false,
+    volume:         50,
+    debugMode:      false,
+    mashingSpeed:   16,
     emulatorConfig: () => ({
-        scale: 2,
-        clip8px: true,
-        smoothing: false,
+        scale:           2,
+        clip8px:         true,
+        smoothing:       false,
         audioBufferSize: 1024,
         audioSampleRate: 44100,
-        enableSAB: true,
+        enableSAB:       true,
     }),
 })
 
@@ -402,31 +402,31 @@ function getNameTables() {
     const ppu = nes.ppu
 
     return {
-        nt0: mapper.nt0 || [],
-        nt1: mapper.nt1 || [],
-        nt2: mapper.nt2 || [],
-        nt3: mapper.nt3 || [],
-        exram: (mapper as any).exram || null,
-        exramMode: (mapper as any).exramMode || 0,
-        chrMode: (mapper as any).chrMode || 0,
-        prgMode: (mapper as any).prgMode || 0,
-        fillnt: (mapper as any).fillnt || [],
-        chrregsA: (mapper as any).chrregsA || [],
-        chrregsB: (mapper as any).chrregsB || [],
-        chrmap: mapper.chr_map || [],
-        chrmapB: mapper.chrmapB || [],
-        pput0: mapper.pput0 || [],
-        pput1: mapper.pput1 || [],
-        pput2: mapper.pput2 || [],
-        pput3: mapper.pput3 || [],
-        chrOr: (mapper as any).chrOr || 0,
-        exlatch: (mapper as any).exlatch || 0,
+        nt0:        mapper.nt0 || [],
+        nt1:        mapper.nt1 || [],
+        nt2:        mapper.nt2 || [],
+        nt3:        mapper.nt3 || [],
+        exram:      (mapper as any).exram || null,
+        exramMode:  (mapper as any).exramMode || 0,
+        chrMode:    (mapper as any).chrMode || 0,
+        prgMode:    (mapper as any).prgMode || 0,
+        fillnt:     (mapper as any).fillnt || [],
+        chrregsA:   (mapper as any).chrregsA || [],
+        chrregsB:   (mapper as any).chrregsB || [],
+        chrmap:     mapper.chr_map || [],
+        chrmapB:    mapper.chrmapB || [],
+        pput0:      mapper.pput0 || [],
+        pput1:      mapper.pput1 || [],
+        pput2:      mapper.pput2 || [],
+        pput3:      mapper.pput3 || [],
+        chrOr:      (mapper as any).chrOr || 0,
+        exlatch:    (mapper as any).exlatch || 0,
         spritemode: (mapper as any).spritemode || false,
-        haschrram: mapper.haschrram || false,
+        haschrram:  mapper.haschrram || false,
 
         // 添加一些PPU状态信息
         scanline: ppu.scanline || 0,
-        cycles: ppu.cycles || 0,
+        cycles:   ppu.cycles || 0,
     }
 }
 

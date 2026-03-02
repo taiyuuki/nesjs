@@ -8,7 +8,7 @@ async function bump() {
     const bumpType = process.argv[2]
 
     const packageFiles = fg.sync(['**/package.json'], {
-        ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/cache/**'],
+        ignore:   ['**/node_modules/**', '**/dist/**', '**/build/**', '**/cache/**'],
         absolute: true,
     })
 
@@ -43,8 +43,8 @@ async function bump() {
 
     if (replacemenets.length > 0) {
         const { ok } = await prompts({
-            type: 'confirm',
-            name: 'ok',
+            type:    'confirm',
+            name:    'ok',
             message: `Are you sure you want to update ${green(replacemenets.length)} package.json files?`,
         })
         if (ok) {

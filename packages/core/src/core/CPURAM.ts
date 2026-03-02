@@ -8,9 +8,9 @@ import type { APU } from './APU'
  */
 export class CPURAM {
     private readonly wram: number[] = new Array(2048).fill(0xff)
-    public mapper!: Mapper
-    public apu?: APU // 真正的 APU 引用
-    public ppu?: PPU // 真正的 PPU 引用
+    public mapper!:        Mapper
+    public apu?:           APU // 真正的 APU 引用
+    public ppu?:           PPU // 真正的 PPU 引用
 
     constructor(mapper: Mapper) {
         this.mapper = mapper

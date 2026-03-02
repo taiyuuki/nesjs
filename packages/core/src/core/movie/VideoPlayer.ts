@@ -8,9 +8,9 @@ import type { NES } from '../NES'
 export class VideoPlayer {
 
     private parsers: Map<string, VideoParserInterface> = new Map()
-    private nes: NES
+    private nes:     NES
     private enabled: boolean = false
-    private debug: boolean = false
+    private debug:   boolean = false
     
     public videoData: VideoData | null = null
 
@@ -177,9 +177,9 @@ export class VideoPlayer {
         return {
             frameNumber,
             hasFrameData: !!this.videoData.frames[frameNumber],
-            frameData: this.videoData.frames[frameNumber],
-            totalFrames: this.videoData.lastFrameNumber,
-            isPlaying: this.enabled,
+            frameData:    this.videoData.frames[frameNumber],
+            totalFrames:  this.videoData.lastFrameNumber,
+            isPlaying:    this.enabled,
         }
     }
     

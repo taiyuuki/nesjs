@@ -15,9 +15,9 @@ function compressArrayIfPossible(value: any): any {
         
         if (compressedSize < originalSize * 0.75) {
             return { 
-                _compressed: 'rle', 
+                _compressed:     'rle', 
                 _originalLength: originalSize,
-                _data: rleCompressed,
+                _data:           rleCompressed,
             }
         }
     }

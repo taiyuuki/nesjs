@@ -2,12 +2,12 @@ import { Mapper } from '../Mapper'
 import { MirrorType } from '@/core/types'
 
 export default class Mapper249 extends Mapper {
-    private reg: number[] = new Array(8).fill(0)
-    private irqEnable: number = 0
+    private reg:        number[] = new Array(8).fill(0)
+    private irqEnable:  number = 0
     private irqCounter: number = 0
-    private irqLatch: number = 0
+    private irqLatch:   number = 0
     private irqRequest: number = 0
-    private spdata: number = 0
+    private spdata:     number = 0
 
     override loadROM(): void {
         super.loadROM()

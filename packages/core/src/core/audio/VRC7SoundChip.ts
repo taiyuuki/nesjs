@@ -115,21 +115,21 @@ const MAXVOL = 0
 export class VRC7SoundChip implements ExpansionSoundChip {
     private modenv_state: EnvState[] = Array(6).fill(EnvState.CUTOFF)
     private carenv_state: EnvState[] = Array(6).fill(EnvState.CUTOFF)
-    private vol: number[] = Array(6).fill(511)
-    private freq: number[] = Array(6).fill(0)
-    private octave: number[] = Array(6).fill(0)
-    private instrument: number[] = Array(6).fill(0)
-    private mod: number[] = Array(6).fill(0)
-    private oldmodout: number[] = Array(6).fill(0)
-    private out: number[] = Array(6).fill(0)
-    private key: boolean[] = Array(6).fill(false)
-    private chSust: boolean[] = Array(6).fill(false)
+    private vol:          number[] = Array(6).fill(511)
+    private freq:         number[] = Array(6).fill(0)
+    private octave:       number[] = Array(6).fill(0)
+    private instrument:   number[] = Array(6).fill(0)
+    private mod:          number[] = Array(6).fill(0)
+    private oldmodout:    number[] = Array(6).fill(0)
+    private out:          number[] = Array(6).fill(0)
+    private key:          boolean[] = Array(6).fill(false)
+    private chSust:       boolean[] = Array(6).fill(false)
     private fmctr = 0
     private amctr = 0
-    private phase: number[] = Array(6).fill(0)
-    private usertone: number[] = Array(8).fill(0)
-    private modenv_vol: number[] = Array(6).fill(511)
-    private carenv_vol: number[] = Array(6).fill(511)
+    private phase:        number[] = Array(6).fill(0)
+    private usertone:     number[] = Array(8).fill(0)
+    private modenv_vol:   number[] = Array(6).fill(511)
+    private carenv_vol:   number[] = Array(6).fill(511)
     private instdata: number[][] = [
         this.usertone,
         [0x03, 0x21, 0x05, 0x06, 0xE8, 0x81, 0x42, 0x27], // Bell

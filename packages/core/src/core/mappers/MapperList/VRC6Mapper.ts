@@ -20,7 +20,7 @@ export default class VRC6Mapper extends Mapper {
     private irqreload = 0
     private irqcounter = 22
     private prescaler = 341
-    private sndchip: VRC6SoundChip
+    private sndchip:   VRC6SoundChip
     private hasInitSound = false
 
     constructor(loader: ROMLoader) {

@@ -3,16 +3,16 @@ import { MirrorType } from '@/types'
 
 // Pirate MMC3 clone with scrambled registers
 export default class Mapper182 extends Mapper {
-    private whichbank: number = 0
-    private prgconfig: boolean = false
-    private chrconfig: boolean = false
+    private whichbank:    number = 0
+    private prgconfig:    boolean = false
+    private chrconfig:    boolean = false
     private irqctrreload: number = 0
-    private irqctr: number = 0
-    private irqenable: boolean = false
-    private irqreload: boolean = false
-    private bank6: number = 0
-    private chrreg: number[] = [0, 0, 0, 0, 0, 0]
-    private interrupted: boolean = false
+    private irqctr:       number = 0
+    private irqenable:    boolean = false
+    private irqreload:    boolean = false
+    private bank6:        number = 0
+    private chrreg:       number[] = [0, 0, 0, 0, 0, 0]
+    private interrupted:  boolean = false
 
     loadrom(): void {
         super.loadROM()

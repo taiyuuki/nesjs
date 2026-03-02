@@ -2,8 +2,8 @@ import { Timer } from './Timer'
 
 // 三角波定时器
 export class TriangleTimer extends Timer {
-    private divider: number = 0
-    protected position: number = 0
+    private divider:                   number = 0
+    protected position:                number = 0
     private static readonly periodadd: number = 1
     
     // 三角波序列

@@ -4,25 +4,25 @@ import { NESControllerButton } from '@nesjs/core'
 export type Player = 1 | 2
 
 const KEYS_INDEX: Record<string, number> = {
-    A: 0,
-    B: 1,
+    A:      0,
+    B:      1,
     SELECT: 2,
-    START: 3,
-    UP: 4,
-    DOWN: 5,
-    LEFT: 6,
-    RIGHT: 7,
-    C: 8,
-    D: 9,
+    START:  3,
+    UP:     4,
+    DOWN:   5,
+    LEFT:   6,
+    RIGHT:  7,
+    C:      8,
+    D:      9,
 }
 
 const GAMEPAD_BUTTON_MAP: Record<number, NESControllerButton> = {
-    0: NESControllerButton.A, // XBox - A
-    1: NESControllerButton.A, // XBox - B (auto A)
-    2: NESControllerButton.B, // XBox - X
-    3: NESControllerButton.B, // XBox - Y (auto B)
-    8: NESControllerButton.SELECT, // XBox - Select
-    9: NESControllerButton.START, // XBox - Start
+    0:  NESControllerButton.A, // XBox - A
+    1:  NESControllerButton.A, // XBox - B (auto A)
+    2:  NESControllerButton.B, // XBox - X
+    3:  NESControllerButton.B, // XBox - Y (auto B)
+    8:  NESControllerButton.SELECT, // XBox - Select
+    9:  NESControllerButton.START, // XBox - Start
     12: NESControllerButton.UP, // XBox - Up
     13: NESControllerButton.DOWN, // XBox - Down
     14: NESControllerButton.LEFT, // XBox - Left
@@ -31,49 +31,49 @@ const GAMEPAD_BUTTON_MAP: Record<number, NESControllerButton> = {
 
 const GAMEPAD_AXES_MAP = {
     HORIZONTAL: {
-        LEFT: NESControllerButton.LEFT,
+        LEFT:  NESControllerButton.LEFT,
         RIGHT: NESControllerButton.RIGHT,
     },
     VERTICAL: {
-        UP: NESControllerButton.UP,
+        UP:   NESControllerButton.UP,
         DOWN: NESControllerButton.DOWN,
     },
 }
 
 export const P1_DEFAULT: Record<string, string> = {
-    UP: 'KeyW',
-    DOWN: 'KeyS',
-    LEFT: 'KeyA',
-    RIGHT: 'KeyD',
-    A: 'KeyK',
-    B: 'KeyJ',
-    C: 'KeyI',
-    D: 'KeyU',
+    UP:     'KeyW',
+    DOWN:   'KeyS',
+    LEFT:   'KeyA',
+    RIGHT:  'KeyD',
+    A:      'KeyK',
+    B:      'KeyJ',
+    C:      'KeyI',
+    D:      'KeyU',
     SELECT: 'Digit2',
-    START: 'Digit1',
+    START:  'Digit1',
 }
 
 export const P2_DEFAULT: Record<string, string> = {
-    UP: 'ArrowUp',
-    DOWN: 'ArrowDown',
-    LEFT: 'ArrowLeft',
-    RIGHT: 'ArrowRight',
-    A: 'Numpad2',
-    B: 'Numpad1',
-    C: 'Numpad5',
-    D: 'Numpad4',
+    UP:     'ArrowUp',
+    DOWN:   'ArrowDown',
+    LEFT:   'ArrowLeft',
+    RIGHT:  'ArrowRight',
+    A:      'Numpad2',
+    B:      'Numpad1',
+    C:      'Numpad5',
+    D:      'Numpad4',
     SELECT: 'NumpadDecimal',
-    START: 'NumpadEnter',
+    START:  'NumpadEnter',
 }
 
 export interface ControllerStateType {
     player: number
-    index: number
+    index:  number
 }
 
 interface AutoFireState {
-    id: number
-    on: boolean
+    id:      number
+    on:      boolean
     pressed: boolean
 }
 
@@ -160,7 +160,7 @@ function arrFill<T>(v: T, length: number) {
 }
 
 class ControllerAdapter {
-    private _events: Record<string, ControllerStateType[]> = {}
+    private _events:         Record<string, ControllerStateType[]> = {}
     private autoFireManager: AutoFireManager
 
     constructor(public controller: {
@@ -216,7 +216,7 @@ class ControllerAdapter {
 
 export class NESController {
     THRESHOLD = 0.3
-    private adapter: ControllerAdapter
+    private adapter:          ControllerAdapter
     private animationFrameID: number | null = null
     private autoFireButtonIndices = new Set([1, 3]) // 默认 B 和 Y 为连发
     private axesHolding: Record<Player, boolean[]> = {
@@ -353,13 +353,13 @@ export class NESController {
             if (key in this.p1KeyMap) {
                 this.adapter.addEvent(this.p1KeyMap[key], {
                     player: 1,
-                    index: KEYS_INDEX[key],
+                    index:  KEYS_INDEX[key],
                 })
             }
             if (key in this.p2KeyMap) {
                 this.adapter.addEvent(this.p2KeyMap[key], {
                     player: 2,
-                    index: KEYS_INDEX[key],
+                    index:  KEYS_INDEX[key],
                 })
             }
         })

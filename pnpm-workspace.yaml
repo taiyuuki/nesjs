@@ -10,7 +10,7 @@ catalog:
   '@rollup/plugin-commonjs': ^29.0.0
   '@rollup/plugin-node-resolve': ^16.0.3
   '@rollup/plugin-terser': ^0.4.4
-  '@taiyuuki/eslint-config': ^1.5.7
+  '@taiyuuki/eslint-config': ^1.6.1
   '@types/node': ^25.3.3
   '@types/pako': ^2.0.4
   '@types/prompts': ^2.4.9
@@ -19,7 +19,7 @@ catalog:
   '@vitejs/plugin-react': ^5.1.4
   '@vitejs/plugin-vue': ^6.0.4
   '@vitejs/plugin-basic-ssl': ^2.1.4
-  eslint: ^10.0.2
+  eslint: ^9.31.0
   esno: ^4.8.0
   fast-glob: ^3.3.3
   kolorist: ^1.8.0

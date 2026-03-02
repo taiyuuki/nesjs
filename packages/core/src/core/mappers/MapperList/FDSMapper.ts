@@ -28,11 +28,11 @@ export default class FDSMapper extends Mapper {
     
     // FDS磁盘数据 - 支持多磁盘面（最多8面 = 4张磁盘 × 2面）
     private diskDataArray: (Uint8Array | null)[] = [null, null, null, null, null, null, null, null]
-    private totalSides: number = 0 // 总磁盘面数
+    private totalSides:    number = 0 // 总磁盘面数
 
     // 磁盘面选择和插入状态
     private selectDisk: number = 0 // 当前选中的磁盘面 (0-7)
-    private inDisk: number = 255 // 当前插入的磁盘面 (255=未插入)
+    private inDisk:     number = 255 // 当前插入的磁盘面 (255=未插入)
 
     /**
      * 获取当前插入的磁盘数据
@@ -54,45 +54,45 @@ export default class FDSMapper extends Mapper {
 
     // 磁盘系统控制
     private diskReadMode: boolean = true
-    private diskMotorOn: boolean = false
+    private diskMotorOn:  boolean = false
     private lastResetBit: boolean = false // 上次bit1的状态，用于边沿检测
     
     // FDS磁盘块状态机
-    private blockMode: number = 0 // 当前块类型: 0=READY, 1=VOLUME_LABEL, 2=FILE_AMOUNT, 3=FILE_HEADER, 4=FILE_DATA
-    private blockPoint: number = 0 // 块内偏移
-    private point: number = 0 // 磁盘数据全局偏移
-    private currentFileSize: number = 0 // 当前文件大小
+    private blockMode:           number = 0 // 当前块类型: 0=READY, 1=VOLUME_LABEL, 2=FILE_AMOUNT, 3=FILE_HEADER, 4=FILE_DATA
+    private blockPoint:          number = 0 // 块内偏移
+    private point:               number = 0 // 磁盘数据全局偏移
+    private currentFileSize:     number = 0 // 当前文件大小
     private currentFileLoadAddr: number = 0 // 当前文件加载地址
-    private rwStart: boolean = false // 读写开始标志
-    private driveReset: boolean = false // 驱动器重置标志
+    private rwStart:             boolean = false // 读写开始标志
+    private driveReset:          boolean = false // 驱动器重置标志
 
     // FDS寄存器
-    private fdsRegs: Uint8Array = new Uint8Array(8)
+    private fdsRegs:             Uint8Array = new Uint8Array(8)
     private shouldDetectBlockId: boolean = false
     
     private static readonly SIZE_VOLUME_LABEL = 55 // Volume Label 数据大小是 55 字节（不包括 Block ID）
     private static readonly SIZE_FILE_AMOUNT = 1 // File Amount 块内容大小是 1 字节（不包括 Block ID）
     
     // IRQ控制
-    private irqReload: number = 0
-    private irqCounter: number = 0
-    private irqEnabled: boolean = false
-    private irqRepeat: boolean = false
+    private irqReload:    number = 0
+    private irqCounter:   number = 0
+    private irqEnabled:   boolean = false
+    private irqRepeat:    boolean = false
     private diskTimerIrq: boolean = false
-    private diskSeekIrq: number = 0
+    private diskSeekIrq:  number = 0
     
     // 磁盘IRQ机制
-    private diskIrqPending: boolean = false // 磁盘IRQ待处理标志
+    private diskIrqPending:      boolean = false // 磁盘IRQ待处理标志
     private diskTransferCounter: number = 0 // 磁盘传输周期计数器
-    private dataReady: boolean = false // 数据准备好标志
+    private dataReady:           boolean = false // 数据准备好标志
     private readonly CYCLES_PER_BYTE = 150
     
     // 游戏状态跟踪
-    private tickCount: number = 0
+    private tickCount:     number = 0
     private cartReadCount: number = 0
     
     // 音频芯片
-    private soundChip: FDSSoundChip
+    private soundChip:             FDSSoundChip
     private soundRegistersEnabled: boolean = false
 
     constructor(loader: ROMLoader) {
@@ -510,6 +510,7 @@ export default class FDSMapper extends Mapper {
                 }
                 else {
                     this.diskTimerIrq = false
+
                     // 当禁用传输IRQ时，同时清除CPU中断标志
                     if (this.cpu) {
                         this.cpu.interrupt &= ~0x20 // 清除 IRQ_MAPPER2
@@ -644,6 +645,7 @@ export default class FDSMapper extends Mapper {
                 // bit1: Disk IRQ发生（磁盘数据传输IRQ）
                 if (this.diskIrqPending) {
                     status |= 0x02
+
                     // 注意：diskIrqPending 在读取 $4031 时清除，不是这里
                 }
 
@@ -852,6 +854,7 @@ export default class FDSMapper extends Mapper {
         // 检查是否已经读取完所有磁盘数据
         const globalOffset = this.point + this.blockPoint
         if (globalOffset >= diskData.length) {
+
             // 磁盘数据已读取完毕，停止触发传输IRQ
             return
         }
@@ -1004,7 +1007,7 @@ export default class FDSMapper extends Mapper {
      */
     public getDiskInfo(): { totalSides: number; selectedSide: number; insertedSide: number } {
         return {
-            totalSides: this.totalSides,
+            totalSides:   this.totalSides,
             selectedSide: this.selectDisk,
             insertedSide: this.inDisk,
         }

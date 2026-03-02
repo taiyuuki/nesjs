@@ -2,9 +2,9 @@ import { Timer } from './Timer'
 
 // 方波定时器
 export class SquareTimer extends Timer {
-    protected position: number = 0
-    private divider: number = 0
-    private values: number[]
+    protected position:         number = 0
+    private divider:            number = 0
+    private values:             number[]
     private readonly periodadd: number
 
     constructor(private ctrlen: number, periodadd = 0) {

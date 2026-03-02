@@ -3,22 +3,22 @@ import { BadMapperException, MirrorType, TVType, Utils } from './types'
 
 export class ROMLoader {
 
-    public prgsize: number = 0
-    public chrsize: number = 0
-    public scrolltype: MirrorType = MirrorType.H_MIRROR
-    public tvtype: TVType = TVType.NTSC
-    public mappertype: number = 0
-    public submapper: number = 0
-    public prgoff: number = 0
-    public chroff: number = 0
-    public savesram: boolean = false
-    public header: Uint8Array = new Uint8Array()
+    public prgsize:           number = 0
+    public chrsize:           number = 0
+    public scrolltype:        MirrorType = MirrorType.H_MIRROR
+    public tvtype:            TVType = TVType.NTSC
+    public mappertype:        number = 0
+    public submapper:         number = 0
+    public prgoff:            number = 0
+    public chroff:            number = 0
+    public savesram:          boolean = false
+    public header:            Uint8Array = new Uint8Array()
     private readonly romData: Uint8Array
 
     // FDS 专用字段
-    public isFDS: boolean = false
+    public isFDS:    boolean = false
     public fdsSides: number = 0
-    public fdsData: Uint8Array = new Uint8Array()
+    public fdsData:  Uint8Array = new Uint8Array()
 
     constructor(romData: Uint8Array) {
         this.romData = romData

@@ -66,14 +66,14 @@ export interface GamepadInterface {
      * 获取当前按键状态
      */
     getButtonStates(): {
-        A: number
-        B: number
+        A:      number
+        B:      number
         SELECT: number
-        START: number
-        UP: number
-        DOWN: number
-        LEFT: number
-        RIGHT: number
+        START:  number
+        UP:     number
+        DOWN:   number
+        LEFT:   number
+        RIGHT:  number
     }
     
     /**
@@ -98,24 +98,24 @@ export interface AudioOutputInterface {
  * 调试信息接口
  */
 export interface DebugInfo {
-    frameCount: number
-    cpuCycles: number
+    frameCount:  number
+    cpuCycles:   number
     ppuScanline: number
-    romName?: string
+    romName?:    string
     mapperInfo?: string
     cpu?: {
-        PC: number
-        A: number
-        X: number
-        Y: number
-        SP: number
-        P: number
+        PC:     number
+        A:      number
+        X:      number
+        Y:      number
+        SP:     number
+        P:      number
         cycles: number
     }
     ppu?: {
         scanline: number
-        cycles: number
-        frame: number
+        cycles:   number
+        frame:    number
     }
 }
 
@@ -144,10 +144,10 @@ export interface EmulatorConfig {
  * ROM信息接口
  */
 export interface ROMInfo {
-    mapperNumber: number
-    prgSize: number
-    chrSize: number
-    hasSRAM: boolean
+    mapperNumber:  number
+    prgSize:       number
+    chrSize:       number
+    hasSRAM:       boolean
     supportsSaves: boolean
 }
 
@@ -167,30 +167,30 @@ export interface SaveStateData {
     
     /** ROM信息 */
     romInfo: {
-        crc32: number
+        crc32:      number
         mapperType: number
     }
     
     /** CPU状态 */
     cpu: {
-        PC: number // 程序计数器
-        A: number // 累加器
-        X: number // X寄存器
-        Y: number // Y寄存器
-        SP: number // 栈指针
-        P: number // 状态标志
+        PC:     number // 程序计数器
+        A:      number // 累加器
+        X:      number // X寄存器
+        Y:      number // Y寄存器
+        SP:     number // 栈指针
+        P:      number // 状态标志
         cycles: number // CPU周期数
-        ram: number[] // CPU RAM (2KB)
+        ram:    number[] // CPU RAM (2KB)
     }
     
     /** PPU状态 */
     ppu: {
         registers: number[] // PPU寄存器
-        palette: number[] // 调色板 (32字节)
-        oam: number[] // OAM (256字节)
-        vram: number[] // VRAM/Nametables
-        scanline: number // 当前扫描线
-        cycle: number // 当前周期
+        palette:   number[] // 调色板 (32字节)
+        oam:       number[] // OAM (256字节)
+        vram:      number[] // VRAM/Nametables
+        scanline:  number // 当前扫描线
+        cycle:     number // 当前周期
     }
     
     /** APU状态 */
@@ -228,9 +228,9 @@ export interface SaveStateInterface {
  * 模拟器事件接口
  */
 export interface EmulatorEvents {
-    onFrameComplete?: (frameCount: number)=> void
-    onROMLoaded?: (romInfo: ROMInfo)=> void
-    onError?: (error: Error)=> void
+    onFrameComplete?: (frameCount: number) => void
+    onROMLoaded?:     (romInfo: ROMInfo) => void
+    onError?:         (error: Error) => void
 }
 
 export enum IRQMETHOD {

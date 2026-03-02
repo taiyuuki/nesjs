@@ -1,24 +1,24 @@
 export interface CanvasRendererOptions {
-    scale?: number
-    clip8px?: boolean
+    scale?:     number
+    clip8px?:   boolean
     fillColor?: string | [number, number, number, number]
     smoothing?: boolean
 }
 
 class CanvasRenderer {
-    canvas: HTMLCanvasElement
-    ctx: CanvasRenderingContext2D
-    scale: number
-    smoothing: boolean
-    clip8px: boolean
-    fillColor: Uint8ClampedArray
+    canvas:             HTMLCanvasElement
+    ctx:                CanvasRenderingContext2D
+    scale:              number
+    smoothing:          boolean
+    clip8px:            boolean
+    fillColor:          Uint8ClampedArray
     NES_Width = 256
     NEX_Height = 240
     private clipBounds: { startX: number; startY: number; width: number; height: number } | null = null
 
     constructor(canvas: HTMLCanvasElement, options?: CanvasRendererOptions) {
         const cfg = Object.assign({
-            scale: 2,
+            scale:   2,
             clip8px: false,
         }, options)
         
@@ -93,7 +93,7 @@ class CanvasRenderer {
             this.clipBounds = {
                 startX: 8,
                 startY: 8,
-                width: this.NES_Width - 16,
+                width:  this.NES_Width - 16,
                 height: this.NEX_Height - 16,
             }
         }

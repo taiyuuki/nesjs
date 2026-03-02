@@ -181,9 +181,9 @@ export class FM2Parser implements VideoParserInterface {
      */
     public getFormatInfo(): { name: string; description: string; extensions: string[] } {
         return {
-            name: 'FM2',
+            name:        'FM2',
             description: 'FCEUX Movie Format',
-            extensions: ['fm2'],
+            extensions:  ['fm2'],
         }
     }
 }

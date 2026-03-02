@@ -17,7 +17,7 @@ export default class NSFMapper extends Mapper {
 
     public nsfBanking = false
     public nsfStartBanks: number[] = new Array(10).fill(0)
-    public nsfBanks: number[] = new Array(10).fill(0)
+    public nsfBanks:      number[] = new Array(10).fill(0)
     private sndchip = 0
 
     private vrc6 = false
@@ -38,9 +38,9 @@ export default class NSFMapper extends Mapper {
     private n163Audio?: Namco163SoundChip
     private vrc6Audio?: VRC6SoundChip
     private vrc7Audio?: VRC7SoundChip
-    private s5bAudio?: Sunsoft5BSoundChip
+    private s5bAudio?:  Sunsoft5BSoundChip
     private mmc5Audio?: MMC5SoundChip
-    private fdsAudio?: FDSSoundChip
+    private fdsAudio?:  FDSSoundChip
 
     // UI/控制用
     private control = 0
@@ -130,9 +130,9 @@ export default class NSFMapper extends Mapper {
         this.setmirroring(this.scrolltype)
 
         this.chr = decompressArray({
-            _compressed: 'rle',
+            _compressed:     'rle',
             _originalLength: 8192,
-            _data: [
+            _data:           [
                 0, 255, 0, 255, 0, 18, -1, 24, 60, 3, -4, 24, 24, 0, 24, 0, 8, 108,
                 3, 0, 13, -7, 108, 108, 254, 108, 254, 108, 108, 0, 9, -7, 48, 124, 192,
                 120, 12, 248, 48, 0, 10, -6, 198, 204, 24, 48, 102, 198, 0, 9, -7,

@@ -4,30 +4,30 @@ import type { AudioOutputInterface } from '@nesjs/core'
 declare const __WORKLET_INJECT__: string 
 
 export interface AudioOptions { 
-    enableSAB?: boolean
-    sabCapacity?: number
-    ringCapacity?: number
+    enableSAB?:       boolean
+    sabCapacity?:     number
+    ringCapacity?:    number
     audioSampleRate?: number
     audioBufferSize?: number
 }
 
 class WebNESAudioOutput implements AudioOutputInterface {
-    sampleRate: number
-    bufferSize: number
-    audioContext: AudioContext | null
-    gainNode: GainNode | null
+    sampleRate:        number
+    bufferSize:        number
+    audioContext:      AudioContext | null
+    gainNode:          GainNode | null
     audioWorkletNode!: AudioWorkletNode | null
-    audiobuf: Float32Array
-    enableSAB: boolean// SharedArrayBuffer support
-    sab?: SharedArrayBuffer | null
-    sabControl?: Int32Array | null
-    sabData?: Float32Array | null
-    sabCapacity: number
-    ringCapacity: number
-    bufptr: number
-    isInitialized: boolean
-    isPlaying: boolean
-    volume: number
+    audiobuf:          Float32Array
+    enableSAB:         boolean// SharedArrayBuffer support
+    sab?:              SharedArrayBuffer | null
+    sabControl?:       Int32Array | null
+    sabData?:          Float32Array | null
+    sabCapacity:       number
+    ringCapacity:      number
+    bufptr:            number
+    isInitialized:     boolean
+    isPlaying:         boolean
+    volume:            number
 
     constructor(options?: AudioOptions) {
         this.enableSAB = !!options?.enableSAB
@@ -46,7 +46,7 @@ class WebNESAudioOutput implements AudioOutputInterface {
         this.volume = 0.5 
         const AudioContext = window.AudioContext
         this.audioContext = new AudioContext({
-            sampleRate: this.sampleRate,
+            sampleRate:  this.sampleRate,
             latencyHint: 'interactive',
         })
 
@@ -64,7 +64,7 @@ class WebNESAudioOutput implements AudioOutputInterface {
                 const AudioContext = window.AudioContext
 
                 this.audioContext = new AudioContext({
-                    sampleRate: this.sampleRate,
+                    sampleRate:  this.sampleRate,
                     latencyHint: 'interactive',
                 })
 
@@ -100,7 +100,7 @@ class WebNESAudioOutput implements AudioOutputInterface {
             'nes-audio-processor', 
             {
                 outputChannelCount: [2],
-                numberOfOutputs: 1,
+                numberOfOutputs:    1,
             },
         )
         this.audioWorkletNode.connect(this.gainNode!)
@@ -205,7 +205,7 @@ class WebNESAudioOutput implements AudioOutputInterface {
                     const copy = new Float32Array(samples.length)
                     copy.set(samples)
                     this.audioWorkletNode.port.postMessage({
-                        type: 'samples',
+                        type:   'samples',
                         buffer: copy.buffer,
                     }, [copy.buffer])
                 }

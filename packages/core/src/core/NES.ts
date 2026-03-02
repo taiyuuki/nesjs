@@ -42,14 +42,14 @@ export class NESGamepad implements GamepadInterface {
 
     public getButtonStates() {
         return {
-            A: this.buttonStates[NESControllerButton.A],
-            B: this.buttonStates[NESControllerButton.B],
+            A:      this.buttonStates[NESControllerButton.A],
+            B:      this.buttonStates[NESControllerButton.B],
             SELECT: this.buttonStates[NESControllerButton.SELECT],
-            START: this.buttonStates[NESControllerButton.START],
-            UP: this.buttonStates[NESControllerButton.UP],
-            DOWN: this.buttonStates[NESControllerButton.DOWN],
-            LEFT: this.buttonStates[NESControllerButton.LEFT],
-            RIGHT: this.buttonStates[NESControllerButton.RIGHT],
+            START:  this.buttonStates[NESControllerButton.START],
+            UP:     this.buttonStates[NESControllerButton.UP],
+            DOWN:   this.buttonStates[NESControllerButton.DOWN],
+            LEFT:   this.buttonStates[NESControllerButton.LEFT],
+            RIGHT:  this.buttonStates[NESControllerButton.RIGHT],
         }
     }
 
@@ -78,22 +78,22 @@ export class NES {
 
     // 核心组件
     private mapper?: Mapper
-    private apu?: APU
-    private cpu?: CPU
+    private apu?:    APU
+    private cpu?:    CPU
     private cpuram?: CPURAM
-    private ppu?: PPU
+    private ppu?:    PPU
 
     // 外部接口
-    private renderer?: RendererInterface
+    private renderer?:       RendererInterface
     private gamepad1 = new NESGamepad()
     private gamepad2 = new NESGamepad()
-    private controller1: ControllerAdapter
-    private controller2: ControllerAdapter
+    private controller1:     ControllerAdapter
+    private controller2:     ControllerAdapter
     private audioInterface?: AudioOutputInterface
 
     // 性能统计
     public frameCount: number = 1
-    public fps: number = 0
+    public fps:        number = 0
 
     // 配置和事件
     private config: Required<EmulatorConfig>
@@ -110,10 +110,10 @@ export class NES {
 
     constructor(config: EmulatorConfig = {}, events: EmulatorEvents = {}) {
         this.config = Object.assign({
-            audioBufferSize: 1024,
-            audioSampleRate: 44100,
+            audioBufferSize:  1024,
+            audioSampleRate:  44100,
             autoSaveInterval: 60 * 60,
-            enableCheat: true,
+            enableCheat:      true,
         }, config)
         this.events = events
         
@@ -256,10 +256,10 @@ export class NES {
             this.mapper.reset()
 
             const romInfo: ROMInfo = {
-                mapperNumber: loader.mappertype,
-                prgSize: loader.prgsize,
-                chrSize: loader.chrsize,
-                hasSRAM: this.mapper.supportsSaves(),
+                mapperNumber:  loader.mappertype,
+                prgSize:       loader.prgsize,
+                chrSize:       loader.chrsize,
+                hasSRAM:       this.mapper.supportsSaves(),
                 supportsSaves: this.mapper.supportsSaves(),
             }
 
@@ -327,10 +327,10 @@ export class NES {
         }
         
         return {
-            mapperNumber: this.mapper.getMapperType(),
-            prgSize: this.mapper.getPRGSize(),
-            chrSize: this.mapper.getCHRSize(),
-            hasSRAM: this.mapper.supportsSaves(),
+            mapperNumber:  this.mapper.getMapperType(),
+            prgSize:       this.mapper.getPRGSize(),
+            chrSize:       this.mapper.getCHRSize(),
+            hasSRAM:       this.mapper.supportsSaves(),
             supportsSaves: this.mapper.supportsSaves(),
         }
     }
@@ -340,23 +340,23 @@ export class NES {
      */
     public getDebugInfo(): DebugInfo {
         return {
-            frameCount: this.frameCount,
-            cpuCycles: this.cpu?.clocks || 0,
+            frameCount:  this.frameCount,
+            cpuCycles:   this.cpu?.clocks || 0,
             ppuScanline: this.ppu?.scanline || 0,
-            mapperInfo: this.getROMInfoString() || undefined,
-            cpu: this.cpu ? {
-                PC: this.cpu.getPC(),
-                A: this.cpu.getA(),
-                X: this.cpu.getX(),
-                Y: this.cpu.getY(),
-                SP: this.cpu.getS(),
-                P: this.cpu.getP(),
+            mapperInfo:  this.getROMInfoString() || undefined,
+            cpu:         this.cpu ? {
+                PC:     this.cpu.getPC(),
+                A:      this.cpu.getA(),
+                X:      this.cpu.getX(),
+                Y:      this.cpu.getY(),
+                SP:     this.cpu.getS(),
+                P:      this.cpu.getP(),
                 cycles: this.cpu.clocks,
             } : undefined,
             ppu: this.ppu ? {
                 scanline: this.ppu.scanline,
-                cycles: this.ppu.cycles,
-                frame: this.frameCount,
+                cycles:   this.ppu.cycles,
+                frame:    this.frameCount,
             } : undefined,
         }
     }
@@ -531,16 +531,16 @@ export class NES {
         const saveData: SaveStateData = {
             version: 1,
             romInfo: {
-                crc32: this.mapper.getCRC(),
+                crc32:      this.mapper.getCRC(),
                 mapperType: this.mapper.getMapperType(),
             },
             cpu: {
                 ...this.cpu.getCPUState(),
                 ram: this.cpuram.getRAM(),
             },
-            ppu: this.ppu.getPPUState(),
-            apu: this.apu.getAPUState(),
-            mapper: { state: this.mapper.getMapperState() },
+            ppu:         this.ppu.getPPUState(),
+            apu:         this.apu.getAPUState(),
+            mapper:      { state: this.mapper.getMapperState() },
             controllers: {
                 player1: this.getControllerSaveState(this.controller1),
                 player2: this.getControllerSaveState(this.controller2),

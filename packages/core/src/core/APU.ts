@@ -24,47 +24,47 @@ export class APU {
         new TriangleTimer(), 
         new NoiseTimer(),
     ]
-    private cyclespersample: number = 0
-    public sprdmaCount: number = 0
-    private apucycle: number = 0
-    private remainder: number = 0
-    private noiseperiod: Uint16Array = new Uint16Array(16)
-    private accum: number = 0
-    private readonly expnSound: ExpansionSoundChip[] = []
-    private soundFiltering: boolean = true
-    private static readonly TNDLOOKUP: Uint16Array = APU.initTndLookup()
+    private cyclespersample:              number = 0
+    public sprdmaCount:                   number = 0
+    private apucycle:                     number = 0
+    private remainder:                    number = 0
+    private noiseperiod:                  Uint16Array = new Uint16Array(16)
+    private accum:                        number = 0
+    private readonly expnSound:           ExpansionSoundChip[] = []
+    private soundFiltering:               boolean = true
+    private static readonly TNDLOOKUP:    Uint16Array = APU.initTndLookup()
     private static readonly SQUARELOOKUP: Uint16Array = APU.initSquareLookup()
-    private framectrreload: number = 0
-    private framectrdiv: number = 7456
-    private dckiller: number = -6392 // 移除开机噪音
-    private lpaccum: number = 0
-    private apuintflag: boolean = true
-    private statusdmcint: boolean = false
-    private statusframeint: boolean = false
-    private framectr: number = 0
-    private ctrmode: number = 4
-    private readonly lenCtrEnable: Uint8Array = new Uint8Array([1, 1, 1, 1])
-    private readonly volume: Uint8Array = new Uint8Array(4)
+    private framectrreload:               number = 0
+    private framectrdiv:                  number = 7456
+    private dckiller:                     number = -6392 // 移除开机噪音
+    private lpaccum:                      number = 0
+    private apuintflag:                   boolean = true
+    private statusdmcint:                 boolean = false
+    private statusframeint:               boolean = false
+    private framectr:                     number = 0
+    private ctrmode:                      number = 4
+    private readonly lenCtrEnable:        Uint8Array = new Uint8Array([1, 1, 1, 1])
+    private readonly volume:              Uint8Array = new Uint8Array(4)
     
     // DMC 实例变量
-    private dmcperiods: Uint16Array = new Uint16Array(16)
-    private dmcrate: number = 0x36
-    private dmcpos: number = 0
+    private dmcperiods:       Uint16Array = new Uint16Array(16)
+    private dmcrate:          number = 0x36
+    private dmcpos:           number = 0
     private dmcshiftregister: number = 0
-    private dmcbuffer: number = 0
-    private dmcvalue: number = 0
-    private dmcsamplelength: number = 1
-    private dmcsamplesleft: number = 0
-    private dmcstartaddr: number = 0xc000
-    private dmcaddr: number = 0xc000
-    private dmcbitsleft: number = 8
-    private dmcsilence: boolean = true
-    private dmcirq: boolean = false
-    private dmcloop: boolean = false
-    private dmcBufferEmpty: boolean = true
+    private dmcbuffer:        number = 0
+    private dmcvalue:         number = 0
+    private dmcsamplelength:  number = 1
+    private dmcsamplesleft:   number = 0
+    private dmcstartaddr:     number = 0xc000
+    private dmcaddr:          number = 0xc000
+    private dmcbitsleft:      number = 8
+    private dmcsilence:       boolean = true
+    private dmcirq:           boolean = false
+    private dmcloop:          boolean = false
+    private dmcBufferEmpty:   boolean = true
     
     // 长度计数器实例变量
-    private readonly lengthctr: Uint8Array = new Uint8Array(4)
+    private readonly lengthctr:         Uint8Array = new Uint8Array(4)
     private static readonly lenctrload: Uint8Array = new Uint8Array([
         10, 254, 20, 2, 40, 4, 80, 6,
         160, 8, 60, 10, 14, 12, 26, 14,
@@ -74,28 +74,28 @@ export class APU {
     private readonly lenctrHalt: Uint8Array = new Uint8Array([1, 1, 1, 1])
     
     // 线性计数器实例变量
-    private linearctr: number = 0
+    private linearctr:    number = 0
     private linctrreload: number = 0
-    private linctrflag: boolean = false
+    private linctrflag:   boolean = false
     
     // 包络单元实例变量
-    private readonly envelopeValue: Uint8Array = new Uint8Array([15, 15, 15, 15])
-    private readonly envelopeCounter: Uint8Array = new Uint8Array([0, 0, 0, 0])
-    private readonly envelopePos: Uint8Array = new Uint8Array([0, 0, 0, 0])
-    private readonly envConstVolume: Uint8Array = new Uint8Array([1, 1, 1, 1]) 
+    private readonly envelopeValue:     Uint8Array = new Uint8Array([15, 15, 15, 15])
+    private readonly envelopeCounter:   Uint8Array = new Uint8Array([0, 0, 0, 0])
+    private readonly envelopePos:       Uint8Array = new Uint8Array([0, 0, 0, 0])
+    private readonly envConstVolume:    Uint8Array = new Uint8Array([1, 1, 1, 1]) 
     private readonly envelopeStartFlag: Uint8Array = new Uint8Array([0, 0, 0, 0]) 
     
     // 扫频单元实例变量
-    private readonly sweepenable: Uint8Array = new Uint8Array([0, 0]) 
-    private readonly sweepnegate: Uint8Array = new Uint8Array([0, 0]) 
+    private readonly sweepenable:  Uint8Array = new Uint8Array([0, 0]) 
+    private readonly sweepnegate:  Uint8Array = new Uint8Array([0, 0]) 
     private readonly sweepsilence: Uint8Array = new Uint8Array([0, 0])
-    private readonly sweepreload: Uint8Array = new Uint8Array([0, 0])
-    private readonly sweepperiod: Uint8Array = new Uint8Array([15, 15])
-    private readonly sweepshift: Uint8Array = new Uint8Array([0, 0])
-    private readonly sweeppos: Uint8Array = new Uint8Array([0, 0])
+    private readonly sweepreload:  Uint8Array = new Uint8Array([0, 0])
+    private readonly sweepperiod:  Uint8Array = new Uint8Array([15, 15])
+    private readonly sweepshift:   Uint8Array = new Uint8Array([0, 0])
+    private readonly sweeppos:     Uint8Array = new Uint8Array([0, 0])
     
     private cyclesperframe: number = 0
-    private ai: AudioOutputInterface = new DefaultAudioOutput()
+    private ai:             AudioOutputInterface = new DefaultAudioOutput()
 
     // 调试：关键寄存器写入与音频输出监控
     
@@ -717,68 +717,68 @@ export class APU {
         return {
             
             // 帧计数器状态
-            framectr: this.framectr,
-            framectrdiv: this.framectrdiv,
-            ctrmode: this.ctrmode,
-            apuintflag: this.apuintflag,
+            framectr:       this.framectr,
+            framectrdiv:    this.framectrdiv,
+            ctrmode:        this.ctrmode,
+            apuintflag:     this.apuintflag,
             statusframeint: this.statusframeint,
-            statusdmcint: this.statusdmcint,
+            statusdmcint:   this.statusdmcint,
             
             // 长度计数器（直接压缩类型化数组）
-            lengthctr: compressArrayIfPossible(this.lengthctr),
-            lenctrHalt: compressArrayIfPossible(this.lenctrHalt),
+            lengthctr:    compressArrayIfPossible(this.lengthctr),
+            lenctrHalt:   compressArrayIfPossible(this.lenctrHalt),
             lenCtrEnable: compressArrayIfPossible(this.lenCtrEnable),
             
             // 线性计数器 (三角波)
-            linearctr: this.linearctr,
+            linearctr:    this.linearctr,
             linctrreload: this.linctrreload,
-            linctrflag: this.linctrflag,
+            linctrflag:   this.linctrflag,
             
             // 包络单元（直接压缩类型化数组）
-            envelopeValue: compressArrayIfPossible(this.envelopeValue),
-            envelopeCounter: compressArrayIfPossible(this.envelopeCounter),
-            envelopePos: compressArrayIfPossible(this.envelopePos),
-            envConstVolume: compressArrayIfPossible(this.envConstVolume),
+            envelopeValue:     compressArrayIfPossible(this.envelopeValue),
+            envelopeCounter:   compressArrayIfPossible(this.envelopeCounter),
+            envelopePos:       compressArrayIfPossible(this.envelopePos),
+            envConstVolume:    compressArrayIfPossible(this.envConstVolume),
             envelopeStartFlag: compressArrayIfPossible(this.envelopeStartFlag),
             
             // 扫频单元（直接压缩类型化数组）
-            sweepenable: compressArrayIfPossible(this.sweepenable),
-            sweepnegate: compressArrayIfPossible(this.sweepnegate),
+            sweepenable:  compressArrayIfPossible(this.sweepenable),
+            sweepnegate:  compressArrayIfPossible(this.sweepnegate),
             sweepsilence: compressArrayIfPossible(this.sweepsilence),
-            sweepreload: compressArrayIfPossible(this.sweepreload),
-            sweepperiod: compressArrayIfPossible(this.sweepperiod),
-            sweepshift: compressArrayIfPossible(this.sweepshift),
-            sweeppos: compressArrayIfPossible(this.sweeppos),
+            sweepreload:  compressArrayIfPossible(this.sweepreload),
+            sweepperiod:  compressArrayIfPossible(this.sweepperiod),
+            sweepshift:   compressArrayIfPossible(this.sweepshift),
+            sweeppos:     compressArrayIfPossible(this.sweeppos),
             
             // 音量（直接压缩类型化数组）
             volume: compressArrayIfPossible(this.volume),
             
             // DMC状态
-            dmcrate: this.dmcrate,
-            dmcpos: this.dmcpos,
+            dmcrate:          this.dmcrate,
+            dmcpos:           this.dmcpos,
             dmcshiftregister: this.dmcshiftregister,
-            dmcbuffer: this.dmcbuffer,
-            dmcvalue: this.dmcvalue,
-            dmcsamplelength: this.dmcsamplelength,
-            dmcsamplesleft: this.dmcsamplesleft,
-            dmcstartaddr: this.dmcstartaddr,
-            dmcaddr: this.dmcaddr,
-            dmcbitsleft: this.dmcbitsleft,
-            dmcsilence: this.dmcsilence,
-            dmcirq: this.dmcirq,
-            dmcloop: this.dmcloop,
-            dmcBufferEmpty: this.dmcBufferEmpty,
+            dmcbuffer:        this.dmcbuffer,
+            dmcvalue:         this.dmcvalue,
+            dmcsamplelength:  this.dmcsamplelength,
+            dmcsamplesleft:   this.dmcsamplesleft,
+            dmcstartaddr:     this.dmcstartaddr,
+            dmcaddr:          this.dmcaddr,
+            dmcbitsleft:      this.dmcbitsleft,
+            dmcsilence:       this.dmcsilence,
+            dmcirq:           this.dmcirq,
+            dmcloop:          this.dmcloop,
+            dmcBufferEmpty:   this.dmcBufferEmpty,
             
             // 定时器状态（仅保存基本属性）
             timers: this.timers.map(timer => ({
                 period: timer.getperiod(),
-                val: timer.getval(),
+                val:    timer.getval(),
             })),
             
             // APU周期状态
-            apucycle: this.apucycle,
+            apucycle:  this.apucycle,
             remainder: this.remainder,
-            accum: this.accum,
+            accum:     this.accum,
         }
     }
 

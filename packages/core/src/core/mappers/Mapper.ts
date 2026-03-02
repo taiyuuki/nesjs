@@ -95,31 +95,31 @@ function _autoDeserializeValue(key: string, value: any, mapper: Mapper, original
  * 提供所有 Mapper 的通用功能
  */
 export class Mapper {
-    protected loader!: ROMLoader
+    protected loader!:    ROMLoader
     protected mappertype: number = 0
-    protected submapper: number = 0
-    protected prgsize: number = 0
-    protected prgoff: number = 0
-    protected chroff: number = 0
-    protected chrsize: number = 0
+    protected submapper:  number = 0
+    protected prgsize:    number = 0
+    protected prgoff:     number = 0
+    protected chroff:     number = 0
+    protected chrsize:    number = 0
     
-    public nes?: NES
-    public cpu?: CPU
+    public nes?:    NES
+    public cpu?:    CPU
     public cpuram?: CPURAM
-    public ppu?: PPU 
+    public ppu?:    PPU 
     
-    protected prg: number[] = []
-    protected chr: number[] = []
-    public chr_map: number[] = []
-    protected prg_map: number[] = []
-    protected prgram: Uint8Array = new Uint8Array(8192)
+    protected prg:        number[] = []
+    protected chr:        number[] = []
+    public chr_map:       number[] = []
+    protected prg_map:    number[] = []
+    protected prgram:     Uint8Array = new Uint8Array(8192)
     protected scrolltype: MirrorType = MirrorType.H_MIRROR
-    protected haschrram: boolean = false
-    protected hasprgram: boolean = true
-    protected savesram: boolean = false
+    protected haschrram:  boolean = false
+    protected hasprgram:  boolean = true
+    protected savesram:   boolean = false
     
     // CRAM 相关属性
-    protected cram?: number[] // Character RAM，用于某些mapper
+    protected cram?:     number[] // Character RAM，用于某些mapper
     protected cramUsed?: number[] // CRAM 使用标记，用于存档状态
     
     // PPU nametables
@@ -138,7 +138,7 @@ export class Mapper {
     // 这些是指向 nametables 的指针，所以对于单屏当我们切换
     // 然后再切换回来时，其他单屏 NT 中的数据不会丢失。
     
-    protected crc: number = 0
+    protected crc:    number = 0
     protected region: TVType = TVType.NTSC
 
     constructor(loader: ROMLoader) {

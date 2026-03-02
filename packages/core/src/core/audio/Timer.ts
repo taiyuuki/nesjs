@@ -1,6 +1,6 @@
 // 音频定时器基类
 export abstract class Timer {
-    protected period: number = 0
+    protected period:   number = 0
     protected position: number = 0
 
     constructor() {}

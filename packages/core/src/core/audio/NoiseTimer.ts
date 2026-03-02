@@ -3,10 +3,10 @@ import { Timer } from './Timer'
 
 // 噪声定时器
 export class NoiseTimer extends Timer {
-    private divider: number = 0
-    protected position: number = 0
-    private values: number[] = NoiseTimer.genvalues(1, 1)
-    private prevduty: number = 1
+    private divider:                   number = 0
+    protected position:                number = 0
+    private values:                    number[] = NoiseTimer.genvalues(1, 1)
+    private prevduty:                  number = 1
     private static readonly periodadd: number = 0
 
     constructor() {

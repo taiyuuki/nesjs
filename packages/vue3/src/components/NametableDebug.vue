@@ -3,7 +3,7 @@ import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 
 // 定义props
 const props = defineProps<{
-    nesRef: any
+    nesRef:  any
     enabled: boolean
 }>()
 
@@ -12,15 +12,15 @@ const emit = defineEmits<{ close: [] }>()
 // 响应式数据
 const testResult = ref('')
 const nameTableData = reactive({
-    nt0: [],
-    nt1: [],
-    nt2: [],
-    nt3: [],
-    exram: [],
-    chrregsA: [],
-    chrregsB: [],
-    chrMode: '',
-    prgMode: '',
+    nt0:       [],
+    nt1:       [],
+    nt2:       [],
+    nt3:       [],
+    exram:     [],
+    chrregsA:  [],
+    chrregsB:  [],
+    chrMode:   '',
+    prgMode:   '',
     exramMode: '',
 })
 

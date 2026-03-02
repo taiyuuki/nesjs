@@ -9,7 +9,7 @@ import { dynamicMappers } from './dyn'
  */
 export class MapperRegistry {
     private static instance: MapperRegistry
-    private loadedMappers: Map<string, typeof Mapper> = new Map()
+    private loadedMappers:   Map<string, typeof Mapper> = new Map()
 
     private constructor() {}
 
@@ -119,8 +119,8 @@ export async function getMapper(loader: ROMLoader): Promise<Mapper> {
 
         return mapper
     }
-    catch(err) {
-        console.error(err)
-        throw new Error(`Unsupport Mapper Type: ${loader.mappertype}`)  
+    catch(cause) {
+        console.error(cause)
+        throw new Error(`Unsupport Mapper Type: ${loader.mappertype}`, { cause })
     }
 }

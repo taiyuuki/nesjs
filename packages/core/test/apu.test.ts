@@ -10,10 +10,10 @@ import { TVType } from '../src/core/types'
 
 // 测试音频输出接口
 class TestAudioOutput implements AudioOutputInterface {
-    public samples: number[] = []
+    public samples:      number[] = []
     public frameFlushes: number = 0
-    public paused: boolean = false
-    public destroyed: boolean = false
+    public paused:       boolean = false
+    public destroyed:    boolean = false
 
     public outputSample(sample: number): void {
         this.samples.push(sample)
@@ -46,7 +46,7 @@ class TestAudioOutput implements AudioOutputInterface {
 
 // 模拟CPU接口
 class MockCPU {
-    public clocks: number = 0
+    public clocks:    number = 0
     public interrupt: number = 0
 
     public stealcycles(_cycles: number): void {

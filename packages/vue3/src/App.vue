@@ -11,7 +11,7 @@ const showDebugPanel = ref(false)
 
 // 预设的ROM选项
 const romPresets = {
-    'Super Mario Bros (JU).nes': 'Super Mario Bros (JU).nes',
+    'Super Mario Bros (JU).nes':    'Super Mario Bros (JU).nes',
     'Super Mario Bros. 2J (J).fds': 'Super Mario Bros. 2J (J).fds',
 }
 
@@ -21,12 +21,12 @@ const switchROM = (romName: string) => {
 
 // 模拟器配置
 const emulatorConfig = reactive({
-    scale: 3,
-    smoothing: false,
-    clip8px: true,
+    scale:           3,
+    smoothing:       false,
+    clip8px:         true,
     audioBufferSize: 1024,
     audioSampleRate: 44100,
-    enableSAB: true,
+    enableSAB:       true,
 })
 
 const isPlaying = computed(() => nesRef.value?.isPlaying || false)

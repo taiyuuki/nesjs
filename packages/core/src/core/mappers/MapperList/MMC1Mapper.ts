@@ -12,16 +12,16 @@ export default class MMC1Mapper extends Mapper {
     // MMC1寄存器
     private mmc1shift: number = 0
     private mmc1latch: number = 0 
-    private mmc1ctrl: number = 0xc
-    private mmc1chr0: number = 0
-    private mmc1chr1: number = 0
-    private mmc1prg: number = 0
+    private mmc1ctrl:  number = 0xc
+    private mmc1chr0:  number = 0
+    private mmc1chr1:  number = 0
+    private mmc1prg:   number = 0
     
     // SOROM 支持 (大于256KB ROM)
     private soromlatch: boolean = false
     
     // Bill and Ted 修复相关
-    private cpucycleprev: number = 0
+    private cpucycleprev:   number = 0
     private framecountprev: number = 0
 
     public override loadROM(): void {

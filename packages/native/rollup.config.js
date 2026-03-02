@@ -33,7 +33,7 @@ function inlineWorklet() {
 
             return {
                 code: replaced,
-                map: null,
+                map:  null,
             }
         },
     }
@@ -41,14 +41,14 @@ function inlineWorklet() {
 
 const config = defineConfig([
     {
-        input: ['src/index.ts'],
+        input:  ['src/index.ts'],
         output: [
             {
-                dir: 'dist/esm',
+                dir:    'dist/esm',
                 format: 'esm',
             },
             {
-                dir: 'dist/cjs',
+                dir:    'dist/cjs',
                 format: 'cjs',
             },
         ],
@@ -56,9 +56,9 @@ const config = defineConfig([
             inlineWorklet(),
             ts(),
             babelPlugin({
-                exclude: '**/node_modules/**',
+                exclude:      '**/node_modules/**',
                 babelHelpers: 'bundled',
-                extensions: ['.ts'],
+                extensions:   ['.ts'],
             }),
             commonjs(),
             
@@ -68,9 +68,9 @@ const config = defineConfig([
         ],
     },
     {
-        input: 'src/index.ts',
+        input:  'src/index.ts',
         output: {
-            dir: 'dist/types',
+            dir:    'dist/types',
             format: 'esm',
         },
         plugins: [

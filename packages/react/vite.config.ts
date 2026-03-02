@@ -16,23 +16,23 @@ export default defineConfig({
         react(),
         dts({
             insertTypesEntry: true,
-            copyDtsFiles: true,
+            copyDtsFiles:     true,
         }),
         rollupDelete({
             targets: ['dist/*'],
-            hook: 'buildStart',
+            hook:    'buildStart',
         }),
     ],
     resolve: { alias: { '@': resolve('src') } },
-    build: {
+    build:   {
         lib: {
-            entry: resolve('src/index.ts'),
-            name: 'nesjsReact',
+            entry:    resolve('src/index.ts'),
+            name:     'nesjsReact',
             fileName: format => `nesjs-react.${format}.js`,
         },
         rollupOptions: {
             external: ['react', 'react-dom', '@nesjs/core', '@nesjs/native'],
-            output: {
+            output:   {
 
                 // 为外部依赖提供全局变量
                 globals: { NESReact: 'NESReact' },
@@ -40,15 +40,15 @@ export default defineConfig({
             plugins: [
                 rollupDelete({
                     targets: ['dist/**/*.{ico,txt,svg,nes,NES,fm2}'],
-                    hook: 'generateBundle',
+                    hook:    'generateBundle',
                 }),
             ],
         },
     },
     server: {
-        port: 10002,
+        port:    10002,
         headers: {
-            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Cross-Origin-Opener-Policy':   'same-origin',
             'Cross-Origin-Embedder-Policy': 'require-corp',
         },
     },

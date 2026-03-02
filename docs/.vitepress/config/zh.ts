@@ -1,6 +1,6 @@
 export default {
-    label: '简体中文',
-    lang: 'zh-CN',
+    label:       '简体中文',
+    lang:        'zh-CN',
     themeConfig: {
 
         // https://vitepress.dev/reference/default-theme-config
@@ -11,7 +11,7 @@ export default {
 
         sidebar: [
             {
-                text: 'Packages',
+                text:  'Packages',
                 items: [
                     { text: '@nesjs/core', link: '/zh/guide/core' },
                     { text: '@nesjs/native', link: '/zh/guide/native' },

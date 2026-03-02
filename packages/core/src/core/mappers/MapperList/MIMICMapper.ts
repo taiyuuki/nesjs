@@ -2,7 +2,7 @@ import { Mapper } from '../Mapper'
 
 export default class MIMICMapper extends Mapper {
     private whichbank: number = 0
-    private chrreg: number[] = [0, 0, 0, 0, 0, 0]
+    private chrreg:    number[] = [0, 0, 0, 0, 0, 0]
 
     loadROM(): void {
         super.loadROM()

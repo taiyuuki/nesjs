@@ -51,9 +51,9 @@ describe('PPU', () => {
         
         // 创建一个mock CPU
         const mockCpu = {
-            setNMI: (_value: boolean) => {},
+            setNMI:    (_value: boolean) => {},
             interrupt: (_irq: boolean) => {},
-            runcycle: (_scanline: number, _cycles: number) => {},
+            runcycle:  (_scanline: number, _cycles: number) => {},
         }
         mapper.cpu = mockCpu as any
         
