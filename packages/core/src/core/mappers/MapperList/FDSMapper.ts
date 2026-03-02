@@ -460,9 +460,12 @@ export default class FDSMapper extends Mapper {
                 // Store the data and acknowledge disk IRQs
                 this.fdsRegs[4] = data
 
-                // Writing to $4024 acknowledges disk IRQs according to FDS docs
-                this.diskTimerIrq = false
+                // Writing to $4024 acknowledges disk transfer IRQs according to FDS docs
+                // 只清除磁盘传输IRQ，不清除Timer IRQ
                 this.diskIrqPending = false
+                if (this.cpu) {
+                    this.cpu.interrupt &= ~0x20 // 清除 IRQ_MAPPER2
+                }
                 break
 
             case 0x4025:
@@ -507,10 +510,14 @@ export default class FDSMapper extends Mapper {
                 }
                 else {
                     this.diskTimerIrq = false
+                    // 当禁用传输IRQ时，同时清除CPU中断标志
+                    if (this.cpu) {
+                        this.cpu.interrupt &= ~0x20 // 清除 IRQ_MAPPER2
+                    }
                 }
 
                 if (irqTransferFlag && motorOn) {
-                    this.diskSeekIrq = 150 
+                    this.diskSeekIrq = 150
                 }
                 
                 const rwStartRisingEdge = !this.rwStart && (data & 0x40) !== 0
@@ -608,8 +615,11 @@ export default class FDSMapper extends Mapper {
                 // Store the written value (it will be read back by $4033)
                 this.fdsRegs[6] = data & 0x7F // bit7 is input only (battery)
 
-                // Writing to $4026 also acknowledges disk IRQs
-                this.diskTimerIrq = false
+                // Writing to $4026 acknowledges disk transfer IRQs (not timer IRQ)
+                this.diskIrqPending = false
+                if (this.cpu) {
+                    this.cpu.interrupt &= ~0x20 // 清除 IRQ_MAPPER2
+                }
                 break
         }
     }
@@ -634,6 +644,7 @@ export default class FDSMapper extends Mapper {
                 // bit1: Disk IRQ发生（磁盘数据传输IRQ）
                 if (this.diskIrqPending) {
                     status |= 0x02
+                    // 注意：diskIrqPending 在读取 $4031 时清除，不是这里
                 }
 
                 // bit3: Nametable arrangement (from $4025.3)
@@ -645,9 +656,10 @@ export default class FDSMapper extends Mapper {
                 // bit4: End of Head (1 when disk head is on innermost track)
                 // bit5: Unknown interrupt source
 
-                // 读取$4030时清除CPU Timer IRQ中断标志
+                // 读取$4030时清除CPU中断标志
+                // 清除 Timer IRQ (0x04) 和 Disk Transfer IRQ (0x20)
                 if (this.cpu) {
-                    this.cpu.interrupt &= ~0x04
+                    this.cpu.interrupt &= ~0x24 // 清除 bit2 (IRQ_MAPPER) 和 bit5 (IRQ_MAPPER2)
                 }
 
                 return status
@@ -831,6 +843,19 @@ export default class FDSMapper extends Mapper {
             return // 不满足条件，不处理磁盘IRQ
         }
 
+        // 检查磁盘数据是否有效
+        const diskData = this.diskData
+        if (!diskData || !this.isDiskInserted) {
+            return // 磁盘数据无效，不处理
+        }
+
+        // 检查是否已经读取完所有磁盘数据
+        const globalOffset = this.point + this.blockPoint
+        if (globalOffset >= diskData.length) {
+            // 磁盘数据已读取完毕，停止触发传输IRQ
+            return
+        }
+
         // 累积周期计数器
         this.diskTransferCounter += cpuCycles
 
@@ -852,7 +877,7 @@ export default class FDSMapper extends Mapper {
             }
             else {
 
-                // 准备下一个字节（即使超出 block 范围，也要触发 IRQ）
+                // 准备下一个字节
                 this.dataReady = true
                 this.diskIrqPending = true
 
