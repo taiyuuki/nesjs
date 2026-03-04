@@ -70,6 +70,7 @@ export const MAPPER_LIST: Record<number, string | undefined> = {
     '140': 'Mapper140',
     '152': 'Mapper152',
     '154': 'Namcot34x3Mapper',
+    '176': 'BMCFK23CMapper',
     '169': 'Mapper15',
     '180': 'CrazyClimberMapper',
     '182': 'Mapper182',

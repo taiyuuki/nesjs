@@ -41,18 +41,18 @@ export class MapperRegistry {
 
                     return this.loadedMappers.get(mapperTypeString)!
                 }
-        
+
                 // 动态加载
                 try {
                     const mod = await dynamicMappers[mapperTypeString]()
                     const MapperClass = mod.default
                     this.loadedMappers.set(mapperTypeString, MapperClass)
-        
+
                     return MapperClass
                 }
                 catch(error) {
                     console.error(`Failed to load mapper ${mapperNumber}:${submapper}:`, error)
-        
+
                     return null
                 }
             }
