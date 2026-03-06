@@ -21,7 +21,7 @@ const switchROM = (romName: string) => {
 
 // 模拟器配置
 const emulatorConfig = reactive({
-    scale:           3,
+    scale:           1,
     smoothing:       false,
     clip8px:         true,
     audioBufferSize: 1024,
