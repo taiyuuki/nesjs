@@ -16,7 +16,9 @@ export default class MMC5Mapper extends Mapper {
     wrambank = 0
     scanctrEnable = false
     irqPend = false
-    chrregs = new Array<number>(8).fill(0)
+    chrregs = new Array<number>(8).fill(0) // 精灵CHR banks (CHRBanksA)
+    chrregsB = new Array<number>(4).fill(0) // 背景CHR banks (CHRBanksB)
+    mmc5ABMode = 0 // 0=A(精灵), 1=B(背景)
     prgregs = new Uint8Array(4)
     romHere = [false, false, false]
     scanctrLine = 0
@@ -186,9 +188,12 @@ export default class MMC5Mapper extends Mapper {
                 case 0x5120: case 0x5121: case 0x5122: case 0x5123:
                 case 0x5124: case 0x5125: case 0x5126: case 0x5127:
                     this.chrregs[addr - 0x5120] = data | this.chrOr
+                    this.mmc5ABMode = 0 // 精灵模式
                     this.setupCHR()
                     break
                 case 0x5128: case 0x5129: case 0x512a: case 0x512b:
+                    this.chrregsB[addr - 0x5128] = data | this.chrOr
+                    this.mmc5ABMode = 1 // 背景模式
                     this.setupCHR()
                     break
                 case 0x5130:
@@ -358,6 +363,60 @@ export default class MMC5Mapper extends Mapper {
         }
     }
 
+    /**
+     * 从背景CHR banks (chrregsB) 获取CHR数据
+     * 用于8x16精灵模式下的背景渲染
+     */
+    getChrFromBanksB(addr: number): number {
+        const bankIndex = addr >> 10 // 1KB bank index (0-7)
+        const offset = addr & 1023
+
+        let chrBank: number
+        switch (this.chrMode) {
+            case 0:
+
+                // 8KB mode - 所有使用chrregsB[3]
+                chrBank = this.chrregsB[3]
+                break
+            case 1:
+
+                // 4KB mode
+                if (addr < 0x1000) {
+                    chrBank = this.chrregsB[3]
+                }
+                else {
+                    chrBank = this.chrregsB[3]
+                }
+                break
+            case 2:
+
+                // 2KB mode
+                if (addr < 0x0800) {
+                    chrBank = this.chrregsB[1]
+                }
+                else if (addr < 0x1000) {
+                    chrBank = this.chrregsB[3]
+                }
+                else if (addr < 0x1800) {
+                    chrBank = this.chrregsB[1]
+                }
+                else {
+                    chrBank = this.chrregsB[3]
+                }
+                break
+            case 3:
+            default:
+
+                // 1KB mode
+                chrBank = this.chrregsB[bankIndex & 3]
+                break
+        }
+
+        const chrAddr = (chrBank * 1024 + offset) % this.chrsize
+
+        return this.chr[chrAddr]
+    }
+
     override ppuWrite(addr: number, data: number): void {
         addr &= 0x3fff
         if (addr < 0x2000 && this.haschrram) {
@@ -370,15 +429,19 @@ export default class MMC5Mapper extends Mapper {
     }
 
     override ppuRead(addr: number): number {
-        
+
         if (addr < 0x2000) {
             if (++this.fetchcount === 3) {
                 this.spritemode = true
             }
             if (this.spritemode) {
+
+                // 精灵获取阶段 - 使用精灵CHR banks (chrregs)
                 return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
             }
             else {
+
+                // 背景获取阶段
                 if (this.exramMode === 1) {
                     if (this.exlatch === 2 || this.exlatch === 3) {
                         let chrBank: number
@@ -401,14 +464,18 @@ export default class MMC5Mapper extends Mapper {
                         return result
                     }
                 }
-                
-                if (this.haschrram) {
-                    return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
+
+                // 检查是否使用8x16精灵模式
+                const sprite16 = this.ppu?.isSprite16() ?? false
+
+                if (sprite16) {
+
+                    // 8x16精灵模式 - 背景使用B banks (chrregsB)
+                    return this.getChrFromBanksB(addr)
                 }
                 else {
 
-                    // 简单方案：直接使用chr_map，不使用chrmapB
-                    // 因为setupCHR已经正确设置了chr_map
+                    // 8x8精灵模式 - 使用A banks (chrregs)
                     return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
                 }
             }
@@ -568,6 +635,8 @@ export default class MMC5Mapper extends Mapper {
         this.scanctrEnable = false
         this.irqPend = false
         this.chrregs.fill(0)
+        this.chrregsB.fill(0)
+        this.mmc5ABMode = 0
         this.prgregs.fill(0)
         this.romHere.fill(false)
         this.scanctrLine = 0

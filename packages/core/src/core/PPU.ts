@@ -312,6 +312,14 @@ export class PPU {
     }
 
     /**
+     * 检查是否使用8x16精灵模式
+     * 用于MMC5 mapper判断是否需要使用背景CHR banks
+     */
+    public isSprite16(): boolean {
+        return this.spritesize
+    }
+
+    /**
      * 为一�?NES 扫描行运�?PPU 模拟
      */
     public clockLine(scanline: number): void {
