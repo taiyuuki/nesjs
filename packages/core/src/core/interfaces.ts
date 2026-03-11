@@ -145,6 +145,7 @@ export interface EmulatorConfig {
  */
 export interface ROMInfo {
     mapperNumber:  number
+    submapper:     number
     prgSize:       number
     chrSize:       number
     hasSRAM:       boolean

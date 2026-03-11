@@ -154,6 +154,10 @@ export class Mapper {
         return this.mappertype
     }
 
+    public getSubMapperType(): number {
+        return this.submapper
+    }
+
     public getPRGSize(): number {
         return this.prgsize
     }
@@ -358,12 +362,13 @@ export class Mapper {
 
     public getROMInfo(): string {
         return 'ROM INFO:\n'
-            + `Mapper Type:  ${this.mappertype}\n`
-            + `PRG Size:     ${this.prgsize}\n`
-            + `CHR Size:     ${this.chrsize}\n`
-            + `Mirroring:    ${this.scrolltype}\n`
-            + `Battery Save: ${this.savesram ? 'Yes' : 'No'}\n`
-            + `CRC32:        ${this.crc.toString(16).toUpperCase()}\n`
+            + `Mapper Type:      ${this.mappertype}\n`
+            + `Sub Mapper Type:  ${this.submapper}`
+            + `PRG Size:         ${this.prgsize}\n`
+            + `CHR Size:         ${this.chrsize}\n`
+            + `Mirroring:        ${this.scrolltype}\n`
+            + `Battery Save:     ${this.savesram ? 'Yes' : 'No'}\n`
+            + `CRC32:            ${this.crc.toString(16).toUpperCase()}\n`
     }
 
     public setmirroring(type: MirrorType): void {

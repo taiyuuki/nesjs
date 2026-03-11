@@ -257,6 +257,7 @@ export class NES {
 
             const romInfo: ROMInfo = {
                 mapperNumber:  loader.mappertype,
+                submapper:     loader.submapper,
                 prgSize:       loader.prgsize,
                 chrSize:       loader.chrsize,
                 hasSRAM:       this.mapper.supportsSaves(),
@@ -328,6 +329,7 @@ export class NES {
         
         return {
             mapperNumber:  this.mapper.getMapperType(),
+            submapper:     this.mapper.getSubMapperType(),
             prgSize:       this.mapper.getPRGSize(),
             chrSize:       this.mapper.getCHRSize(),
             hasSRAM:       this.mapper.supportsSaves(),
