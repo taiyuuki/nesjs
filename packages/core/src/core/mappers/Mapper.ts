@@ -194,8 +194,8 @@ export class Mapper {
         this.prg = this.loader.load(this.prgsize, this.prgoff)
         this.region = this.loader.tvtype
         this.submapper = this.loader.submapper
-        this.crc = Mapper.crc32(this.prg)
-        
+        this.crc = this.loader.crc32 // Use CRC32 from ROMLoader (already computed)
+
         // CRC "数据库" 用于某些无法识别的游戏
         if (this.crc === 0x41243492 // low g man (u)
             || this.crc === 0x98CCD385) { // low g man (e)

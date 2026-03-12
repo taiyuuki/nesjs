@@ -1,5 +1,20 @@
 
 import { BadMapperException, MirrorType, TVType, Utils } from './types'
+import { CRC32 } from './CRC'
+
+/**
+ * ROM database entry for mapper corrections
+ */
+interface ROMDBEntry {
+    crc32:   number
+    mapper:  number
+    offset?: number
+}
+
+// ROM database for mapper corrections (CRC32 -> correct mapper)
+const ROM_DATABASE: ROMDBEntry[] = [
+    { crc32: 0x1c098942, mapper: 162, offset: -1 }, // Xi You Ji Hou Zhuan (Ch) - header says 163, should be 162
+]
 
 export class ROMLoader {
 
@@ -14,6 +29,7 @@ export class ROMLoader {
     public savesram:          boolean = false
     public header:            Uint8Array = new Uint8Array()
     private readonly romData: Uint8Array
+    public crc32:             number = 0 // Computed CRC32 of ROM data
 
     // FDS 专用字段
     public isFDS:    boolean = false
@@ -236,9 +252,39 @@ export class ROMLoader {
         } 
         else if (this.header[0] === 0x55) { // 'U'
             throw new BadMapperException('This is a UNIF file with the wrong extension')
-        } 
+        }
         else {
             throw new BadMapperException('iNES Header Invalid')
+        }
+
+        // Compute CRC32 and check for mapper corrections
+        this.computeCRC32()
+        this.applyMapperCorrection()
+    }
+
+    private computeCRC32(): void {
+        const crc = new CRC32()
+
+        // Only compute CRC32 on PRG data (not CHR) to match Mapper base class
+        // PRG data starts at header.length + prgoff
+        const startOffset = this.header.length + this.prgoff
+        const endOffset = startOffset + this.prgsize
+        for (let i = startOffset; i < endOffset; i++) {
+            crc.update(this.romData[i])
+        }
+        this.crc32 = crc.getValue()
+    }
+
+    private applyMapperCorrection(): void {
+
+        // Check ROM database for mapper corrections
+        for (const entry of ROM_DATABASE) {
+            if (this.crc32 === entry.crc32) {
+                if (this.mappertype !== entry.mapper) {
+                    this.mappertype = entry.mapper
+                }
+                break
+            }
         }
     }
 

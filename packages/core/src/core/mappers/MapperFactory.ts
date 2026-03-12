@@ -1,7 +1,7 @@
 
 import type { ROMLoader } from '../ROMLoader'
 import type { Mapper } from './Mapper'
-import { MAPPER_LIST } from './list'
+import { MAPPER_LIST } from './ines'
 import { dynamicMappers } from './dyn'
 
 /**
