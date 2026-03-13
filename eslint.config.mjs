@@ -11,7 +11,7 @@ export default tyk_eslint({
         '@stylistic/array-element-newline': 'off', 
     },
     markdown: false,
-    ignores: ['examples/node-example.js', '**/*.md', '**/*.css', '**/cache/**'],
+    ignores: ['examples/node-example.js', '**/*.md', '**/*.css', '**/cache/**', '**/_log/**'],
 }, {
     files: ['**/*.js'],
     rules: { 'no-undef': 'off' },

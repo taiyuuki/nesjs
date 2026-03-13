@@ -58,7 +58,6 @@
     "kolorist": "catalog:",
     "prompts": "catalog:",
     "rollup": "catalog:",
-    "rollup-plugin-copy": "^3.5.0",
     "typescript": "catalog:",
     "vitepress": "catalog:",
     "vitest": "catalog:",
