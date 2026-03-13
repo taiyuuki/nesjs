@@ -16,6 +16,28 @@ export default defineConfig({
         ['link', { rel: 'manifest', href: '/site.webmanifest' }],
         ['meta', { name: 'msapplication-TileColor', content: '#da532c' }],
         ['meta', { name: 'theme-color', content: '#ffffff' }],
+        // Inline style for Playground button to ensure it works on first load
+        ['style', {}, `
+            a.VPButton[href*="playground"] {
+                border-color: #f59e0b !important;
+                color: #f59e0b !important;
+                background: transparent !important;
+            }
+            a.VPButton[href*="playground"]:hover {
+                border-color: #f59e0b !important;
+                color: #fff !important;
+                background: #f59e0b !important;
+            }
+            html.dark a.VPButton[href*="playground"] {
+                border-color: #fbbf24 !important;
+                color: #fbbf24 !important;
+            }
+            html.dark a.VPButton[href*="playground"]:hover {
+                border-color: #fbbf24 !important;
+                color: #1f2937 !important;
+                background: #fbbf24 !important;
+            }
+        `],
     ],
 
     locales: {

@@ -18,7 +18,11 @@ const romList = [
     { name: 'Trouble at 2A03', file: '/roms/trouble_at_2a03-nesdev-submission-build.nes', description: 'Music demo' },
 ]
 
-const currentRom = ref(romList[0])
+type RomItem = { name: string, file: string, description: string } | { name: string, data: Uint8Array, description: string }
+
+const currentRom = ref<RomItem | null>(romList[0])
+const localFileName = ref<string | null>(null)
+const fileInput = ref<HTMLInputElement>()
 const cvs = ref<HTMLCanvasElement>()
 const isPlaying = ref(false)
 const isLoading = ref(false)
@@ -37,12 +41,25 @@ async function loadRom() {
     isPlaying.value = false
 
     try {
-        const res = await fetch(currentRom.value.file)
-        if (!res.ok) {
-            throw new Error(`Failed to fetch ROM: ${res.status}`)
+        let romData: Uint8Array
+
+        if ('data' in currentRom.value) {
+
+            // 本地文件
+            romData = currentRom.value.data
         }
-        const buf = await res.arrayBuffer()
-        await emulator.loadROM(new Uint8Array(buf))
+        else {
+
+            // 远程文件
+            const res = await fetch(currentRom.value.file)
+            if (!res.ok) {
+                throw new Error(`Failed to fetch ROM: ${res.status}`)
+            }
+            const buf = await res.arrayBuffer()
+            romData = new Uint8Array(buf)
+        }
+
+        await emulator.loadROM(romData)
         isReady.value = true
         await start()
     }
@@ -56,20 +73,62 @@ async function loadRom() {
     }
 }
 
+async function handleLocalFile(event: Event) {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    if (!file) return
+
+    // 检查文件扩展名
+    if (!file.name.toLowerCase().endsWith('.nes')) {
+        errorMessage.value = 'Please select a valid .nes ROM file'
+
+        return
+    }
+
+    try {
+        const buffer = await file.arrayBuffer()
+        currentRom.value = {
+            name:        file.name.replace('.nes', '').replace('.NES', ''),
+            data:        new Uint8Array(buffer),
+            description: 'Local file',
+        }
+        localFileName.value = file.name
+        await loadRom()
+    }
+    catch(error) {
+        const err = error instanceof Error ? error : new Error(String(error))
+        errorMessage.value = err.message
+        console.error('Failed to load local ROM:', err)
+    }
+
+    // 清空 input 以便可以重复选择同一文件
+    input.value = ''
+}
+
+function triggerFileInput() {
+    fileInput.value?.click()
+}
+
+function selectPresetRom(rom: typeof romList[0]) {
+    currentRom.value = rom
+    localFileName.value = null
+    loadRom()
+}
+
 async function start() {
     if (!emulator) return
     await emulator.start()
     isPlaying.value = true
 }
 
-function togglePlay() {
+async function togglePlay() {
     if (!emulator) return
     if (isPlaying.value) {
-        emulator.pause()
+        await emulator.pause()
         isPlaying.value = false
     }
     else {
-        emulator.resume()
+        await emulator.resume()
         isPlaying.value = true
     }
 }
@@ -170,17 +229,40 @@ const buttonText = computed(() => {
         <div class="rom-selector">
           <label>Select ROM:</label>
           <select
-            v-model="currentRom"
-            @change="loadRom"
+            :value="localFileName ? 'local' : currentRom?.file || ''"
+            @change="(e) => { const selected = romList.find(r => r.file === (e.target as HTMLSelectElement).value); if (selected) selectPresetRom(selected) }"
           >
-            <option
-              v-for="rom in romList"
-              :key="rom.file"
-              :value="rom"
+            <optgroup label="Built-in ROMs">
+              <option
+                v-for="rom in romList"
+                :key="rom.file"
+                :value="rom.file"
+              >
+                {{ rom.name }} - {{ rom.description }}
+              </option>
+            </optgroup>
+            <optgroup
+              v-if="localFileName"
+              label="Local File"
             >
-              {{ rom.name }} - {{ rom.description }}
-            </option>
+              <option value="local">
+                {{ localFileName }}
+              </option>
+            </optgroup>
           </select>
+          <input
+            ref="fileInput"
+            type="file"
+            accept=".nes"
+            style="display: none"
+            @change="handleLocalFile"
+          >
+          <button
+            class="upload-btn"
+            @click="triggerFileInput"
+          >
+            Load Local ROM
+          </button>
         </div>
 
         <div class="buttons">
@@ -315,6 +397,22 @@ const buttonText = computed(() => {
 
 .rom-selector select:focus {
     outline: none;
+    border-color: var(--vp-c-brand-1);
+}
+
+.rom-selector .upload-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--vp-c-border);
+    border-radius: 4px;
+    background: var(--vp-c-bg-elv);
+    color: var(--vp-c-text-1);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.rom-selector .upload-btn:hover {
+    background: var(--vp-c-brand-soft);
     border-color: var(--vp-c-brand-1);
 }
 
