@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@nesjs/native": ["../packages/native/dist/types/index.d.ts"]
+    }
+  },
+  "include": [
+    ".vitepress/**/*.ts",
+    ".vitepress/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

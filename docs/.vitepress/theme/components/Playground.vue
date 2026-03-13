@@ -229,7 +229,7 @@ const buttonText = computed(() => {
         <div class="rom-selector">
           <label>Select ROM:</label>
           <select
-            :value="localFileName ? 'local' : currentRom?.file || ''"
+            :value="localFileName ? 'local' : currentRom && 'file' in currentRom ? currentRom.file : ''"
             @change="(e) => { const selected = romList.find(r => r.file === (e.target as HTMLSelectElement).value); if (selected) selectPresetRom(selected) }"
           >
             <optgroup label="Built-in ROMs">
