@@ -1,4 +1,4 @@
-import type { EmulatorEvents, ROMInfo } from '@nesjs/core'
+import type { EmulatorEvents, PaletteColors, ROMInfo } from '@nesjs/core'
 import type { NESEmulatorOptions } from '@nesjs/native'
 
 /**
@@ -23,6 +23,9 @@ export interface NESOptions {
 
     /** Emulator configuration options */
     emulatorConfig?: NESEmulatorOptions
+
+    /** NES Palette */
+    palette?: PaletteColors
 }
 
 /**

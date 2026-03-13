@@ -1,3 +1,4 @@
+import type { PaletteColors } from './interfaces'
 
 /**
  * 工具函数：使用游程编码压缩数组数据
@@ -172,7 +173,27 @@ function runLengthDecode(rleData: number[], originalLength: number): number[] {
     return result
 }
 
+/**
+ * 将十六进制调色板数据转换为 RGBA 数组
+ * @param hex 384字符的十六进制字符串 (192字节 = 64色 × 3字节RGB)
+ */
+function hexToPalette(hex: string): PaletteColors {
+    const palette: PaletteColors = []
+    for (let i = 0; i < 64; i++) {
+        const offset = i * 6
+        const r = Number.parseInt(hex.slice(offset, offset + 2), 16)
+        const g = Number.parseInt(hex.slice(offset + 2, offset + 4), 16)
+        const b = Number.parseInt(hex.slice(offset + 4, offset + 6), 16)
+
+        // 转换为 ARGB 格式 (0xAARRGGBB)
+        palette.push(r << 16 | g << 8 | b | 0xFF000000)
+    }
+
+    return palette
+}
+
 export {
     compressArrayIfPossible,
     decompressArray,
+    hexToPalette,
 }
