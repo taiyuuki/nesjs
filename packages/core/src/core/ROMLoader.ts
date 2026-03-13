@@ -1,20 +1,7 @@
 
 import { BadMapperException, MirrorType, TVType, Utils } from './types'
 import { CRC32 } from './CRC'
-
-/**
- * ROM database entry for mapper corrections
- */
-interface ROMDBEntry {
-    crc32:   number
-    mapper:  number
-    offset?: number
-}
-
-// ROM database for mapper corrections (CRC32 -> correct mapper)
-const ROM_DATABASE: ROMDBEntry[] = [
-    { crc32: 0x1c098942, mapper: 162, offset: -1 }, // Xi You Ji Hou Zhuan (Ch) - header says 163, should be 162
-]
+import { ROM_DATABASE } from './mappers/ines-correct'
 
 export class ROMLoader {
 
@@ -265,11 +252,9 @@ export class ROMLoader {
     private computeCRC32(): void {
         const crc = new CRC32()
 
-        // Only compute CRC32 on PRG data (not CHR) to match Mapper base class
-        // PRG data starts at header.length + prgoff
-        const startOffset = this.header.length + this.prgoff
-        const endOffset = startOffset + this.prgsize
-        for (let i = startOffset; i < endOffset; i++) {
+        // Compute CRC32 on ROM data only (excluding the 16-byte iNES header)
+        // This matches FCEUX and other emulators
+        for (let i = this.header.length; i < this.romData.length; i++) {
             crc.update(this.romData[i])
         }
         this.crc32 = crc.getValue()

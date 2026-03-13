@@ -150,6 +150,7 @@ export interface ROMInfo {
     chrSize:       number
     hasSRAM:       boolean
     supportsSaves: boolean
+    crc:           number
 }
 
 export interface SaveControllerState {

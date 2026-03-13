@@ -262,6 +262,7 @@ export class NES {
                 chrSize:       loader.chrsize,
                 hasSRAM:       this.mapper.supportsSaves(),
                 supportsSaves: this.mapper.supportsSaves(),
+                crc:           this.mapper.getCRC(),
             }
 
             this.events.onROMLoaded?.(romInfo)
@@ -334,6 +335,7 @@ export class NES {
             chrSize:       this.mapper.getCHRSize(),
             hasSRAM:       this.mapper.supportsSaves(),
             supportsSaves: this.mapper.supportsSaves(),
+            crc:           this.mapper.getCRC(),
         }
     }
 
