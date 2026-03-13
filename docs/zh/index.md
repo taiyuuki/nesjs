@@ -8,13 +8,16 @@ hero:
   image:
     src: /logo.png
     alt: Logo
-  actions: 
+  actions:
     - theme: alt
       text: Github
       link: https://github.com/taiyuuki/nesjs
     - theme: brand
       text: 开始使用
       link: /zh/guide/start
+    - theme: alt
+      text: 在线体验
+      link: /zh/playground
 
 features:
   - title: 💻平台无关

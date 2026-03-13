@@ -15,6 +15,9 @@ hero:
     - theme: brand
       text: Getting Started
       link: /guide/start
+    - theme: alt
+      text: Playground
+      link: /playground
 
 features:
   - title: 💻 Platform Agnostic

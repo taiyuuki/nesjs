@@ -5,14 +5,14 @@ import NesVue from './components/nes-vue.vue'
 import NametableDebug from './components/NametableDebug.vue'
 
 const nesRef = ref<NESComponentExpose>()
-const romUrl = ref<string | Blob>('Super Mario Bros (JU).nes')
+const romUrl = ref<string | Blob>('ROMs/Spacegulls-1.1.nes')
 const biosURL = ref('DISKSYS.ROM')
 const showDebugPanel = ref(false)
 
 // 预设的ROM选项
 const romPresets = {
-    'Super Mario Bros (JU).nes':    'Super Mario Bros (JU).nes',
-    'Super Mario Bros. 2J (J).fds': 'Super Mario Bros. 2J (J).fds',
+    'Spacegulls-1.1.nes': 'ROMs/Spacegulls-1.1.nes',
+    'arkade-rush.nes':    'ROMs/arkade-rush.nes',
 }
 
 const switchROM = (romName: string) => {

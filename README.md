@@ -2,7 +2,7 @@
 
 English | [中文](./README.zh-CN.md)
 
-[documentation](https://nesjs.netlify.app/)
+[Documentation](https://nesjs.netlify.app/) · [Playground](https://nesjs.netlify.app/playground)
 
 Monorepo for a modern NES (Nintendo Entertainment System) emulator written in TypeScript. It contains:
 

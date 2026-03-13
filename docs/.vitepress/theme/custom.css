@@ -1,0 +1,30 @@
+/* Custom styles for NESJS docs */
+
+/* Playground button with unique amber/orange color */
+a.VPButton[href="/playground.html"],
+a.VPButton[href="/zh/playground.html"] {
+  border-color: #f59e0b !important;
+  color: #f59e0b !important;
+  background: transparent !important;
+}
+
+a.VPButton[href="/playground.html"]:hover,
+a.VPButton[href="/zh/playground.html"]:hover {
+  border-color: #f59e0b !important;
+  color: #fff !important;
+  background: #f59e0b !important;
+}
+
+/* Dark mode - brighter amber */
+html.dark a.VPButton[href="/playground.html"],
+html.dark a.VPButton[href="/zh/playground.html"] {
+  border-color: #fbbf24 !important;
+  color: #fbbf24 !important;
+}
+
+html.dark a.VPButton[href="/playground.html"]:hover,
+html.dark a.VPButton[href="/zh/playground.html"]:hover {
+  border-color: #fbbf24 !important;
+  color: #1f2937 !important;
+  background: #fbbf24 !important;
+}

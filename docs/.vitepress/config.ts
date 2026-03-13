@@ -1,3 +1,4 @@
+import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
 import root from './config/en'
 import zh from './config/zh'
@@ -20,6 +21,13 @@ export default defineConfig({
     locales: {
         root,
         zh,
+    },
+
+    vite: {
+        resolve: {
+            dedupe: ['vue'],
+            alias:  { '@nesjs/native': fileURLToPath(new URL('../../packages/native/dist/esm/index.js', import.meta.url)) },
+        },
     },
 
     markdown: {

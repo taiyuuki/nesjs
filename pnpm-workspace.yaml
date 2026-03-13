@@ -4,22 +4,22 @@ packages:
 
 catalog:
   '@babel/core': ^7.29.0
-  '@changesets/changelog-github': ^0.5.2
-  '@changesets/cli': ^2.29.8
-  '@rollup/plugin-babel': ^6.1.0
-  '@rollup/plugin-commonjs': ^29.0.0
+  '@changesets/changelog-github': ^0.6.0
+  '@changesets/cli': ^2.30.0
+  '@rollup/plugin-babel': ^7.0.0
+  '@rollup/plugin-commonjs': ^29.0.2
   '@rollup/plugin-node-resolve': ^16.0.3
-  '@rollup/plugin-terser': ^0.4.4
+  '@rollup/plugin-terser': ^1.0.0
   '@taiyuuki/eslint-config': ^1.6.1
-  '@types/node': ^25.3.3
+  '@types/node': ^25.5.0
   '@types/pako': ^2.0.4
   '@types/prompts': ^2.4.9
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
-  '@vitejs/plugin-react': ^5.1.4
-  '@vitejs/plugin-vue': ^6.0.4
-  '@vitejs/plugin-basic-ssl': ^2.1.4
-  eslint: ^9.31.0
+  '@vitejs/plugin-react': ^6.0.0
+  '@vitejs/plugin-vue': ^6.0.5
+  '@vitejs/plugin-basic-ssl': ^2.2.0
+  eslint: ^9.39.4
   esno: ^4.8.0
   fast-glob: ^3.3.3
   kolorist: ^1.8.0
@@ -30,15 +30,15 @@ catalog:
   rollup: ^4.59.0
   rollup-plugin-copy: 3.5.0
   rollup-plugin-delete: ^3.0.2
-  rollup-plugin-dts: ^6.3.0
+  rollup-plugin-dts: ^6.4.0
   rollup-plugin-glob-import: ^0.5.0
   rollup-plugin-node-builtins: ^2.1.2
   rollup-plugin-node-globals: ^1.4.0
   rollup-plugin-typescript2: ^0.36.0
   typescript: ^5.9.3
-  vite: ^7.3.1
+  vite: ^8.0.0
   vite-plugin-dts: ^4.5.4
   vitepress: 2.0.0-alpha.12
-  vitest: ^4.0.18
-  vue: ^3.5.29
+  vitest: ^4.1.0
+  vue: ^3.5.30
   vue-tsc: ^3.2.5

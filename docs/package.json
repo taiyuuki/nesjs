@@ -1,0 +1,17 @@
+{
+  "name": "nesjs-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "dependencies": {
+    "@nesjs/native": "workspace:*",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "vitepress": "catalog:"
+  }
+}

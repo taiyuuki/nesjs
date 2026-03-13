@@ -5,6 +5,7 @@ export default {
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Packages', link: '/guide/start' },
+            { text: 'Playground', link: '/playground' },
         ],
 
         sidebar: [
