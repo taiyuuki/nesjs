@@ -14,6 +14,7 @@ import type {
     GamepadButtonState,
     GamepadButtons,
     GamepadInterface,
+    PaletteColors,
     ROMInfo,
     RendererInterface,
     SaveControllerState,
@@ -25,6 +26,7 @@ import { BinarySaveState } from './BinarySaveState'
 import type { Cheater } from './Cheater'
 import type { TVType } from './types'
 import type FDSMapper from './mappers/MapperList/FDSMapper'
+import { hexToPalette } from './utils'
 
 /**
  * 游戏手柄实现
@@ -64,17 +66,9 @@ export class NESGamepad implements GamepadInterface {
  */
 export class NES {
 
-    // NES调色板 
-    private static readonly NES_PALETTE = [
-        0x606060, 0x09268e, 0x1a11bd, 0x3409b6, 0x5e0982, 0x790939, 0x6f0c09, 0x511f09, 
-        0x293709, 0x0d4809, 0x094e09, 0x094b17, 0x093a5a, 0x000000, 0x000000, 0x000000, 
-        0xb1b1b1, 0x1658f7, 0x4433ff, 0x7d20ff, 0xb515d8, 0xcb1d73, 0xc62922, 0x954f09, 
-        0x5f7209, 0x28ac09, 0x099c09, 0x099032, 0x0976a2, 0x090909, 0x000000, 0x000000,
-        0xffffff, 0x5dadff, 0x9d84ff, 0xd76aff, 0xff5dff, 0xff63c6, 0xff8150, 0xffa50d,
-        0xccc409, 0x74f009, 0x54fc1c, 0x33f881, 0x3fd4ff, 0x494949, 0x000000, 0x000000,
-        0xffffff, 0xc8eaff, 0xe1d8ff, 0xffccff, 0xffc6ff, 0xffcbfb, 0xffd7c2, 0xffe999, 
-        0xf0f986, 0xd6ff90, 0xbdffaf, 0xb3ffd7, 0xb3ffff, 0xbcbcbc, 0x000000, 0x000000,
-    ].map(color => color | 0xff000000) // 添加alpha通道
+    // 默认调色板
+    private defaultPalette = hexToPalette('74747424188c0000a844009c8c0074a80010a400007c0800402c00004400005000003c14183c5c000000000000000000bcbcbc0070ec2038ec8000f0bc00bce40058d82800c84c0c88700000940000a800009038008088000000000000000000fcfcfc3cbcfc5c94fccc88fcf478fcfc74b4fc7460fc9838f0bc3c80d0104cdc4858f89800e8d8787878000000000000fcfcfca8e4fcc4d4fcd4c8fcfcc4fcfcc4d8fcbcb0fcd8a8fce4a0e0fca0a8f0bcb0fccc9cfcf0c4c4c4000000000000')
+    private palette: number[]
 
     // 核心组件
     private mapper?: Mapper
@@ -122,6 +116,9 @@ export class NES {
         this.controller2 = new ControllerAdapter(this.gamepad2)
         
         this.cheater = null
+
+        // 设置默认调色板
+        this.palette = this.defaultPalette
 
         // this.videoPlayer = null
     }
@@ -407,9 +404,58 @@ export class NES {
      * @returns RGB颜色值
      */
     private getNESColor(paletteIndex: number, _emphasis: number): number {
-        const index = (paletteIndex & 0x3F) % NES.NES_PALETTE.length
-        
-        return NES.NES_PALETTE[index]
+        const index = paletteIndex & 0x3F
+
+        return this.palette[index] ?? 0
+    }
+
+    /**
+     * 设置自定义调色板
+     * @param palette 64色 RGBA 格式的调色板数组
+     */
+    public setPalette(palette: PaletteColors): void {
+        if (palette.length !== 64) {
+            throw new Error('调色板必须包含64种颜色')
+        }
+        this.palette = [...palette]
+    }
+
+    /**
+     * 重置为默认调色板
+     */
+    public resetPalette(): void {
+        this.palette = this.defaultPalette
+    }
+
+    /**
+     * 获取当前调色板
+     * @returns 当前使用的64色调色板
+     */
+    public getPalette(): PaletteColors {
+        return [...this.palette]
+    }
+
+    /**
+     * 从 .pal 文件数据解析调色板
+     * @param buffer .pal 文件的二进制数据 (192字节)
+     * @returns 64色 RGBA 格式的调色板数组
+     */
+    public static parsePALFile(buffer: Uint8Array): PaletteColors {
+        if (buffer.length < 192) {
+            throw new Error(`无效的PAL文件：需要192字节，实际${buffer.length}字节`)
+        }
+
+        const palette: PaletteColors = []
+        for (let i = 0; i < 64; i++) {
+            const r = buffer[i * 3]
+            const g = buffer[i * 3 + 1]
+            const b = buffer[i * 3 + 2]
+
+            // 转换为 ARGB 格式 (0xAARRGGBB)
+            palette.push(r << 16 | g << 8 | b | 0xFF000000)
+        }
+
+        return palette
     }
 
     /**

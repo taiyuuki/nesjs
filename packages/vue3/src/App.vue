@@ -29,6 +29,30 @@ const emulatorConfig = reactive({
     enableSAB:       true,
 })
 
+const palette = ref<number[] | undefined>(void 0)
+
+async function loadPalette(e: Event) {
+    const t = e.target as HTMLInputElement
+    const file = t.files![0]
+    const buffer = await file.arrayBuffer()
+
+    palette.value = hexToPalette(new Uint8Array(buffer))
+}
+
+function hexToPalette(buffer: Uint8Array) {
+    const palette = []
+    for (let i = 0; i < 64; i++) {
+        const r = buffer[i * 3]
+        const g = buffer[i * 3 + 1]
+        const b = buffer[i * 3 + 2]
+
+        // 转换为 ARGB 格式 (0xAARRGGBB)
+        palette.push(r << 16 | g << 8 | b | 0xFF000000)
+    }
+
+    return palette
+}
+
 const isPlaying = computed(() => nesRef.value?.isPlaying || false)
 
 const togglePlay = async() => {
@@ -94,31 +118,43 @@ onMounted(loadBios)
       :volume="100"
       :auto-start="true"
       :emulator-config="emulatorConfig"
+      :palette="palette"
       debug-mode
       class="nes-emulator"
       @loaded="getROMInfo"
     />
-    <div class="controls">
+    <div style="display: flex;">
+      <div>ROM</div>
       <input
         type="file"
         accept="*.nes"
         @change="selectROM"
       >
-      <div class="rom-selector">
-        <label>快速ROM切换:</label>
-        <select
-          :value="romUrl"
-          @change="switchROM(($event.target as HTMLSelectElement).value)"
+    </div>
+    <div style="display: flex;">
+      <div>调色板</div>
+      <input
+        type="file"
+        accept="*.pal"
+        @change="loadPalette"
+      >
+    </div>  
+    <div class="rom-selector">
+      <label>快速ROM切换:</label>
+      <select
+        :value="romUrl"
+        @change="switchROM(($event.target as HTMLSelectElement).value)"
+      >
+        <option
+          v-for="(path, name) in romPresets"
+          :key="name"
+          :value="path"
         >
-          <option
-            v-for="(path, name) in romPresets"
-            :key="name"
-            :value="path"
-          >
-            {{ name }}
-          </option>
-        </select>
-      </div>
+          {{ name }}
+        </option>
+      </select>
+    </div>
+    <div class="controls">
       <button @click="togglePlay">
         {{ isPlaying ? '暂停' : '开始' }}
       </button>

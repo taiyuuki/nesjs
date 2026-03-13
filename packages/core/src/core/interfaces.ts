@@ -295,3 +295,6 @@ export interface VideoParserInterface {
 }
 
 export type CheaterInstance = Cheater
+
+/** 调色板颜色数组类型 (64色 RGBA格式) */
+export type PaletteColors = number[]
