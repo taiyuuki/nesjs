@@ -264,9 +264,9 @@ export class ROMLoader {
 
         // Check ROM database for mapper corrections
         for (const entry of ROM_DATABASE) {
-            if (this.crc32 === entry.crc32) {
-                if (this.mappertype !== entry.mapper) {
-                    this.mappertype = entry.mapper
+            if (this.crc32 === entry[0]) {
+                if (this.mappertype !== entry[1]) {
+                    this.mappertype = entry[1]
                 }
                 break
             }
