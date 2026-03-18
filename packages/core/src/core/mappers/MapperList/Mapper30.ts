@@ -50,6 +50,12 @@ export default class Mapper30 extends Mapper {
     // 是否为单屏模式
     private oneScreen: boolean = false
 
+    private mirrorMode: number = 0
+
+    private readonly extraNt0: number[] = new Array(0x400).fill(0)
+
+    private readonly extraNt1: number[] = new Array(0x400).fill(0)
+
     // Flash ROM 相关 (submapper 0, 1, 4)
     private flashEnabled: boolean = false
 
@@ -75,6 +81,7 @@ export default class Mapper30 extends Mapper {
 
         // Flash ROM 支持 (submapper 0, 1, 4 且有 battery)
         this.flashEnabled = (this.submapper === 0 || this.submapper === 1 || this.submapper === 4) && this.savesram
+        this.mirrorMode = this.loader.header[6] & 0x01 | (this.loader.header[6] & 0x08) >> 2
 
         // 检查nametable配置
         // 对于 submapper 3，忽略header的镜像位，由mapper控制
@@ -87,8 +94,9 @@ export default class Mapper30 extends Mapper {
         else {
 
             // 其他submapper使用header的镜像设置
-            this.fourScreen = this.scrolltype === MirrorType.FOUR_SCREEN_MIRROR
-            this.oneScreen = this.scrolltype === MirrorType.SS_MIRROR0 || this.scrolltype === MirrorType.SS_MIRROR1
+            this.fourScreen = this.mirrorMode === 3
+            this.oneScreen = this.mirrorMode === 2
+            this.applyFixedMirroring()
         }
 
         // 确保有32KB CHR RAM
@@ -108,6 +116,12 @@ export default class Mapper30 extends Mapper {
         this.prgBank = 0
         this.chrBank = 0
         this.ntConfig = 0
+        if (this.submapper === 3) {
+            this.setmirroring(MirrorType.H_MIRROR)
+        }
+        else {
+            this.applyFixedMirroring()
+        }
         this.updateBanks()
     }
 
@@ -256,6 +270,32 @@ export default class Mapper30 extends Mapper {
             else {
                 this.setmirroring(MirrorType.SS_MIRROR1)
             }
+        }
+        else {
+            this.applyFixedMirroring()
+        }
+    }
+
+    private applyFixedMirroring(): void {
+        switch (this.mirrorMode) {
+            case 0:
+                this.setmirroring(MirrorType.H_MIRROR)
+                break
+
+            case 1:
+                this.setmirroring(MirrorType.V_MIRROR)
+                break
+
+            case 3:
+                this.nt0 = this.pput0
+                this.nt1 = this.pput1
+                this.nt2 = this.extraNt0
+                this.nt3 = this.extraNt1
+                break
+
+            default:
+                this.setmirroring(MirrorType.SS_MIRROR0)
+                break
         }
     }
 }

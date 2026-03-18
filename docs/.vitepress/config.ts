@@ -16,6 +16,7 @@ export default defineConfig({
         ['link', { rel: 'manifest', href: '/site.webmanifest' }],
         ['meta', { name: 'msapplication-TileColor', content: '#da532c' }],
         ['meta', { name: 'theme-color', content: '#ffffff' }],
+
         // Inline style for Playground button to ensure it works on first load
         ['style', {}, `
             a.VPButton[href*="playground"] {

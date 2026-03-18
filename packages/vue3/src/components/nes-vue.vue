@@ -140,7 +140,6 @@ watch(() => props.emulatorConfig.clip8px, newVal => {
 })
 
 watch(() => props.palette, np => {
-    console.log(np)
     if (np) {
         emulator?.nes.setPalette(np)
     }

@@ -38,16 +38,6 @@ export default class Mapper176 extends Mapper {
         this.chrBank = 0
         this.sbw = 0
 
-        console.log(`Mapper176 Init: prgsize=${this.prgsize}, num8KBanks=${num8KBanks}`)
-        console.log(`Mapper176 Banks: [${this.prgBanks.join(', ')}]`)
-
-        // Check reset vector
-        const bank15Offset = (num8KBanks - 1) * 8192
-        const resetLo = this.prg[bank15Offset + 0x1FFC]
-        const resetHi = this.prg[bank15Offset + 0x1FFD]
-        const resetVec = resetLo | resetHi << 8
-        console.log(`Mapper176 Reset Vector: $${resetVec.toString(16).padStart(4, '0')} (from bank ${num8KBanks - 1})`)
-
         this.sync()
     }
 
