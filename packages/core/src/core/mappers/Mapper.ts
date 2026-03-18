@@ -95,6 +95,9 @@ function _autoDeserializeValue(key: string, value: any, mapper: Mapper, original
  * 提供所有 Mapper 的通用功能
  */
 export class Mapper {
+    private static readonly DEBUG_TRACE_CRC = 0xECC185F3
+    private static readonly DEBUG_TRACE_LIMIT = 600
+
     protected loader!:    ROMLoader
     protected mappertype: number = 0
     protected submapper:  number = 0
@@ -138,8 +141,9 @@ export class Mapper {
     // 这些是指向 nametables 的指针，所以对于单屏当我们切换
     // 然后再切换回来时，其他单屏 NT 中的数据不会丢失。
     
-    protected crc:    number = 0
-    protected region: TVType = TVType.NTSC
+    protected crc:           number = 0
+    protected region:        TVType = TVType.NTSC
+    private debugTraceCount: number = 0
 
     constructor(loader: ROMLoader) {
 
@@ -256,6 +260,7 @@ export class Mapper {
     }
 
     public ppuRead(addr: number): number {
+        addr &= 0x3fff
         if (addr < 0x2000) {
             const chrIndex = this.chr_map[addr >> 10] + (addr & 1023)
             
@@ -432,6 +437,10 @@ export class Mapper {
 
     public getCRC(): number {
         return this.crc
+    }
+
+    public shouldTraceDebug(): boolean {
+        return this.crc === Mapper.DEBUG_TRACE_CRC
     }
 
     public getCPURAM() {

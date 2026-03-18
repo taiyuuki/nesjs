@@ -181,7 +181,6 @@ export class PPU {
     }
 
     public write(regnum: number, data: number): void {
-        
         this.openbus = data
         switch (regnum) {
             case 0: 
@@ -275,23 +274,9 @@ export class PPU {
                 if (!this.renderingOn() || this.scanline > 240 && this.scanline < this.numscanlines - 1) {
                     this.loopyV += this.vraminc
                 }
-                else if ((this.loopyV & 0x7000) === 0x7000) {
-                    const YScroll = this.loopyV & 0x3E0
-                    this.loopyV &= 0xFFF
-                    switch (YScroll) {
-                        case 0x3A0:
-                            this.loopyV ^= 0xBA0
-                            break
-                        case 0x3E0:
-                            this.loopyV ^= 0x3E0
-                            break
-                        default:
-                            this.loopyV += 0x20
-                            break
-                    }
-                }
                 else {
-                    this.loopyV += 0x1000
+                    this.incLoopyVHoriz()
+                    this.incLoopyVVert()
                 }
                 break
         }
@@ -619,11 +604,11 @@ export class PPU {
         this.found = 0
         this.secOAM.fill(0xff)
         
-        for (let spritestart = this.oamstart; spritestart < 255; spritestart += 4) {
+        for (let spritestart = 0; spritestart < 256; spritestart += 4) {
             
             ypos = this.OAM[spritestart]
             offset = this.scanline - ypos
-            if (ypos > this.scanline || offset > (this.spritesize ? 15 : 7)) {
+            if (offset < 0 || offset > (this.spritesize ? 15 : 7)) {
                 
                 continue
             }
@@ -660,14 +645,15 @@ export class PPU {
                 
                 const tilenum = this.OAM[spritestart + 1]
                 this.spriteFetch(this.spritesize, tilenum, offset, oamextra)
+
                 ++this.found
             }
         }
         
         for (let i = this.found; i < 8; ++i) {
             
-            this.spriteshiftregL[this.found] = 0
-            this.spriteshiftregH[this.found] = 0
+            this.spriteshiftregL[i] = 0
+            this.spriteshiftregH[i] = 0
             
             this.spriteFetch(this.spritesize, 0xff, 0, 0)
         }
@@ -707,7 +693,7 @@ export class PPU {
         
         for (let y = this.found - 1; y >= 0; --y) {
             const off = x - this.spriteXlatch[y]
-            if (off >= 0 && off <= 8) {
+            if (off >= 0 && off < 8) {
                 if ((this.spriteshiftregH[y] & 1) + (this.spriteshiftregL[y] & 1) !== 0) {
                     
                     index = y
@@ -725,7 +711,6 @@ export class PPU {
         }
         
         if (this.sprite0here && index === 0 && !bgflag && x < 255) {
-            
             this.sprite0hit = true
         }
         
