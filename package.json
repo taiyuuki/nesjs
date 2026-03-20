@@ -1,6 +1,6 @@
 {
   "name": "nesjs",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "A NES emulator library for JavaScript",
   "private": true,
   "type": "module",
@@ -66,7 +66,7 @@
   "pnpm": {
     "peerDependencyRules": {
       "allowedVersions": {
-        "eslint": "9"
+        "eslint": "10"
       }
     }
   }

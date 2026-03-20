@@ -176,27 +176,10 @@ export default class VRC6Mapper extends Mapper {
         }
     }
 
-    protected override postLoadState(state: any): void {
+    protected override postLoadState(_state: any): void {
 
-        // 重新初始化音频芯片实例，确保在读档后有正确的方法
-        this.sndchip = new VRC6SoundChip()
-        this.hasInitSound = false
-        
-        // 如果状态中有音频数据，恢复它
-        if (state.sndchip && typeof state.sndchip === 'object') {
-
-            // 恢复音频芯片的寄存器状态
-            if (state.sndchip.registers) {
-
-                // 通过写入操作恢复寄存器状态
-                const registers = state.sndchip.registers
-                for (let addr = 0x9000; addr <= 0xb003; addr++) {
-                    const regIndex = addr - 0x9000
-                    if (registers[regIndex] !== undefined) {
-                        this.sndchip.write(addr, registers[regIndex])
-                    }
-                }
-            }
-        }
+        // 重置音频芯片状态，而不是创建新实例
+        // 创建新实例会导致旧的芯片仍在APU中播放声音
+        this.sndchip.reset()
     }
 }

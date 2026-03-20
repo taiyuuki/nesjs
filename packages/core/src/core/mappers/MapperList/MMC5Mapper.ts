@@ -43,26 +43,13 @@ export default class MMC5Mapper extends Mapper {
         // MMC5 恢复状态后需要重新设置银行映射
         this.setupPRG()
         this.setupCHR()
-        
-        // 重新初始化音频芯片实例，确保在读档后有正确的方法
-        if (state.soundchip) {
-            this.soundchip = new MMC5SoundChip()
-            if (this.cpuram?.apu) {
-                this.cpuram.apu.addExpnSound(this.soundchip)
-            }
-            
-            // 如果状态中有音频数据，恢复它
-            if (state.soundchip.registers) {
 
-                // 通过写入操作恢复寄存器状态
-                for (let i = 0; i < 16; i++) {
-                    if (state.soundchip.registers[i] !== undefined) {
-                        this.soundchip.write(i, state.soundchip.registers[i])
-                    }
-                }
-            }
+        // 重置音频芯片状态，而不是创建新实例
+        // 创建新实例会导致旧的芯片仍在APU中播放声音
+        if (this.soundchip) {
+            this.soundchip.reset()
         }
-        
+
         // 恢复镜像设置（如果存档中包含镜像数据）
         if (state.lastNtSetup !== undefined) {
             this.setMirroring(state.lastNtSetup, this.exram)

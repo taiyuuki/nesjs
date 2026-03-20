@@ -25,7 +25,8 @@ function _shouldSerializeProperty(key: string, value: any): boolean {
         'prg', 'chrsize', 'prgsize', 'prgoff', 'chroff', 'mappertype', 'submapper',
         'haschrram', 'hasprgram', 'savesram',
         'nt0', 'nt1', 'nt2', 'nt3', // nametable 指针
-        'soundchip', // 声音芯片
+        'soundchip', 'sndchip', 'sound', // 声音芯片（不同mapper使用不同名称）
+        'n163Audio', 'vrc6Audio', 'vrc7Audio', 's5bAudio', 'mmc5Audio', 'fdsAudio', // NSF mapper
     ]
     
     if (excludeList.includes(key)) return false
