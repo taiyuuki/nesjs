@@ -211,8 +211,8 @@ export class Mapper {
 
         if (this.chrsize === 0) { // chr ram
             this.haschrram = true
-            this.chrsize = 8192
-            this.chr = new Array(8192).fill(0)
+            this.chrsize = this.loader.chrRamSize || 8192
+            this.chr = new Array(this.chrsize).fill(0)
         }
         
         this.prg_map = new Array(32)

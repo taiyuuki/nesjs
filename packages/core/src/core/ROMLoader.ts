@@ -14,9 +14,14 @@ export class ROMLoader {
     public prgoff:            number = 0
     public chroff:            number = 0
     public savesram:          boolean = false
+    public prgRamSize:        number = 0
+    public prgNvramSize:      number = 0
+    public chrRamSize:        number = 0
+    public chrNvramSize:      number = 0
     public header:            Uint8Array = new Uint8Array()
     private readonly romData: Uint8Array
     public crc32:             number = 0 // Computed CRC32 of ROM data
+    public isNES20:           boolean = false
 
     // FDS 专用字段
     public isFDS:    boolean = false
@@ -33,6 +38,11 @@ export class ROMLoader {
 
     public parseHeader(): void {
         this.readHeader(16)
+        this.isNES20 = false
+        this.prgRamSize = 0
+        this.prgNvramSize = 0
+        this.chrRamSize = 0
+        this.chrNvramSize = 0
 
         // 解码 iNES 1.0 headers
         // 前 4 字节: $4E $45 $53 $1A
@@ -50,6 +60,7 @@ export class ROMLoader {
 
             // 检测 NES 2.0 格式用于 header 的其余部分
             if ((this.header[7] >> 2 & 3) === 2) {
+                this.isNES20 = true
 
                 // nes 2.0 格式
                 // mapper bits D0..D3 在 byte 6 的高 4 位
@@ -109,8 +120,12 @@ export class ROMLoader {
                     )
                 }
 
-                // prg ram size 在 header byte 10
-                // chr ram size byte 11
+                // PRG/CHR RAM sizes
+                this.prgRamSize = this.decodeRamSize(this.header[10] & 0x0F)
+                this.prgNvramSize = this.decodeRamSize(this.header[10] >> 4 & 0x0F)
+                this.chrRamSize = this.decodeRamSize(this.header[11] & 0x0F)
+                this.chrNvramSize = this.decodeRamSize(this.header[11] >> 4 & 0x0F)
+
                 // tv type 是 byte 12
                 if ((this.header[12] & 3) === 1) {
 
@@ -258,6 +273,14 @@ export class ROMLoader {
             crc.update(this.romData[i])
         }
         this.crc32 = crc.getValue()
+    }
+
+    private decodeRamSize(shiftCount: number): number {
+        if (shiftCount === 0) {
+            return 0
+        }
+
+        return 64 << shiftCount
     }
 
     private applyMapperCorrection(): void {

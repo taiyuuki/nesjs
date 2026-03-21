@@ -98,8 +98,6 @@ export default class MMC5Mapper extends Mapper {
 
     override loadROM(): void {
         super.loadROM()
-
-        this.haschrram = false
         
         this.prgregs[3] = this.prgsize / 8192 - 1
         this.prgregs[2] = this.prgsize / 8192 - 1
@@ -358,50 +356,66 @@ export default class MMC5Mapper extends Mapper {
         const bankIndex = addr >> 10 // 1KB bank index (0-7)
         const offset = addr & 1023
 
-        let chrBank: number
+        let chrAddr: number
         switch (this.chrMode) {
             case 0:
 
                 // 8KB mode - 所有使用chrregsB[3]
-                chrBank = this.chrregsB[3]
+                chrAddr = this.chrregsB[3] * 8192 + (addr & 0x1fff)
                 break
             case 1:
 
                 // 4KB mode
-                if (addr < 0x1000) {
-                    chrBank = this.chrregsB[3]
-                }
-                else {
-                    chrBank = this.chrregsB[3]
-                }
+                chrAddr = this.chrregsB[3] * 4096 + (addr & 0xfff)
                 break
             case 2:
 
                 // 2KB mode
                 if (addr < 0x0800) {
-                    chrBank = this.chrregsB[1]
+                    chrAddr = this.chrregsB[1] * 2048 + (addr & 0x7ff)
                 }
                 else if (addr < 0x1000) {
-                    chrBank = this.chrregsB[3]
+                    chrAddr = this.chrregsB[3] * 2048 + (addr & 0x7ff)
                 }
                 else if (addr < 0x1800) {
-                    chrBank = this.chrregsB[1]
+                    chrAddr = this.chrregsB[1] * 2048 + (addr & 0x7ff)
                 }
                 else {
-                    chrBank = this.chrregsB[3]
+                    chrAddr = this.chrregsB[3] * 2048 + (addr & 0x7ff)
                 }
                 break
             case 3:
             default:
 
                 // 1KB mode
-                chrBank = this.chrregsB[bankIndex & 3]
+                chrAddr = this.chrregsB[bankIndex & 3] * 1024 + offset
                 break
         }
 
-        const chrAddr = (chrBank * 1024 + offset) % this.chrsize
-
         return this.chr[chrAddr]
+    }
+
+    private isRenderingFetch(): boolean {
+        return !!this.ppu?.renderingOn() && this.ppu.scanline >= 0 && this.ppu.scanline < 240
+    }
+
+    private readChrFromBanksA(addr: number): number {
+        return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
+    }
+
+    private shouldUseBackgroundBanks(): boolean {
+        const sprite16 = this.ppu?.isSprite16() ?? false
+        if (!sprite16) {
+            return false
+        }
+
+        if (this.isRenderingFetch()) {
+            return !this.spritemode
+        }
+
+        // Outside rendering, PPUDATA accesses use the most recently selected
+        // CHR register group instead of always forcing background banks.
+        return this.mmc5ABMode === 1
     }
 
     override ppuWrite(addr: number, data: number): void {
@@ -424,7 +438,7 @@ export default class MMC5Mapper extends Mapper {
             if (this.spritemode) {
 
                 // 精灵获取阶段 - 使用精灵CHR banks (chrregs)
-                return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
+                return this.readChrFromBanksA(addr)
             }
             else {
 
@@ -452,18 +466,15 @@ export default class MMC5Mapper extends Mapper {
                     }
                 }
 
-                // 检查是否使用8x16精灵模式
-                const sprite16 = this.ppu?.isSprite16() ?? false
-
-                if (sprite16) {
+                if (this.shouldUseBackgroundBanks()) {
 
                     // 8x16精灵模式 - 背景使用B banks (chrregsB)
                     return this.getChrFromBanksB(addr)
                 }
                 else {
 
-                    // 8x8精灵模式 - 使用A banks (chrregs)
-                    return this.chr[this.chr_map[addr >> 10] + (addr & 1023)]
+                    // 8x8精灵模式，或非渲染期使用最近一次选中的bank组时，使用A banks
+                    return this.readChrFromBanksA(addr)
                 }
             }
         }
