@@ -48,7 +48,7 @@
     "@changesets/changelog-github": "catalog:",
     "@changesets/cli": "catalog:",
     "@nesjs/core": "workspace:^",
-    "@taiyuuki/eslint-config": "catalog:",
+    "@taiyuuki/eslint-config": "^1.6.6",
     "@types/node": "catalog:",
     "@types/pako": "catalog:",
     "@types/prompts": "catalog:",
