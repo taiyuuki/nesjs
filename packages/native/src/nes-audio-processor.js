@@ -19,7 +19,7 @@ class NESAudioProcessor extends AudioWorkletProcessor {
 
         this.port.onmessage = event => {
             const d = event.data
-            if (d && d.type === 'init-conefig') {
+            if (d && d.type === 'init-config') {
                 try {
                     const rc = d.ringCapacity || this.maxBufferSize
                     this.maxBufferSize = rc

@@ -13,6 +13,12 @@ export type NESEmulatorOptions = AudioOptions & CanvasRendererOptions & Emulator
 }
 
 class NESEmulator {
+    private static readonly FPS_BY_TV = {
+        NTSC:  1789773.0 / 29781,
+        PAL:   1662607.0 / 33252,
+        DENDY: 1773448.0 / 35469,
+    } as const
+
     nes:              NES
     renderer:         CanvasRenderer
     audioOutput:      WebNESAudioOutput
@@ -49,14 +55,16 @@ class NESEmulator {
         await this.nes.loadROM(romData)
         switch (this.nes.getTVType()) {
             case 'NTSC':
-                this.targetFPS = 60
+                this.targetFPS = NESEmulator.FPS_BY_TV.NTSC
                 break
             case 'PAL':
+                this.targetFPS = NESEmulator.FPS_BY_TV.PAL
+                break
             case 'DENDY':
-                this.targetFPS = 50
+                this.targetFPS = NESEmulator.FPS_BY_TV.DENDY
                 break
             default:
-                this.targetFPS = 60
+                this.targetFPS = NESEmulator.FPS_BY_TV.NTSC
         }
         this.frameDuration = 1000 / this.targetFPS
     }

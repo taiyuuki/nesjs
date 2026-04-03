@@ -5,6 +5,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest'
 import { APU } from '../src/core/APU'
+import { SquareTimer } from '../src/core/audio/SquareTimer'
 import type { AudioOutputInterface } from '../src/core/interfaces'
 import { TVType } from '../src/core/types'
 
@@ -254,6 +255,19 @@ describe('APU', () => {
         expect(audioOutput.samples.length).toBeGreaterThan(0)
     })
 
+    it('应该在寄存器写入后立即刷新常量音量', () => {
+        apu.write(0x15, 0x01)
+        apu.write(0x00, 0x1F)
+        apu.write(0x02, 0x08)
+        apu.write(0x03, 0x08)
+
+        expect((apu as any).volume[0]).toBe(15)
+
+        apu.write(0x00, 0x10)
+
+        expect((apu as any).volume[0]).toBe(0)
+    })
+
     it('应该正确处理Sprite DMA', () => {
         const initialCount = apu.sprdmaCount
         
@@ -261,5 +275,21 @@ describe('APU', () => {
         apu.write(0x14, 0x02)
         
         expect(apu.sprdmaCount).toBe(initialCount + 2)
+    })
+})
+
+describe('SquareTimer', () => {
+    it('不应该在第一个CPU周期就提前步进', () => {
+        const timer = new SquareTimer(8, 2)
+        timer.setduty([1, 0, 0, 0, 0, 0, 0, 0])
+        timer.setperiod(8)
+
+        expect(timer.getval()).toBe(1)
+
+        timer.clock(1)
+        expect(timer.getval()).toBe(1)
+
+        timer.clock(9)
+        expect(timer.getval()).toBe(0)
     })
 })

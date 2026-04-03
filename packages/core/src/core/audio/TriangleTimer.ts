@@ -26,9 +26,9 @@ export class TriangleTimer extends Timer {
         
         // 计算经过的周期数
         const totalPeriod = this.period + TriangleTimer.periodadd
-        let periods = Math.floor((this.divider + totalPeriod) / totalPeriod)
+        const periods = Math.floor(this.divider / totalPeriod)
         if (periods < 0) {
-            periods = 0
+            return
         }
         
         this.position = this.position + periods & 0x1F // 32个位置
