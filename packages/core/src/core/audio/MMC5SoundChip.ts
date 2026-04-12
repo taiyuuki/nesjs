@@ -108,6 +108,29 @@ export class MMC5SoundChip implements ExpansionSoundChip {
         return (this.lengthctr[0] === 0 ? 0 : 1) + (this.lengthctr[1] === 0 ? 0 : 2)
     }
 
+    /**
+     * 重置音频芯片状态
+     */
+    reset(): void {
+        this.timers[0].reset()
+        this.timers[1].reset()
+        this.volume = [0, 0]
+        this.lenCtrEnable = [true, true, true, true]
+        this.pcmMode = false
+        this.pcmIRQen = false
+        this.cycles = 0
+        this.pcmOut = 0
+        this.lengthctr = [0, 0, 0, 0]
+        this.lenctrHalt = [true, true, true, true]
+        this.envelopeValue = [15, 15, 15, 15]
+        this.envelopeCounter = [0, 0, 0, 0]
+        this.envelopePos = [0, 0, 0, 0]
+        this.envConstVolume = [true, true, true, true]
+        this.envelopeStartFlag = [false, false, false, false]
+        this.framectr = 0
+        this.ctrmode = 4
+    }
+
     private setlength() {
         for (let i = 0; i < 4; ++i) {
             if (!this.lenctrHalt[i] && this.lengthctr[i] > 0) {

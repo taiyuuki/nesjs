@@ -27,6 +27,7 @@ export class APU {
     private cyclespersample:              number = 0
     public sprdmaCount:                   number = 0
     private apucycle:                     number = 0
+    private samplePhase:                  number = 0
     private remainder:                    number = 0
     private noiseperiod:                  Uint16Array = new Uint16Array(16)
     private accum:                        number = 0
@@ -235,6 +236,7 @@ export class APU {
                 this.timers[0].setduty(APU.DUTYLOOKUP[data >> 6])
                 this.envConstVolume[0] = data & Utils.BIT4 ? 1 : 0
                 this.envelopeValue[0] = data & 15
+                this.setvolumes()
                 break
 
             case 0x1:
@@ -245,12 +247,14 @@ export class APU {
                 this.sweepnegate[0] = data & Utils.BIT3 ? 1 : 0
                 this.sweepshift[0] = data & 7
                 this.sweepreload[0] = 1
+                this.setvolumes()
                 break
 
             case 0x2:
 
                 // 脉冲1定时器低位
                 this.timers[0].setperiod((this.timers[0].getperiod() & 0xfe00) + (data << 1))
+                this.setvolumes()
                 break
 
             case 0x3:
@@ -262,6 +266,7 @@ export class APU {
                 this.timers[0].setperiod((this.timers[0].getperiod() & 0x1ff) + ((data & 7) << 9))
                 this.timers[0].reset()
                 this.envelopeStartFlag[0] = 1
+                this.setvolumes()
                 break
 
             case 0x4:
@@ -271,6 +276,7 @@ export class APU {
                 this.timers[1].setduty(APU.DUTYLOOKUP[data >> 6])
                 this.envConstVolume[1] = data & Utils.BIT4 ? 1 : 0
                 this.envelopeValue[1] = data & 15
+                this.setvolumes()
                 break
 
             case 0x5:
@@ -281,12 +287,14 @@ export class APU {
                 this.sweepnegate[1] = data & Utils.BIT3 ? 1 : 0
                 this.sweepshift[1] = data & 7
                 this.sweepreload[1] = 1
+                this.setvolumes()
                 break
 
             case 0x6:
 
                 // 脉冲2定时器低位
                 this.timers[1].setperiod((this.timers[1].getperiod() & 0xfe00) + (data << 1))
+                this.setvolumes()
                 break
 
             case 0x7:
@@ -296,6 +304,7 @@ export class APU {
                 this.timers[1].setperiod((this.timers[1].getperiod() & 0x1ff) + ((data & 7) << 9))
                 this.timers[1].reset()
                 this.envelopeStartFlag[1] = 1
+                this.setvolumes()
                 break
 
             case 0x8:
@@ -330,6 +339,7 @@ export class APU {
                 this.lenctrHalt[3] = data & Utils.BIT5 ? 1 : 0
                 this.envConstVolume[3] = data & Utils.BIT4 ? 1 : 0
                 this.envelopeValue[3] = data & 0xf
+                this.setvolumes()
                 break
 
             case 0xD:
@@ -338,6 +348,7 @@ export class APU {
             case 0xE:
                 this.timers[3].setduty((data & Utils.BIT7) === 0 ? 1 : 6)
                 this.timers[3].setperiod(this.noiseperiod[data & 15])
+                this.setvolumes()
                 break
 
             case 0xF:
@@ -347,6 +358,7 @@ export class APU {
                     this.lengthctr[3] = APU.lenctrload[data >> 3]
                 }
                 this.envelopeStartFlag[3] = 1
+                this.setvolumes()
                 break
 
             case 0x10:
@@ -401,6 +413,7 @@ export class APU {
                     --this.cpu.interrupt
                     this.statusdmcint = false
                 }
+                this.setvolumes()
                 break
 
             case 0x16:
@@ -427,6 +440,7 @@ export class APU {
                     this.setlength()
                     this.setsweep()
                 }
+                this.setvolumes()
                 break
 
             default:
@@ -457,8 +471,10 @@ export class APU {
                     }
                 }
                 this.accum += this.getOutputLevel()
+                this.samplePhase += 1
 
-                if (this.apucycle % this.cyclespersample < 1) {
+                if (this.samplePhase >= this.cyclespersample) {
+                    this.samplePhase -= this.cyclespersample
                     const sample = this.lowpassFilter(this.highpassFilter(Math.floor(this.accum / this.remainder)))
 
                     this.ai.outputSample(sample)
@@ -479,7 +495,9 @@ export class APU {
                     this.framectrdiv = this.framectrreload
                     this.clockframecounter()
                 }
-                if (this.apucycle % this.cyclespersample < 1) {
+                this.samplePhase += 1
+                if (this.samplePhase >= this.cyclespersample) {
+                    this.samplePhase -= this.cyclespersample
                     this.timers[0].clock(this.remainder)
                     this.timers[1].clock(this.remainder)
                     if (this.lengthctr[2] > 0 && this.linearctr > 0) {
@@ -565,12 +583,24 @@ export class APU {
     }
 
     private setvolumes(): void {
+        this.refreshPulseSweepSilence(0)
+        this.refreshPulseSweepSilence(1)
         this.volume[0] = this.lengthctr[0] <= 0 || this.sweepsilence[0] ? 0 
             : this.envConstVolume[0] ? this.envelopeValue[0] : this.envelopeCounter[0]
         this.volume[1] = this.lengthctr[1] <= 0 || this.sweepsilence[1] ? 0 
             : this.envConstVolume[1] ? this.envelopeValue[1] : this.envelopeCounter[1]
         this.volume[3] = this.lengthctr[3] <= 0 ? 0 
             : this.envConstVolume[3] ? this.envelopeValue[3] : this.envelopeCounter[3]
+    }
+
+    private refreshPulseSweepSilence(channel: 0 | 1): void {
+        const rawperiod = this.timers[channel].getperiod() >> 1
+        let shiftedperiod = rawperiod >> this.sweepshift[channel]
+        if (this.sweepnegate[channel]) {
+            shiftedperiod = -shiftedperiod + channel
+        }
+        shiftedperiod += rawperiod
+        this.sweepsilence[channel] = rawperiod < 8 || shiftedperiod > 0x7ff ? 1 : 0
     }
 
     private clockdmc(): void {
@@ -776,9 +806,10 @@ export class APU {
             })),
             
             // APU周期状态
-            apucycle:  this.apucycle,
-            remainder: this.remainder,
-            accum:     this.accum,
+            apucycle:    this.apucycle,
+            samplePhase: this.samplePhase,
+            remainder:   this.remainder,
+            accum:       this.accum,
         }
     }
 
@@ -869,6 +900,7 @@ export class APU {
         
         // 恢复APU周期状态
         this.apucycle = state.apucycle ?? this.apucycle
+        this.samplePhase = state.samplePhase ?? this.samplePhase
         this.remainder = state.remainder ?? this.remainder
         this.accum = state.accum ?? this.accum
     }

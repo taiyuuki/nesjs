@@ -239,25 +239,10 @@ export default class NamcoMapper extends Mapper {
         }
     }
 
-    protected override postLoadState(state: any): void {
+    protected override postLoadState(_state: any): void {
 
-        // 重新初始化音频芯片实例，确保在读档后有正确的方法
-        this.sound = new Namco163SoundChip()
-        this.hasInitSound = false
-        
-        // 如果状态中有音频数据，恢复它
-        if (state.sound && typeof state.sound === 'object') {
-
-            // 恢复音频芯片的寄存器状态
-            if (state.sound.registers) {
-
-                // 通过写入操作恢复寄存器状态
-                for (let i = 0; i < 128; i++) {
-                    if (state.sound.registers[i] !== undefined) {
-                        this.sound.write(i, state.sound.registers[i])
-                    }
-                }
-            }
-        }
+        // 重置音频芯片状态，而不是创建新实例
+        // 创建新实例会导致旧的芯片仍在APU中播放声音
+        this.sound.reset()
     }
 }

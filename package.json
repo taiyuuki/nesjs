@@ -1,6 +1,6 @@
 {
   "name": "nesjs",
-  "version": "2.6.0",
+  "version": "2.6.3",
   "description": "A NES emulator library for JavaScript",
   "private": true,
   "type": "module",
@@ -48,7 +48,7 @@
     "@changesets/changelog-github": "catalog:",
     "@changesets/cli": "catalog:",
     "@nesjs/core": "workspace:^",
-    "@taiyuuki/eslint-config": "catalog:",
+    "@taiyuuki/eslint-config": "1.6.6",
     "@types/node": "catalog:",
     "@types/pako": "catalog:",
     "@types/prompts": "catalog:",
@@ -66,7 +66,7 @@
   "pnpm": {
     "peerDependencyRules": {
       "allowedVersions": {
-        "eslint": "9"
+        "eslint": "10"
       }
     }
   }

@@ -18,7 +18,7 @@ const romList = [
     { name: 'Trouble at 2A03', file: '/roms/trouble_at_2a03-nesdev-submission-build.nes', description: 'Music demo' },
 ]
 
-type RomItem = { name: string, file: string, description: string } | { name: string, data: Uint8Array, description: string }
+type RomItem = { name: string, data: Uint8Array, description: string } | { name: string, file: string, description: string }
 
 const currentRom = ref<RomItem | null>(romList[0])
 const localFileName = ref<string | null>(null)

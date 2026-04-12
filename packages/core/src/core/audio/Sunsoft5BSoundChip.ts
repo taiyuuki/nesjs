@@ -81,4 +81,17 @@ export class Sunsoft5BSoundChip {
     private clockenvelope(): void {
         this.enval = 0 // Gimmick 只用 envelope 静音
     }
+
+    /**
+     * 重置音频芯片状态
+     */
+    public reset(): void {
+        this.timers[0].reset()
+        this.timers[1].reset()
+        this.timers[2].reset()
+        this.enable = [false, false, false]
+        this.useenvelope = [false, false, false]
+        this.volume = [0, 0, 0]
+        this.enval = 0
+    }
 }

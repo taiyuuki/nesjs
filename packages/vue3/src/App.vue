@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { NESComponentExpose } from './types'
+import type { NESComponentExpose } from './types'
 import NesVue from './components/nes-vue.vue'
 import NametableDebug from './components/NametableDebug.vue'
 
 const nesRef = ref<NESComponentExpose>()
-const romUrl = ref<string | Blob>('ROMs/Spacegulls-1.1.nes')
+const romUrl = ref<Blob | string>('ROMs/Spacegulls-1.1.nes')
 const biosURL = ref('DISKSYS.ROM')
 const showDebugPanel = ref(false)
 

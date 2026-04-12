@@ -26,9 +26,9 @@ export class SquareTimer extends Timer {
             return
         }
         
-        let periods = Math.floor((this.divider + totalPeriod) / totalPeriod)
+        const periods = Math.floor(this.divider / totalPeriod)
         if (periods < 0) {
-            periods = 0
+            return
         }
         
         this.position = (this.position + periods) % this.values.length
@@ -41,6 +41,7 @@ export class SquareTimer extends Timer {
 
     public reset(): void {
         this.position = 0
+        this.divider = 0
     }
 
     public setduty(duty: number[]): void

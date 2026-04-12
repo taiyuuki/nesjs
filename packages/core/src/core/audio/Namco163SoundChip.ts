@@ -65,6 +65,18 @@ export class Namco163SoundChip implements ExpansionSoundChip {
         return this.lpaccum << 2
     }
 
+    /**
+     * 重置音频芯片状态
+     */
+    public reset(): void {
+        this.registers.fill(0)
+        this.out.fill(0)
+        this.numch = 1
+        this.cycpos = 0
+        this.curch = 0
+        this.lpaccum = 0
+    }
+
     private output() {
         let sample = 0
         for (let i = 0; i < this.numch; ++i) {

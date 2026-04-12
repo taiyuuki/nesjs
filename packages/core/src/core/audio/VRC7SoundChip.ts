@@ -275,6 +275,32 @@ export class VRC7SoundChip implements ExpansionSoundChip {
         return this.lpaccum2
     }
 
+    /**
+     * 重置音频芯片状态
+     */
+    public reset(): void {
+        this.modenv_state = Array(6).fill(EnvState.CUTOFF)
+        this.carenv_state = Array(6).fill(EnvState.CUTOFF)
+        this.vol = Array(6).fill(511)
+        this.freq = Array(6).fill(0)
+        this.octave = Array(6).fill(0)
+        this.instrument = Array(6).fill(0)
+        this.mod = Array(6).fill(0)
+        this.oldmodout = Array(6).fill(0)
+        this.out = Array(6).fill(0)
+        this.key = Array(6).fill(false)
+        this.chSust = Array(6).fill(false)
+        this.fmctr = 0
+        this.amctr = 0
+        this.phase = Array(6).fill(0)
+        this.modenv_vol = Array(6).fill(511)
+        this.carenv_vol = Array(6).fill(511)
+        this.ch = 0
+        this.lpaccum = 0
+        this.lpaccum2 = 0
+        this.s = 1
+    }
+
     private setEnvelope(
         instrument: number[],
         state: EnvState[],

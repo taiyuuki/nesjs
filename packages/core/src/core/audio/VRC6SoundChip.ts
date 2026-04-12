@@ -84,4 +84,19 @@ export class VRC6SoundChip implements ExpansionSoundChip {
             }
         }
     }
+
+    /**
+     * 重置音频芯片状态
+     */
+    public reset(): void {
+        this.timers[0].reset()
+        this.timers[1].reset()
+        this.enable = [true, true, true]
+        this.volume = [0, 0, 0]
+        this.sawdivider = 15
+        this.sawctr = 0
+        this.sawaccum = 0
+        this.sawseq = 0
+        this.clocknow = false
+    }
 }

@@ -9,7 +9,7 @@ export default {
     enhanceApp({ app }: { app: any }) {
 
         // Register global component
-        // eslint-disable-next-line vue/multi-word-component-names
+         
         app.component('Playground', Playground)
     },
 }
