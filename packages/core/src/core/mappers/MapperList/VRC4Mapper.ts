@@ -3,12 +3,12 @@ import { MirrorType, Utils } from '../../types'
 import { Mapper } from '../Mapper'
 
 export default class VRC4Mapper extends Mapper {
-    private static readonly registerselectbits = [
-        [[1, 2], [6, 7]],
-        [[2, 3], [0, 1]],
-        [[3, 2], [1, 0]],
+    private static readonly registerMasks = [
+        [0x42, 0x84],
+        [0x15, 0x2A],
+        [0x0A, 0x05],
     ]
-    private registers: number[][]
+    private registerMasks: number[]
     private prgbank0 = 0
     private prgbank1 = 0
     private chrbank = new Array(8).fill(0)
@@ -27,16 +27,16 @@ export default class VRC4Mapper extends Mapper {
         super(loader) // 你需要传入 loader
         switch (loader.mappertype) {
             case 21:
-                this.registers = VRC4Mapper.registerselectbits[0]
+                this.registerMasks = VRC4Mapper.registerMasks[0]
                 break
             case 23:
-                this.registers = VRC4Mapper.registerselectbits[1]
+                this.registerMasks = VRC4Mapper.registerMasks[1]
                 break
             case 25:
-                this.registers = VRC4Mapper.registerselectbits[2]
+                this.registerMasks = VRC4Mapper.registerMasks[2]
                 break
             default:
-                this.registers = VRC4Mapper.registerselectbits[0]
+                this.registerMasks = VRC4Mapper.registerMasks[0]
                 break
         }
     }
@@ -66,17 +66,42 @@ export default class VRC4Mapper extends Mapper {
 
             return
         }
-        const bit0 = (addr & 1 << this.registers[0][0]) !== 0 || (addr & 1 << this.registers[1][0]) !== 0
-        const bit1 = (addr & 1 << this.registers[0][1]) !== 0 || (addr & 1 << this.registers[1][1]) !== 0
-        switch (addr >> 12) {
-            case 0x8:
+        const normalizedAddr = addr & 0xf000
+            | ((addr & this.registerMasks[1]) === 0 ? 0 : 0x2)
+            | ((addr & this.registerMasks[0]) === 0 ? 0 : 0x1)
+
+        if (normalizedAddr >= 0xb000 && normalizedAddr <= 0xe003) {
+            const whichreg = normalizedAddr >> 1 & 0x1 | normalizedAddr - 0xb000 >> 11
+            const nibble = data & 0xf
+            const oldval = this.chrbank[whichreg]
+
+            if ((normalizedAddr & 0x1) === 0) {
+                this.chrbank[whichreg] = oldval & 0x1f0 | nibble
+            }
+            else {
+
+                // Some VRC2/VRC4 boards expose a 9th CHR bank bit via data bit4 on the high-nibble write.
+                this.chrbank[whichreg] = oldval & 0x00f | nibble << 4 | (data & 0x10) << 4
+            }
+
+            this.setbanks()
+
+            return
+        }
+
+        switch (normalizedAddr & 0xf003) {
+            case 0x8000:
+            case 0x8001:
+            case 0x8002:
+            case 0x8003:
                 this.prgbank0 = data & 0x1f
                 break
-            case 0x9:
-                if (bit1) {
-                    this.prgmode = (data & Utils.BIT1) !== 0
+            case 0x9000:
+            case 0x9001:
+                if (data === 0xff) {
+                    break
                 }
-                else if (this.vrc2mirror) {
+                if (this.vrc2mirror) {
                     switch (data & 1) {
                         case 0: this.setmirroring(MirrorType.V_MIRROR); break
                         case 1: this.setmirroring(MirrorType.H_MIRROR); break
@@ -91,74 +116,60 @@ export default class VRC4Mapper extends Mapper {
                     }
                 }
                 break
-            case 0xa:
+            case 0x9002:
+            case 0x9003:
+                this.prgmode = (data & Utils.BIT1) !== 0
+                break
+            case 0xa000:
+            case 0xa001:
+            case 0xa002:
+            case 0xa003:
                 this.prgbank1 = data & 0x1f
                 break
-            case 0xb:
-            case 0xc:
-            case 0xd:
-            case 0xe: {
-                data &= 0xf
-                const whichreg = (addr - 0xb000 >> 11) + (bit1 ? 1 : 0)
-                let oldval = this.chrbank[whichreg]
-                if (bit0) {
-                    oldval = oldval & 0xf | data << 4
-                }
-                else {
-                    oldval = oldval & 0xf0 | data
-                }
-                this.chrbank[whichreg] = oldval
+            case 0xf000:
+                this.irqreload = this.irqreload & 0xf0 | data & 0xf
                 break
-            }
-            case 0xf:
-                if (!bit1) {
-                    if (bit0) {
-                        this.irqreload = this.irqreload & 0xf | (data & 0xf) << 4
-                    }
-                    else {
-                        this.irqreload = this.irqreload & 0xf0 | data & 0xf
-                    }
+            case 0xf001:
+                this.irqreload = this.irqreload & 0x0f | (data & 0xf) << 4
+                break
+            case 0xf002:
+                this.irqack = (data & Utils.BIT0) !== 0
+                this.irqenable = (data & Utils.BIT1) !== 0
+                this.irqmode = (data & Utils.BIT2) !== 0
+                this.irqcounter = this.irqreload
+                this.prescaler = 341
+                if (this.firedinterrupt && this.cpu) {
+                    --this.cpu.interrupt
                 }
-                else if (bit0) {
-                    this.irqenable = this.irqack
-                    if (this.firedinterrupt) {
-                        --this.cpu!.interrupt
-                    }
-                    this.firedinterrupt = false
+                this.firedinterrupt = false
+                break
+            case 0xf003:
+                this.irqenable = this.irqack
+                if (this.firedinterrupt && this.cpu) {
+                    --this.cpu.interrupt
                 }
-                else {
-                    this.irqack = (data & Utils.BIT0) !== 0
-                    this.irqenable = (data & Utils.BIT1) !== 0
-                    this.irqmode = (data & Utils.BIT2) !== 0
-                    if (this.irqenable) {
-                        this.irqcounter = this.irqreload
-                        this.prescaler = 341
-                    }
-                    if (this.firedinterrupt) {
-                        --this.cpu!.interrupt
-                    }
-                    this.firedinterrupt = false
-                }
+                this.firedinterrupt = false
                 break
         }
-        if (addr < 0xf000) {
+
+        if (normalizedAddr < 0xf000) {
             this.setbanks()
         }
     }
 
     private setbanks(): void {
         if (this.prgmode) {
-            for (let i = 1; i <= 8; ++i) {
-                this.prg_map[8 - i] = this.prgsize - 1024 * i
-            }
-            for (let i = 1; i <= 8; ++i) {
-                this.prg_map[32 - i] = this.prgsize - 1024 * i
+            for (let i = 0; i < 8; ++i) {
+                this.prg_map[i] = this.prgsize - 16384 + 1024 * i
             }
             for (let i = 0; i < 8; ++i) {
-                this.prg_map[i + 8] = 1024 * (i + 8 * this.prgbank0) % this.prgsize
+                this.prg_map[i + 24] = this.prgsize - 8192 + 1024 * i
             }
             for (let i = 0; i < 8; ++i) {
-                this.prg_map[i + 16] = 1024 * (i + 8 * this.prgbank1) % this.prgsize
+                this.prg_map[i + 8] = 1024 * (i + 8 * this.prgbank1) % this.prgsize
+            }
+            for (let i = 0; i < 8; ++i) {
+                this.prg_map[i + 16] = 1024 * (i + 8 * this.prgbank0) % this.prgsize
             }
         }
         else {
@@ -183,14 +194,16 @@ export default class VRC4Mapper extends Mapper {
         }
     }
 
-    public cpucycle(): void {
+    public cpucycle(cycles: number): void {
         if (this.irqenable) {
             if (this.irqmode) {
-                this.scanlinecount()
+                while (cycles-- > 0) {
+                    this.scanlinecount()
+                }
             }
             else {
-                this.prescaler -= 3
-                if (this.prescaler <= 0) {
+                this.prescaler -= cycles * 3
+                while (this.prescaler <= 0) {
                     this.prescaler += 341
                     this.scanlinecount()
                 }
