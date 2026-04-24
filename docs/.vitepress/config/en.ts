@@ -14,7 +14,6 @@ export default {
                 items: [
                     { text: '@nesjs/core', link: '/guide/core' },
                     { text: '@nesjs/native', link: '/guide/native' },
-                    { text: '@nesjs/vue3', link: '/guide/vue3' },
                 ],
             },
         ],
