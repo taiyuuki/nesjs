@@ -54,6 +54,7 @@
     "esno": "catalog:",
     "fast-glob": "catalog:",
     "kolorist": "catalog:",
+    "oxc-minify": "^0.127.0",
     "prompts": "catalog:",
     "rollup": "catalog:",
     "typescript": "catalog:",
