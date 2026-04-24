@@ -10,8 +10,7 @@
     "linked": [
         [
             "@nesjs/core",
-            "@nesjs/native",
-            "@nesjs/vue3"
+            "@nesjs/native"
         ]
     ],
     "access": "public",
