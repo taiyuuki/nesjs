@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter=\"@nesjs/core\" build && pnpm --filter=\"@nesjs/native\" build && pnpm --filter=\"@nesjs/vue3\" build",
+    "build": "pnpm --filter=\"@nesjs/core\" build && pnpm --filter=\"@nesjs/native\" build",
     "build:core": "pnpm --filter=\"@nesjs/core\" build",
     "build:native": "pnpm --filter=\"@nesjs/native\" build",
     "build:vue3": "pnpm --filter=\"@nesjs/vue3\" build",
@@ -21,7 +21,7 @@
     "minor": "esno scripts/bump.ts minor",
     "major": "esno scripts/bump.ts major",
     "health": "esno scripts/health-check.ts",
-    "publish:all": "pnpm --filter=\"@nesjs/core\" publish && pnpm --filter=\"@nesjs/native\" publish && pnpm --filter=\"@nesjs/vue3\" publish",
+    "publish:all": "pnpm --filter=\"@nesjs/core\" publish && pnpm --filter=\"@nesjs/native\" publish",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
