@@ -86,22 +86,22 @@ function onKeyDown(e: KeyboardEvent) {
 
     // 防止方向键/空格滚动页面
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault()
+    // 玩家1按键进端A的本地槽（nesA P1）；玩家2按键进端B的本地槽（nesB P2）。
+    // 各自经 lockstep 发到对端。注意绝不能写对端的"远程槽"——那会被 onBeforeFrame 覆盖。
     const gp1 = nesA?.getGamepad(1)
-    const gp2 = nesA?.getGamepad(2)
-    if (!gp1 || !gp2) return
+    const gp2 = nesB?.getGamepad(2)
     const b1 = P1_KEYS[e.code]
-    if (b1 !== undefined) gp1.setButton(b1, 1)
+    if (b1 !== undefined && gp1) gp1.setButton(b1, 1)
     const b2 = P2_KEYS[e.code] ?? P2_KEYS_ALT[e.code]
-    if (b2 !== undefined) gp2.setButton(b2, 1)
+    if (b2 !== undefined && gp2) gp2.setButton(b2, 1)
 }
 function onKeyUp(e: KeyboardEvent) {
     const gp1 = nesA?.getGamepad(1)
-    const gp2 = nesA?.getGamepad(2)
-    if (!gp1 || !gp2) return
+    const gp2 = nesB?.getGamepad(2)
     const b1 = P1_KEYS[e.code]
-    if (b1 !== undefined) gp1.setButton(b1, 0)
+    if (b1 !== undefined && gp1) gp1.setButton(b1, 0)
     const b2 = P2_KEYS[e.code] ?? P2_KEYS_ALT[e.code]
-    if (b2 !== undefined) gp2.setButton(b2, 0)
+    if (b2 !== undefined && gp2) gp2.setButton(b2, 0)
 }
 
 async function loadRom() {
@@ -316,9 +316,9 @@ const playButtonText = computed(() => isLoading.value ? 'Loading...' : isPlaying
           </div>
         </div>
       </div>
-      <div class="arrow">
+      <!-- <div class="arrow">
         ⇄ Transport ⇄
-      </div>
+      </div> -->
       <div class="canvas-cell">
         <div class="canvas-head">
           <span class="tag p2">端 B</span> 玩家2 · ↑↓←→/Numpad
