@@ -1,6 +1,7 @@
 // .vitepress/theme/index.js
 import DefaultTheme from 'vitepress/theme'
 import Playground from './components/Playground.vue'
+import NetcodeDemo from './components/NetcodeDemo.vue'
 import './code.css'
 import './custom.css'
 
@@ -9,7 +10,8 @@ export default {
     enhanceApp({ app }: { app: any }) {
 
         // Register global component
-         
+
         app.component('Playground', Playground)
+        app.component('NetcodeDemo', NetcodeDemo)
     },
 }

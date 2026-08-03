@@ -167,6 +167,38 @@ export class NES {
     }
 
     /**
+     * 将指定玩家的按键状态打包成一个字节返回
+     *
+     * 位序与 NESControllerButton 一致（A=bit0, B=bit1, SELECT=bit2, START=bit3,
+     * UP=bit4, DOWN=bit5, LEFT=bit6, RIGHT=bit7）。netcode 远程传输输入时
+     * 用一个字节即可表达完整的手柄状态。
+     */
+    public getInput(player: 1 | 2): number {
+        const states = this.getGamepad(player).buttonStates
+        let input = 0
+
+        for (let i = 0; i < 8; i++) {
+            input |= states[i] << i
+        }
+
+        return input
+    }
+
+    /**
+     * 用一个字节覆盖指定玩家的按键状态
+     *
+     * 在 netcode 的 `onBeforeFrame` 回调里调用此方法，即可把收到的远程输入
+     * 注入对应玩家，随后本帧即用这套输入推进模拟。位序同 `getInput`。
+     */
+    public setInput(player: 1 | 2, input: number): void {
+        const states = this.getGamepad(player).buttonStates
+
+        for (let i = 0; i < 8; i++) {
+            states[i] = input >> i & 1
+        }
+    }
+
+    /**
      * 获取CPU引用
      */
     public getCPU(): CPU | undefined {
@@ -369,6 +401,9 @@ export class NES {
         if (!this.ppu || !this.apu || !this.cpu) {
             return
         }
+
+        // 帧前事件：netcode 在此注入远程输入（写入 gamepad.buttonStates 后本帧即生效）
+        this.events.onBeforeFrame?.(this.frameCount)
 
         // 播放录像
         // this.videoPlayer?.playFrame(this.frameCount)

@@ -230,6 +230,16 @@ export interface SaveStateInterface {
  * 模拟器事件接口
  */
 export interface EmulatorEvents {
+
+    /**
+     * 每帧模拟开始前触发（在 `runFrame` 执行 PPU/APU 之前）
+     *
+     * 这是 netcode 注入远程输入的时机：在回调里把远程玩家的输入写入
+     * `getGamepad(player).buttonStates`，本帧就会用这套输入推进。
+     * 此时 `frameCount` 尚未自增，回调看到的正是"将要执行的帧"。
+     */
+    onBeforeFrame?: (frameCount: number) => void
+
     onFrameComplete?: (frameCount: number) => void
     onROMLoaded?:     (romInfo: ROMInfo) => void
     onError?:         (error: Error) => void

@@ -6,6 +6,7 @@ export default {
             { text: 'Home', link: '/' },
             { text: 'Packages', link: '/guide/start' },
             { text: 'Playground', link: '/playground' },
+            { text: 'Netplay Demo', link: '/netcode' },
         ],
 
         sidebar: [

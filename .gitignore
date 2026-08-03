@@ -4,3 +4,7 @@ dist
 **/public/m**
 **/cache
 _log
+
+# ai cache
+.claude/
+.zcode/

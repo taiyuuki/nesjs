@@ -8,6 +8,7 @@ export default {
             { text: '主页', link: '/zh/index' },
             { text: 'Packages', link: '/zh/guide/start' },
             { text: '在线体验', link: '/zh/playground' },
+            { text: '联机示例', link: '/zh/netcode' },
         ],
 
         sidebar: [
