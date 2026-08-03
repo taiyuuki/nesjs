@@ -86,6 +86,7 @@ function onKeyDown(e: KeyboardEvent) {
 
     // 防止方向键/空格滚动页面
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault()
+
     // 玩家1按键进端A的本地槽（nesA P1）；玩家2按键进端B的本地槽（nesB P2）。
     // 各自经 lockstep 发到对端。注意绝不能写对端的"远程槽"——那会被 onBeforeFrame 覆盖。
     const gp1 = nesA?.getGamepad(1)
